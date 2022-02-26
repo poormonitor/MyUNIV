@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}首页{% endblock %}
+{% block content %}
+<h1 class="center ud-margin">MyUNIV</h1>
+<h2 class="center">高考填报分析系统</h2>
+<br />
+<div class="row">
+    <div class="col-sm-6">
+        <h4>快速</h4>
+        <p>MyUNIV基于Python Flask，一个轻量级微服务框架，使用SQLite3存储数据。在统计近几年高考数据有良好的性能。</p>
+    </div>
+    <div class="col-sm-6">
+        <h4>美观</h4>
+        <p>前端基于Bootstrap 5，使用JQuery，SweetAlert等库。这使得MySTU看上去是一个现代化的数据查询系统。</p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-6">
+        <h4>易用</h4>
+        <p>前端逻辑清晰，操作提示直观，无需教学也可使用，极大的降低了学校专业查询成本。</p>
+    </div>
+    <div class="col-sm-6">
+        <h4>智能</h4>
+        <p>多种条件筛选符合要求的学校和专业，并可以根据相关要求自动筛选80个备选志愿供参考。</p>
+    </div>
+</div>
+{% endblock %}

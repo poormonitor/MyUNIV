@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    <title>{% block title %}{% endblock %} - MyUNIV</title>
+</head>
+
+<body>
+    <div class="container">
+        <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+            <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none"
+                one-link-mark="yes">
+                <span class="fs-4">MyUNIV</span>
+            </a>
+            <ul class="nav nav-pills">
+                <li class="nav-item"><a href="/query" class="nav-link" one-link-mark="yes">查询</a></li>
+            </ul>
+            <ul class="nav nav-pills">
+                <li class="nav-item">
+                    {% if uid in session %}
+                    <a href="/login" class="nav-link" one-link-mark="yes">退出</a>
+                    {% else %}
+                    <a href="/login" class="nav-link" one-link-mark="yes">登录</a>
+                    {% endif %}
+                </li>
+            </ul>
+        </header>
+
+        <div class="jumbotron">
+            {% block content %}{% endblock %}
+        </div>
+        <br />
+        <div id="footer" class="center">
+            Powered by MyUNIV. A Johnson Sun work.
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+    <script src="{{ url_for('static', filename='sweetalert.min.js') }}"></script>
+</body>
+
+</html>
