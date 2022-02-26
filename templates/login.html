@@ -54,7 +54,7 @@
             });
             return false;
         }
-        $('#passwd').val(md5($('#passwd-fake').val() + $('#nonce').val()));
+        $('#passwd').val(md5(md5($('#passwd-fake').val()) + $('#nonce').val()));
     }
 </script>
 {% endblock %}

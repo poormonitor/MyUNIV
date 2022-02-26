@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}查询{% endblock %}
+{% block content %}
+<form method="POST" enctype="multipart/form-data">
+    <div class="mb3">
+        <label for="file" class="control-label">文件</label>
+        <input id="file" type="file" name="xlsx" class="form-control">
+    </div>
+    <div class="mb3">
+        <label for="year" class="control-label">年份</label>
+        <input id="year" type="text" name="year" class="form-control">
+    </div>
+    <br />
+    <input type="submit" class="btn btn-primary">
+</form>
+{% endblock %}

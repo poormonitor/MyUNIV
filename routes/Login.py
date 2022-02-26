@@ -12,22 +12,24 @@ def login():
         session["nonce"] = os.urandom(16).hex()
         session["csrf"] = os.urandom(16).hex()
         error = request.args.get('error', None)
-        error = {"1": "密码错误", "2": "参数错误"}[error] if error else None
+        error = {
+            "1": "密码错误",
+            "2": "参数错误",
+            "3": "账号不存在"
+        }[error] if error else None
         return render_template('login.html',
                                session=session,
                                csrf=session["csrf"],
                                nonce=session["nonce"],
                                error=error)
-    try:
-        uid = request.form['uid']
-        passwd = request.form['passwd']
-        csrf = request.form['csrf']
-        nonce = session["nonce"]
-    except KeyError:
-        abort(400)
+    uid = request.form['uid']
+    passwd = request.form['passwd']
+    csrf = request.form['csrf']
+    nonce = session["nonce"]
     result = User.query.filter_by(uid=uid).first()
-    print(result)
-    if md5(result.passwd + nonce) != passwd:
+    if not result:
+        return redirect('/login?error=3')
+    if md5(str(result.passwd + nonce).encode("utf-8")).hexdigest() != passwd:
         return redirect('/login?error=1')
     if csrf != session["csrf"]:
         return redirect('/login?error=2')
@@ -35,4 +37,9 @@ def login():
     session["name"] = result.name
     session["admin"] = result.admin
     session["must"] = result.must
+    return redirect('/')
+
+@login_bp.route('/logout', methods=['GET'])
+def logout():
+    session.clear()
     return redirect('/')

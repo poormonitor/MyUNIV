@@ -4,7 +4,7 @@ This file defines the univ model, which contains sid, uname, utags, province and
 from . import db
 
 
-class Users(db.Model):
+class Univ(db.Model):
     __tablename__ = 'univ'
     sid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     uname = db.Column(db.String(64), nullable=False)

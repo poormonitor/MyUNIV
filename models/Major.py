@@ -4,7 +4,7 @@ This file defines the major model, which contains mid, mname, mtags, sid, must, 
 from . import db
 
 
-class Users(db.Model):
+class Major(db.Model):
     __tablename__ = 'major'
     mid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     mname = db.Column(db.String(64), nullable=False)
