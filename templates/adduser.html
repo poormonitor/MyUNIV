@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}添加用户{% endblock %}
+{% block content %}
+<div class="center">
+    <h2>添加用户</h2>
+</div>
+<div class="center">
+    <p>
+        逗号或空格分隔，每行一个用户，格式为：用户名、姓名、密码。
+    </p>
+</div>
+<div class="col-sm-6 offset-sm-3">
+    <form method="POST">
+        <div class="mb-3">
+            <label for="users" class="control-label">用户</label>
+            <textarea id="users" type="text" name="users" class="form-control" rows="10" required></textarea>
+        </div>
+        <br />
+        <input name="csrf" type="hidden" value="{{ csrf }}">
+        <div class="center">
+            <button type="submit" class="btn btn-primary">提交</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

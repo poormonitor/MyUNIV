@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}修改用户信息{% endblock %}
+{% block content %}
+<div class="center">
+    <h2>修改用户信息</h2>
+</div>
+<div class="center">
+    <p>
+        修改密码。
+    </p>
+</div>
+{% if error %}
+<br />
+<div class="center">
+    <span class="alert alert-danger" role="alert">
+        <strong>{{ error }}</strong>
+    </span>
+</div>
+<br />
+{% endif %}
+<div class="col-sm-6 offset-sm-3">
+    <form method="POST" onsubmit="return check_password();">
+        <div class="mb-3">
+            <label for="fake_old_password" class="control-label">原密码</label>
+            <input id="fake_old_password" type="password" class="form-control" required>
+            <input id="old_password" type="hidden" name="old_password">
+        </div>
+        <div class="mb-3">
+            <label for="fake_new_password" class="control-label">新密码</label>
+            <input id="fake_new_password" type="password" class="form-control" required>
+            <input id="new_password" type="hidden" name="new_password">
+        </div>
+        <div class="mb-3">
+            <label for="new_password_confirm" class="control-label">确认新密码</label>
+            <input id="new_password_confirm" type="password" class="form-control" required>
+        </div>
+        <input name="csrf" type="hidden" value="{{ csrf }}">
+        <div class="center">
+            <button type="submit" class="btn btn-primary">提交</button>
+        </div>
+    </form>
+</div>
+<script src="{{ url_for('static', filename='md5.min.js') }}"></script>
+<script>
+    function check_password() {
+        var old_password = $('#fake_old_password').val();
+        var new_password = $('#fake_new_password').val();
+        var new_password_confirm = $('#new_password_confirm').val();
+        if (new_password != new_password_confirm) {
+            swal({
+                title: "密码不一致",
+                text: "两次输入的密码不一致",
+                icon: "error",
+            });
+            return false;
+        }
+        $('#old_password').val(md5(old_password));
+        $('#new_password').val(md5(new_password));
+        return true;
+    }
+</script>
+
+{% endblock %}

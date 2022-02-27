@@ -6,7 +6,7 @@ from . import db
 
 class Univ(db.Model):
     __tablename__ = 'univ'
-    sid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    sid = db.Column(db.Integer, primary_key=True)
     uname = db.Column(db.String(64), nullable=False)
     utags = db.Column(db.String(64), nullable=False)
     province = db.Column(db.Integer, nullable=False)
@@ -14,7 +14,8 @@ class Univ(db.Model):
     def __repr__(self):
         return '<Univ %r>' % self.sid
 
-    def __init__(self, uname, utags, province):
+    def __init__(self, sid, uname, utags, province):
+        self.sid = sid
         self.uname = uname
         self.utags = utags
         self.province = province

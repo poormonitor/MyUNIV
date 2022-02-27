@@ -37,12 +37,12 @@
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 {{ session["name"] }}
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="#">修改个人数据</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('Modify.modify') }}">修改个人数据</a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
-                                <li><a class="dropdown-item" href="#">管理用户</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('AddUser.adduser') }}">管理用户</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('AddData.adddata') }}">添加数据</a></li>
                                 <li>
                                     <hr class="dropdown-divider">
@@ -64,6 +64,7 @@
         <div id="footer" class="center">
             Powered by MyUNIV. A Johnson Sun work.
         </div>
+        <br />
     </div>
     <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>

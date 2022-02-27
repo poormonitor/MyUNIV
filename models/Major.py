@@ -9,7 +9,7 @@ class Major(db.Model):
     mid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     mname = db.Column(db.String(64), nullable=False)
     mtags = db.Column(db.String(64), nullable=False)
-    sid = db.ForeignKey('univ.sid')
+    sid = db.Column(db.Integer, nullable=False)
     must = db.Column(db.Integer, nullable=False)
     year = db.Column(db.Integer, nullable=False)
     rank = db.Column(db.Integer, nullable=True)

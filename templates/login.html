@@ -14,16 +14,15 @@
     <br />
     {% endif %}
     <div id="form">
-        <form action="./login" method="POST" role="form" onsubmit="return SubmitCheck()">
-            <div class="mb3">
+        <form method="POST" role="form" onsubmit="return SubmitCheck()">
+            <div class="mb-3">
                 <label for="uid" class="form-label">用户名</label>
-                <input type="text" class="form-control" id="uid" name="uid" autocomplete="username" placeholder="用户名">
+                <input type="text" class="form-control" id="uid" name="uid" autocomplete="username" placeholder="用户名" required>
             </div>
-            <br />
-            <div class="mb3">
+            <div class="mb-3">
                 <label for="passwd" class="form-label">密码</label>
                 <input type="password" class="form-control" id="passwd-fake" autocomplete="current-password"
-                    placeholder="密码">
+                    placeholder="密码" required>
                 <input type="hidden" id="nonce" value="{{ nonce }}">
                 <input type="hidden" id="passwd" name="passwd">
             </div>
@@ -38,22 +37,6 @@
 <script src="{{ url_for('static', filename='md5.min.js') }}"></script>
 <script>
     function SubmitCheck() {
-        if ($('#uid').val() == '') {
-            swal({
-                title: "请输入用户名",
-                icon: "warning",
-                timer: 1000,
-            });
-            return false;
-        }
-        if ($('#passwd-fake').val() == '') {
-            swal({
-                title: "请输入密码",
-                icon: "warning",
-                timer: 1000,
-            });
-            return false;
-        }
         $('#passwd').val(md5(md5($('#passwd-fake').val()) + $('#nonce').val()));
     }
 </script>

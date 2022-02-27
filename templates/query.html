@@ -1,5 +1,68 @@
 {% extends "base.html" %}
 {% block title %}查询{% endblock %}
 {% block content %}
-
+<form method="GET">
+    <div class="row g-3">
+        <div class="col-md-3">
+            <label for="school" class="form-label">学校</label>
+            <input type="text" class="form-control" id="school" name="school" value="{{ request['school'] }}">
+        </div>
+        <div class="col-md-3">
+            <label for="major" class="form-label">专业</label>
+            <input type="text" class="form-control" id="major" name="major" value="{{ request['major'] }}">
+        </div>
+        <div class="col-md-3">
+            <label for="year" class="form-label">年份</label>
+            <input type="text" class="form-control" id="year" name="year" value="{{ request['year'] }}">
+        </div>
+        <div class="col-md-3">
+            <label for="rank" class="form-label">位次号</label>
+            <input type="text" class="form-control" id="rank" name="rank" value="{{ request['rank'] }}">
+        </div>
+    </div>
+    <div class="col-12 center mb-3">
+        <button type="submit" class="btn btn-primary col-sm-4">Go</button>
+    </div>
+</form>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>学校代码</th>
+                <th>学校名称</th>
+                <th>专业名称</th>
+                <th>招生计划</th>
+                <th>年份</th>
+                <th>位次号</th>
+                <th>选考专业</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in result %}
+            <tr>
+                <td>{{ item[0].sid }}</td>
+                <td>{{ item[1].uname }}</td>
+                <td>{{ item[0].mname }}</td>
+                <td>{{ item[0].schedule }}</td>
+                <td>{{ item[0].year }}</td>
+                <td>{{ item[0].rank }}</td>
+                <td>{{ item[0].must }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-end">
+            <li class="page-item disabled">
+                <a class="page-link">Previous</a>
+            </li>
+            <li class="page-item"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item">
+                <a class="page-link" href="#">Next</a>
+            </li>
+        </ul>
+    </nav>
+</div>
 {% endblock %}

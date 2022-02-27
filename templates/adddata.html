@@ -1,16 +1,30 @@
 {% extends "base.html" %}
-{% block title %}查询{% endblock %}
+{% block title %}添加数据{% endblock %}
 {% block content %}
-<form method="POST" enctype="multipart/form-data">
-    <div class="mb3">
-        <label for="file" class="control-label">文件</label>
-        <input id="file" type="file" name="xlsx" class="form-control">
-    </div>
-    <div class="mb3">
-        <label for="year" class="control-label">年份</label>
-        <input id="year" type="text" name="year" class="form-control">
-    </div>
-    <br />
-    <input type="submit" class="btn btn-primary">
-</form>
+<div class="center">
+    <h2>添加数据</h2>
+</div>
+<div class="center">
+    <p>
+        请从浙江省教育考试院下载发布的投档数据，格式为xlsx，并上传到本系统。
+    </p>
+</div>
+<div class="col-sm-6 offset-sm-3">
+    <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="file" class="control-label">文件</label>
+            <input id="file" type="file" name="xlsx" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="year" class="control-label">年份</label>
+            <input id="year" type="text" name="year" class="form-control" required>
+        </div>
+        <br />
+        <input name="csrf" type="hidden" value="{{ csrf }}">
+        <div class="center">
+            <button type="submit" class="btn btn-primary">提交</button>
+        </div>
+    </form>
+</div>
+
 {% endblock %}

@@ -1,5 +1,6 @@
 from models.User import User
-from flask import Blueprint, render_template, request, abort, session, redirect
+from flask import Blueprint, render_template, request, session, redirect
+from models import db
 from hashlib import md5
 
 login_bp = Blueprint('Login', __name__)
@@ -37,7 +38,10 @@ def login():
     session["name"] = result.name
     session["admin"] = result.admin
     session["must"] = result.must
+    # update last login
+    result.last_login = db.func.now()
     return redirect('/')
+
 
 @login_bp.route('/logout', methods=['GET'])
 def logout():
