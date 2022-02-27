@@ -1,5 +1,5 @@
 from models.User import User
-from flask import Blueprint, render_template, request, session, redirect
+from flask import Blueprint, render_template, request, session, redirect, url_for
 from models import db
 from hashlib import md5
 

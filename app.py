@@ -17,7 +17,7 @@ def create_app():
     app = Flask(__name__)
 
     app.config['SECRET_KEY'] = os.urandom(24)
-    app.config['SESSION_COOKIE_PATH'] = '/'
+    app.config['SESSION_COOKIE_PATH'] = '/univ'
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
         os.path.dirname(__file__), "data.db")
     app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
@@ -34,4 +34,4 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True)
+    app.run(port=6000)
