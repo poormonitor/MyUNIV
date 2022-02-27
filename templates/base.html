@@ -51,7 +51,7 @@
                             </ul>
                         </li>
                         {% else %}
-                        <a href="/login" class="nav-link" one-link-mark="yes">登录</a>
+                        <a href="{{ url_for('Login.login') }}" class="nav-link" one-link-mark="yes">登录</a>
                         {% endif %}
                     </ul>
                 </div>
