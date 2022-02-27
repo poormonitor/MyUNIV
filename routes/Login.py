@@ -1,5 +1,5 @@
 from models.User import User
-from flask import Blueprint, render_template, request, session, redirect
+from flask import Blueprint, render_template, request, session, redirect, url_for
 from models import db
 from hashlib import md5
 
@@ -29,21 +29,21 @@ def login():
     nonce = session["nonce"]
     result = User.query.filter_by(uid=uid).first()
     if not result:
-        return redirect('/login?error=3')
+        return redirect(url_for('Login.login', error=3))
     if md5(str(result.passwd + nonce).encode("utf-8")).hexdigest() != passwd:
-        return redirect('/login?error=1')
+        return redirect(url_for('Login.login', error=1))
     if csrf != session["csrf"]:
-        return redirect('/login?error=2')
+        return redirect(url_for('Login.login', error=2))
     session["uid"] = uid
     session["name"] = result.name
     session["admin"] = result.admin
     session["must"] = result.must
     # update last login
     result.last_login = db.func.now()
-    return redirect('/')
+    return redirect(url_for('Index.index'))
 
 
 @login_bp.route('/logout', methods=['GET'])
 def logout():
     session.clear()
-    return redirect('/')
+    return redirect(url_for('Index.index'))

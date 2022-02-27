@@ -60,4 +60,4 @@ def adddata():
                                                    rank
                                                })
         db.session.commit()
-    return redirect('/')
+    return redirect(url_for('Index.index'))
