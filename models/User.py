@@ -16,7 +16,7 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % self.uid
 
-    def __init__(self, uid, name, password, admin=False, must=None):
+    def __init__(self, uid, name, password, admin=False, must=0):
         self.uid = uid
         self.name = name
         self.passwd = password

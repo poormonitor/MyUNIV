@@ -10,19 +10,13 @@ class Major(db.Model):
     mname = db.Column(db.String(64), nullable=False)
     mtags = db.Column(db.String(64), nullable=False)
     sid = db.Column(db.Integer, nullable=False)
-    must = db.Column(db.Integer, nullable=False)
-    year = db.Column(db.Integer, nullable=False)
-    rank = db.Column(db.Integer, nullable=True)
     schedule = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
         return '<Major %r>' % self.mid
 
-    def __init__(self, mname, mtags, sid, must, year, rank, schedule):
+    def __init__(self, mname, mtags, sid, schedule):
         self.mname = mname
         self.mtags = mtags
         self.sid = sid
-        self.must = must
-        self.year = year
-        self.rank = rank
         self.schedule = schedule

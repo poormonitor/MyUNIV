@@ -17,11 +17,11 @@ def adduser():
             return render_template('adduser.html', session=session, csrf=session["csrf"])
         if not valid_csrf():
             return redirect(url_for('AddUser.adduser'))
-        users = request.form("users")
+        users = request.form.get("users")
         for line in users.splitlines():
             items = re.split(",| |\t", line)
             if User.query.filter_by(uid=items[0]).first() is None:
-                passwd = md5(items[2]).hexdigest()
+                passwd = md5(str(items[2]).encode("utf-8")).hexdigest()
                 db.session.add(
                     User(uid=items[0], name=items[1], password=passwd))
         db.session.commit()
