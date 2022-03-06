@@ -10,11 +10,13 @@ class Rank(db.Model):
     mid = db.Column(db.Integer, nullable=False)
     year = db.Column(db.Integer, nullable=False)
     rank = db.Column(db.Integer, nullable=False)
+    schedule = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
         return '<Rank %r>' % self.rmid
 
-    def __init__(self, mid, year, rank):
+    def __init__(self, mid, year, rank, schedule):
         self.mid = mid
         self.year = year
         self.rank = rank
+        self.schedule = schedule

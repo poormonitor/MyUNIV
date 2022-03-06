@@ -1,5 +1,5 @@
 from flask import Blueprint, redirect, render_template, session, request, url_for
-from func import isadmin, valid_csrf
+from func import admin_required, valid_csrf
 from models import db
 from models.User import User
 from hashlib import md5
@@ -10,20 +10,19 @@ add_user_bp = Blueprint('AddUser', __name__)
 
 
 @add_user_bp.route('/adduser', methods=['GET', 'POST'])
+@admin_required
 def adduser():
-    if isadmin():
-        if request.method == "GET":
-            session['csrf'] = os.urandom(16).hex()
-            return render_template('adduser.html', session=session, csrf=session["csrf"])
-        if not valid_csrf():
-            return redirect(url_for('AddUser.adduser'))
-        users = request.form.get("users")
-        for line in users.splitlines():
-            items = re.split(",| |\t", line)
-            if User.query.filter_by(uid=items[0]).first() is None:
-                passwd = md5(str(items[2]).encode("utf-8")).hexdigest()
-                db.session.add(
-                    User(uid=items[0], name=items[1], password=passwd))
-        db.session.commit()
+    if request.method == "GET":
+        session['csrf'] = os.urandom(16).hex()
+        return render_template('adduser.html', csrf=session["csrf"])
+    if not valid_csrf():
         return redirect(url_for('AddUser.adduser'))
-    return redirect(url_for('Index.index'))
+    users = request.form.get("users")
+    for line in users.splitlines():
+        items = re.split(",| |\t", line)
+        if User.query.filter_by(uid=items[0]).first() is None:
+            passwd = md5(str(items[2]).encode("utf-8")).hexdigest()
+            db.session.add(
+                User(uid=items[0], name=items[1], password=passwd))
+    db.session.commit()
+    return redirect(url_for('AddUser.adduser'))

@@ -18,7 +18,7 @@ def create_app():
     app.config['SECRET_KEY'] = os.urandom(24)
     app.config['SESSION_COOKIE_PATH'] = '/'
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
-        os.path.dirname(__file__), "data.db")
+        os.path.dirname(__file__), "data.sqlite")
     app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
@@ -26,7 +26,7 @@ def create_app():
     migrate = Migrate()
     migrate.init_app(app, db)
     routes_init_app(app)
-    has = os.path.isfile(os.path.join(os.path.dirname(__file__), "data.db"))
+    has = os.path.isfile(os.path.join(os.path.dirname(__file__), "data.sqlite"))
     with app.app_context():
         db.create_all()
         if not has:

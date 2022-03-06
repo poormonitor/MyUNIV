@@ -8,6 +8,10 @@
     <p>
         请从浙江省教育考试院下载发布的投档数据，格式为xlsx，并上传到本系统。
     </p>
+    <p>
+        投档数据：学校代号 学校名称 专业代号 专业名称 计划数 分数线 位次号<br />
+        选课数据：省份 院校名称 专业（类）名称 选考科目要求<br />
+    </p>
 </div>
 <div class="col-sm-6 offset-sm-3">
     <form method="POST" enctype="multipart/form-data">
@@ -18,6 +22,19 @@
         <div class="mb-3">
             <label for="year" class="control-label">年份</label>
             <input id="year" type="text" name="year" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="type" class="control-label">类型</label>
+        </div>
+        <div class="mb-3">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="type" id="check1" value="1" checked>
+                <label class="form-check-label" for="check1">投档数据</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="type" id="check2" value="2">
+                <label class="form-check-label" for="check2">选科数据</label>
+            </div>
         </div>
         <br />
         <input name="csrf" type="hidden" value="{{ csrf }}">

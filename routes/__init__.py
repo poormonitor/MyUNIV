@@ -4,6 +4,8 @@ from .Query import query_bp
 from .AddData import add_data_bp
 from .AddUser import add_user_bp
 from .Modify import modify_bp
+from .Major import major_bp
+from .Univ import univ_bp
 
 
 def init_app(app):
@@ -11,6 +13,8 @@ def init_app(app):
     app.register_blueprint(index_bp)
     app.register_blueprint(query_bp)
     app.register_blueprint(modify_bp)
+    app.register_blueprint(major_bp)
+    app.register_blueprint(univ_bp)
     app.register_blueprint(add_data_bp, url_prefix='/admin')
     app.register_blueprint(add_user_bp, url_prefix='/admin')
     return app

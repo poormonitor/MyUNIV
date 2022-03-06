@@ -6,6 +6,10 @@
             <input type="text" class="form-control" id="school" name="school" value="{{ request['school'] }}">
         </div>
         <div class="col-md-2">
+            <label for="utags" class="form-label">学校标签</label>
+            <input type="text" class="form-control" id="utags" name="utags" value="{{ request['utags'] }}">
+        </div>
+        <div class="col-md-2">
             <label for="major" class="form-label">专业</label>
             <input type="text" class="form-control" id="major" name="major" value="{{ request['major'] }}">
         </div>
@@ -19,7 +23,8 @@
         </div>
         <div class="col-md-2">
             <label for="rank_range" class="form-label">位次浮动区间</label>
-            <input type="text" class="form-control" id="rank_range" name="rank_range" value="{{ request['rank_range'] }}">
+            <input type="text" class="form-control" id="rank_range" name="rank_range"
+                value="{{ request['rank_range'] }}">
         </div>
     </div>
     <div class="col-12 center mb-3">
@@ -43,9 +48,9 @@
             {% for item in result %}
             <tr>
                 <td>{{ item[0].sid }}</td>
-                <td>{{ item[1].uname }}</td>
-                <td>{{ item[0].mname }}</td>
-                <td>{{ item[0].schedule }}</td>
+                <td><a href="{{ url_for('Univ.univ', sid=item[1].sid) }}">{{ item[1].uname }}</a></td>
+                <td><a href="{{ url_for('Major.major', mid=item[0].mid) }}">{{ item[0].mname }}</a></td>
+                <td>{{ item[2].schedule }}</td>
                 <td>{{ item[2].year }}</td>
                 <td>{{ item[2].rank }}</td>
                 <td>{{ item[2].must }}</td>

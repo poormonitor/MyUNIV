@@ -1,0 +1,45 @@
+{% extends "base.html" %} {% block title %}专业信息{% endblock %}
+{% block content %}
+<h2>{{ major.mname }}</h2>
+<h4>{{ univ.uname }}</h4>
+<div>
+    <hr />
+    <h4>必选科目信息</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>年份</th>
+                <th>必选科目</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in must %}
+            <tr>
+                <td>{{ i.year }}</td>
+                <td>{{ i.must }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <hr />
+    <h4>历年投档信息</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>年份</th>
+                <th>位次号</th>
+                <th>计划人数</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in ranks %}
+            <tr>
+                <td>{{ i.year }}</td>
+                <td>{{ i.rank }}</td>
+                <td>{{ i.schedule }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

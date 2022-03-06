@@ -1,9 +1,11 @@
 from models.Major import Major
 from models.Univ import Univ
 from models.Rank import Rank
+from models.Tag import Tag
 from models import db
-from flask import Blueprint, render_template, redirect, url_for, request, session
-from func import islogin, login_required
+from flask import Blueprint, render_template, url_for, request
+from func import login_required
+import json
 
 query_bp = Blueprint('Query', __name__)
 
@@ -21,7 +23,8 @@ def query():
         "year": last_year,
         "school": "",
         "major": "",
-        "rank_range": 1000
+        "rank_range": "",
+        "utags": ""
     }
     if "school" in request.args and request.args["school"] != "":
         for i in request.args["school"].split(" "):
@@ -38,10 +41,27 @@ def query():
         rank_range = int(request.args["rank_range"])
         info["rank_range"] = rank_range
     if "rank" in request.args and request.args["rank"] != "":
+        if not info["rank_range"]:
+            info["rank_range"] = 1000
         rank = int(request.args["rank"])
-        result = result.filter(rank - info["rank_range"] <= Rank.rank,
-                               Rank.rank <= rank + info["rank_range"])
+        result = result.filter(
+            rank - info["rank_range"] <= Rank.rank,
+            Rank.rank <= rank + info["rank_range"]).filter(Rank.rank != 0)
         info["rank"] = rank
+    if "utags" in request.args and request.args["utags"] != "":
+        utags = request.args["utags"].split(" ")
+        tags = []
+        tagnames = []
+        for i in utags:
+            tagnames.append(i)
+            if (a := db.session.query(Tag).filter(
+                    Tag.tname.like("%" + i + "%")).first()) is not None:
+                tags.append(a.tid)
+        tags.sort()
+        for i in tags:
+            result = result.filter(Univ.utags.like("%," + str(i) + ",%"))
+        info["utags"] = ",".join(tagnames)
+        print(tags)
     cnt = len(result.all()) // 50 + 1
     result = result.offset((page - 1) * 50).limit(50).all()
     urls = [
@@ -51,7 +71,6 @@ def query():
     return render_template(
         'query.html',
         result=result,
-        session=session,
         request=info,
         page=page,
         cnt=cnt,

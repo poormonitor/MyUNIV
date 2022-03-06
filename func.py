@@ -3,6 +3,7 @@ from functools import wraps
 
 
 def islogin():
+    return True
     if "uid" in session:
         return True
     else:
@@ -48,3 +49,14 @@ def admin_required(f):
             return f(*args, **kwargs)
 
     return wrap
+
+
+def get_school_name(name: str):
+    import re
+    from const import allow_tags
+    univ_name = name.split("(")[0]
+    tag = re.findall(r'(?<=[\(]).*?(?=[\)])', univ_name)
+    for j in tag:
+        if j not in allow_tags:
+            univ_name += "(" + j + ")"
+    return univ_name

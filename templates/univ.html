@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}学校信息{% endblock %}
+{% block content %}
+<h2>{{ univ.uname }}</h2>
+<div id="tags">
+    {% for tag in tags %}
+    <span class="badge bg-primary">{{ tag }}</span>
+    {% endfor %}
+</div>
+<div id="info">
+    <hr />
+    <h4>必选科目信息</h4>
+    <div class="accordion" id="musts">
+        {% for i in musts.items() %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="mustsheading{{ i[0] }}">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapse{{ i[0] }}" aria-expanded="false" aria-controls="mustscollapse{{ i[0] }}">
+                    {{ i[0] }}
+                </button>
+            </h2>
+            <div id="mustscollapse{{ i[0] }}" class="accordion-collapse collapse"
+                aria-labelledby="mustsheading{{ i[0] }}" data-bs-parent="#musts">
+                <div class="accordion-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>年份</th>
+                                    <th>专业</th>
+                                    <th>必选科目</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in i[1] %}
+                                <tr>
+                                    <td>{{ i[1].year }}</td>
+                                    <td>{{ i[0].mname }}</td>
+                                    <td>{{ i[1].must }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <hr />
+    <h4>历年投档信息</h4>
+    <div class="accordion" id="ranks">
+        {% for i in ranks.items() %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="ranksheading{{ i[0] }}">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#rankscollapse{{ i[0] }}" aria-expanded="false"
+                    aria-controls="rankscollapse{{ i[0] }}">
+                    {{ i[0] }}
+                </button>
+            </h2>
+            <div id="rankscollapse{{ i[0] }}" class="accordion-collapse collapse"
+                aria-labelledby="ranksheading{{ i[0] }}" data-bs-parent="#ranks">
+                <div class="accordion-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>年份</th>
+                                    <th>专业</th>
+                                    <th>位次号</th>
+                                    <th>计划人数</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for j in i[1] %}
+                                <tr>
+                                    <td>{{ j[1].year }}</td>
+                                    <td>{{ j[0].mname }}</td>
+                                    <td>{{ j[1].rank }}</td>
+                                    <td>{{ j[1].schedule }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
