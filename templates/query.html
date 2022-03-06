@@ -1,5 +1,6 @@
 {% extends "base.html" %} {% block title %}查询{% endblock %} {% block content %}
-<form method="GET">
+<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-select.min.css') }}">
+<form method="GET" onsubmit="return beforeSubmit();">
     <div class="row g-3">
         <div class="col-md-2">
             <label for="school" class="form-label">学校</label>
@@ -22,9 +23,34 @@
             <input type="text" class="form-control" id="rank" name="rank" value="{{ request['rank'] }}">
         </div>
         <div class="col-md-2">
-            <label for="rank_range" class="form-label">位次浮动区间</label>
+            <label for="rank_range" class="form-label">区间</label>
             <input type="text" class="form-control" id="rank_range" name="rank_range"
                 value="{{ request['rank_range'] }}">
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-8">
+            <label>选考科目</label>
+            <input type="hidden" name="mymust">
+            {% for i,e in must_string %}
+            <div class="form-check form-check-inline">
+                <input class="form-check-input musts" type="checkbox" id="must{{ i }}" value="{{ i }}" {{ 'checked' if i
+                    + 1 in info["mymust"] else "" }}>
+                <label class="form-check-label" for="must{{ i }}">{{ e }}</label>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="col-md-4">
+            <label for="province" class="form-label">省份</label>
+            <select class="selectpicker" id="province" name="province">
+                {% for i in provinces %}
+                {% if i[0] in request['province'] %}
+                <option value="{{ i[0] }}" selected>{{ [1] }}</option>
+                {% else %}
+                <option value="{{ i[0] }}">{{ i[1] }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
         </div>
     </div>
     <div class="col-12 center mb-3">
@@ -82,4 +108,20 @@
         </ul>
     </nav>
 </div>
+{% endblock %}
+{% block script %}
+<script src="{{ url_for('static', filename='bootstrap-select.min.js') }}"></script>
+<script>
+    $('input.musts').on('change', function (e) {
+        if ($('input.musts:checked').length > 3) {
+            $(this).prop('checked', false);
+        }
+    });
+    function beforeSubmit() {
+        $("input.musts:checked").each(function () {
+            $("input[name='mymust']").val($("input[name='mymust']").val() + $(this).val());
+        });
+        return true;
+    }
+</script>
 {% endblock %}
