@@ -1,6 +1,5 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template
 from func import login_required
-from models import db
 from models.Major import Major
 from models.Univ import Univ
 from models.Tag import Tag

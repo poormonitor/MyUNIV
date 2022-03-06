@@ -7,7 +7,6 @@ from models.Tag import Tag
 from models.Rank import Rank
 from pandas import read_excel
 from const import allow_tags, provinces
-from threading import Thread
 from tempfile import NamedTemporaryFile
 import re
 import os

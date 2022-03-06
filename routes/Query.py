@@ -5,7 +5,6 @@ from models.Tag import Tag
 from models import db
 from flask import Blueprint, render_template, url_for, request
 from func import login_required
-import json
 
 query_bp = Blueprint('Query', __name__)
 
