@@ -1,6 +1,6 @@
 {% extends "base.html" %} {% block title %}查询{% endblock %} {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-select.min.css') }}">
-<form method="GET" onsubmit="return beforeSubmit();">
+<form method="GET">
     <div class="row g-3">
         <div class="col-md-2">
             <label for="school" class="form-label">学校</label>
@@ -8,7 +8,15 @@
         </div>
         <div class="col-md-2">
             <label for="utags" class="form-label">学校标签</label>
-            <input type="text" class="form-control" id="utags" name="utags" value="{{ request['utags'] }}">
+            <select class="selectpicker form-control" id="utags" name="utags" multiple>
+                {% for i in utags %}
+                {% if i.tid in info["utags"] %}
+                <option value="{{ i.tid }}" selected>{{ i.tname }}</option>
+                {% else %}
+                <option value="{{ i.tid }}">{{ i.tname }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
         </div>
         <div class="col-md-2">
             <label for="major" class="form-label">专业</label>
@@ -24,28 +32,28 @@
         </div>
         <div class="col-md-2">
             <label for="rank_range" class="form-label">区间</label>
-            <input type="text" class="form-control" id="rank_range" name="rank_range"
-                value="{{ request['rank_range'] }}">
+            <input type="text" class="form-control" id="rank_range" name="rank_range" value="{{ request['rank_range'] }}">
         </div>
     </div>
     <div class="row g-3">
         <div class="col-md-8">
             <label>选考科目</label>
-            <input type="hidden" name="mymust">
-            {% for i,e in must_string %}
-            <div class="form-check form-check-inline">
-                <input class="form-check-input musts" type="checkbox" id="must{{ i }}" value="{{ i }}" {{ 'checked' if i
-                    + 1 in info["mymust"] else "" }}>
-                <label class="form-check-label" for="must{{ i }}">{{ e }}</label>
+            <div class="mt-2">
+                {% for i,e in must_string %}
+                <div class="form-check form-check-inline">
+                    <label class="form-check-label" for="must{{ i }}">{{ e }}</label> {% if i in info["mymust"] %}
+                    <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i }}" value="{{ i }}" checked> {% else %}
+                    <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i }}" value="{{ i }}"> {% endif %}
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
         <div class="col-md-4">
             <label for="province" class="form-label">省份</label>
-            <select class="selectpicker" id="province" name="province">
+            <select class="selectpicker form-control" id="province" name="province" multiple>
                 {% for i in provinces %}
-                {% if i[0] in request['province'] %}
-                <option value="{{ i[0] }}" selected>{{ [1] }}</option>
+                {% if i[0] in info["province"] %}
+                <option value="{{ i[0] }}" selected>{{ i[1] }}</option>
                 {% else %}
                 <option value="{{ i[0] }}">{{ i[1] }}</option>
                 {% endif %}
@@ -108,20 +116,14 @@
         </ul>
     </nav>
 </div>
-{% endblock %}
-{% block script %}
+<script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+{% endblock %} {% block script %}
 <script src="{{ url_for('static', filename='bootstrap-select.min.js') }}"></script>
 <script>
-    $('input.musts').on('change', function (e) {
+    $('input.musts').on('change', function(e) {
         if ($('input.musts:checked').length > 3) {
             $(this).prop('checked', false);
         }
     });
-    function beforeSubmit() {
-        $("input.musts:checked").each(function () {
-            $("input[name='mymust']").val($("input[name='mymust']").val() + $(this).val());
-        });
-        return true;
-    }
 </script>
 {% endblock %}

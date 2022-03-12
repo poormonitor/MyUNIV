@@ -5,7 +5,7 @@ from models.Tag import Tag
 from models.Must import Must
 from models import db
 from flask import Blueprint, render_template, url_for, request
-from func import login_required
+from func import login_required, get_what_i_can_choose
 from const import majors, provinces
 from itertools import combinations
 
@@ -16,8 +16,7 @@ query_bp = Blueprint('Query', __name__)
 @login_required
 def query():
     page = int(request.args.get("page")) if "page" in request.args else 1
-    last_year = a.year if (a := Rank.query.order_by(
-        Rank.year.desc()).first()) else ""
+    last_year = a.year if (a := Rank.query.first()) else ""
     result = db.session.query(Major, Univ, Rank).filter(
         Univ.sid == Major.sid, Major.mid == Rank.mid).outerjoin(
             Must, Must.mid == Major.mid).order_by(Univ.sid)
@@ -28,7 +27,9 @@ def query():
         "major": "",
         "rank_range": "",
         "utags": "",
-        "musts": 0
+        "musts": 0,
+        "province": [],
+        "utags": []
     }
     if "school" in request.args and request.args["school"] != "":
         for i in request.args["school"].split(" "):
@@ -51,35 +52,33 @@ def query():
         result = result.filter(
             rank - info["rank_range"] <= Rank.rank,
             Rank.rank <= rank + info["rank_range"]).filter(Rank.rank != 0)
+        result = result.order_by(db.text("ABS(rank.rank - %d) ASC" % rank))
         info["rank"] = rank
+    else:
+        result = result.order_by(Univ.sid.asc())
     if "utags" in request.args and request.args["utags"] != "":
-        utags = request.args["utags"].split(" ")
-        tags = []
-        tagnames = []
+        utags = list(map(int, request.args.getlist("utags")))
+        utags.sort()
         for i in utags:
-            tagnames.append(i)
-            if (a := db.session.query(Tag).filter(
-                    Tag.tname.like("%" + i + "%")).first()) is not None:
-                tags.append(a.tid)
-        tags.sort()
-        for i in tags:
             result = result.filter(Univ.utags.like("%," + str(i) + ",%"))
-        info["utags"] = ",".join(tagnames)
+        info["utags"] = utags
     if "mymust" in request.args and request.args["mymust"] != "":
-        mymust = list(request.args["mymust"])
+        mymust = request.args.getlist("mymust")
+        mymust = "".join(mymust)
+        what_i_can = get_what_i_can_choose(mymust)
         info["mymust"] = list(map(int, mymust))
-        mymust = ["0"] + mymust
-        mymust = ["0"] + list(combinations(mymust, 3)) + list(
-            combinations(mymust, 2)) + list(combinations(mymust, 1))
-        mymust = [int("".join(i)) for i in mymust]
         for i in mymust:
-            result = result.filter(Must.must.in_(mymust))
+            result = result.filter(Must.must.in_(what_i_can))
+    if "province" in request.args and request.args["province"] != "":
+        province = info["province"] = list(
+            map(int, request.args.getlist("province")))
     cnt = len(result.all()) // 50 + 1
     result = result.offset((page - 1) * 50).limit(50).all()
     urls = [
         str(url_for('Query.query', page=i, **info))
         for i in (1, page - 1, page, page + 1, cnt)
     ]
+    all_tags = Tag.query.all()
     return render_template('query.html',
                            result=result,
                            request=info,
@@ -88,4 +87,5 @@ def query():
                            cnt=cnt,
                            string=urls,
                            provinces=provinces.items(),
-                           must_string=enumerate(majors[1:]))
+                           must_string=enumerate(majors[1:]),
+                           utags=all_tags)
