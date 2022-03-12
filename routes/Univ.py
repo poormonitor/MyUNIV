@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template
-from func import login_required
+from func import login_required, get_must_string
 from models import db
 from models.Major import Major
 from models.Univ import Univ
 from models.Tag import Tag
 from models.Rank import Rank
 from models.Must import Must
+import json
 
 univ_bp = Blueprint('Univ', __name__)
 
@@ -25,15 +26,22 @@ def univ(sid: int):
         if i[1].year not in ranks:
             ranks[i[1].year] = []
         ranks[i[1].year].append(i)
-    mts = db.session.query(Major, Must).filter(Major.mid == Must.mid).filter(
-        Major.sid == univ.sid).all()
+    mts = db.session.query(Must).filter(Must.sid == univ.sid).all()
     musts = {}
     for i in mts:
-        if i[1].year not in musts:
-            musts[i[1].year] = []
-        musts[i[1].year].append(i)
+        if i.year not in musts:
+            musts[i.year] = []
+        content = {"must": get_must_string(i.must), "mname": i.mname}
+        musts[i.year].append(content)
+    totals = db.session.query(Rank.year, db.func.sum(Rank.schedule)).filter(
+        Rank.mid.in_(db.session.query(
+            Major.mid).filter(Major.sid == sid))).group_by(Rank.year).order_by(
+                Rank.year.asc()).all()
+    totals = [[str(i[0]), i[1]] for i in totals]
+    totals = json.dumps(totals)
     return render_template('univ.html',
                            univ=univ,
                            ranks=ranks,
                            musts=musts,
-                           tags=tags)
+                           tags=tags,
+                           total=totals)

@@ -39,6 +39,7 @@ def login():
     session["must"] = result.must
     # update last login
     result.last_login = db.func.now()
+    db.session.commit()
     return redirect(url_for('Index.index'))
 
 

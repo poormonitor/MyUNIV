@@ -5,9 +5,8 @@ from models.Tag import Tag
 from models.Must import Must
 from models import db
 from flask import Blueprint, render_template, url_for, request
-from func import login_required, get_what_i_can_choose
+from func import login_required, get_what_i_can_choose, get_must_string
 from const import majors, provinces
-from itertools import combinations
 
 query_bp = Blueprint('Query', __name__)
 
@@ -16,10 +15,13 @@ query_bp = Blueprint('Query', __name__)
 @login_required
 def query():
     page = int(request.args.get("page")) if "page" in request.args else 1
-    last_year = a.year if (a := Rank.query.first()) else ""
-    result = db.session.query(Major, Univ, Rank).filter(
-        Univ.sid == Major.sid, Major.mid == Rank.mid).outerjoin(
-            Must, Must.mid == Major.mid).order_by(Univ.sid)
+    last_year = a.year if (a := Rank.query.order_by(
+        Rank.year.desc()).first()) else ""
+    result = db.session.query(Major, Univ, Rank, Must).outerjoin(
+        Must, db.and_(Must.sid == Major.sid,
+                      Major.mname.contains(Must.mname))).filter(
+                          Univ.sid == Major.sid,
+                          Major.mid == Rank.mid).order_by(Univ.sid)
     info = {
         "rank": "",
         "year": last_year,
@@ -29,7 +31,9 @@ def query():
         "utags": "",
         "musts": 0,
         "province": [],
-        "utags": []
+        "utags": [],
+        "sort": "",
+        "standard": ""
     }
     if "school" in request.args and request.args["school"] != "":
         for i in request.args["school"].split(" "):
@@ -62,25 +66,39 @@ def query():
         for i in utags:
             result = result.filter(Univ.utags.like("%," + str(i) + ",%"))
         info["utags"] = utags
+    if "standard" in request.args and request.args["standard"] != "":
+        info["standard"] = int(request.args["standard"])
+        result = result.filter(Must.year == info["standard"])
     if "mymust" in request.args and request.args["mymust"] != "":
+        if not info["standard"]:
+            last_year_must = a.year if (a := Must.query.order_by(
+                Must.year.desc()).first()) else ""
+            info["standard"] = last_year_must
+            result = result.filter(Must.year == info["standard"])
         mymust = request.args.getlist("mymust")
+        info["mymust"] = list(map(int, mymust))
         mymust = "".join(mymust)
         what_i_can = get_what_i_can_choose(mymust)
-        info["mymust"] = list(map(int, mymust))
-        for i in mymust:
-            result = result.filter(Must.must.in_(what_i_can))
+        result = result.filter(Must.must.in_(what_i_can))
     if "province" in request.args and request.args["province"] != "":
         province = info["province"] = list(
             map(int, request.args.getlist("province")))
+        result = result.filter(Univ.province.in_(province))
+    if "sort" in request.args and request.args["sort"] != "":
+        info["sort"] = request.args["sort"]
+        result = result.filter(
+            db.or_(Must.include.contains(i) for i in info["sort"].split(" ")))
     cnt = len(result.all()) // 50 + 1
     result = result.offset((page - 1) * 50).limit(50).all()
+    musts = [(get_must_string(i[3].must), i[3].year) if i[3] else ""
+             for i in result]
     urls = [
         str(url_for('Query.query', page=i, **info))
         for i in (1, page - 1, page, page + 1, cnt)
     ]
     all_tags = Tag.query.all()
     return render_template('query.html',
-                           result=result,
+                           result=enumerate(result),
                            request=info,
                            info=info,
                            page=page,
@@ -88,4 +106,5 @@ def query():
                            string=urls,
                            provinces=provinces.items(),
                            must_string=enumerate(majors[1:]),
-                           utags=all_tags)
+                           utags=all_tags,
+                           musts=musts)

@@ -7,9 +7,9 @@ from . import db
 class Major(db.Model):
     __tablename__ = 'major'
     mid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    mname = db.Column(db.String(64), nullable=False)
-    mtags = db.Column(db.String(64), nullable=False)
-    sid = db.Column(db.Integer, nullable=False)
+    mname = db.Column(db.String(64), nullable=False, index=True)
+    mtags = db.Column(db.String(64), nullable=False, index=True)
+    sid = db.Column(db.Integer, nullable=False, index=True)
 
     def __repr__(self):
         return '<Major %r>' % self.mid

@@ -26,14 +26,15 @@ def create_app():
     migrate = Migrate()
     migrate.init_app(app, db)
     routes_init_app(app)
-    has = os.path.isfile(os.path.join(os.path.dirname(__file__), "data.sqlite"))
+    exists = os.path.isfile(
+        os.path.join(os.path.dirname(__file__), "data.sqlite"))
     with app.app_context():
         db.create_all()
-        if not has:
+        if not exists:
             db.session.add(
-                User(uid="hhg",
-                     name="hhg",
-                     password="51c5c82bfa00bdd4dfaac964bcc12ba8",
+                User(uid="admin",
+                     name="admin",
+                     password="21232f297a57a5a743894a0e4a801fc3",
                      admin=True))
     return app
 

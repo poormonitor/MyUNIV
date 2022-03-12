@@ -15,7 +15,8 @@
         <div class="accordion-item">
             <h2 class="accordion-header" id="mustsheading{{ i[0] }}">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapse{{ i[0] }}" aria-expanded="false" aria-controls="mustscollapse{{ i[0] }}">
+                    data-bs-target="#mustscollapse{{ i[0] }}" aria-expanded="false"
+                    aria-controls="mustscollapse{{ i[0] }}">
                     {{ i[0] }}
                 </button>
             </h2>
@@ -32,11 +33,11 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for i in i[1] %}
+                                {% for j in i[1] %}
                                 <tr>
-                                    <td>{{ i[1].year }}</td>
-                                    <td>{{ i[0].mname }}</td>
-                                    <td>{{ i[1].must }}</td>
+                                    <td>{{ i[0] }}</td>
+                                    <td>{{ j["mname"] }}</td>
+                                    <td>{{ j["must"] }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -91,4 +92,55 @@
         {% endfor %}
     </div>
 </div>
+<br />
+<div id="total" class="center" style="width:auto;height:300px;"></div>
+<script src="{{ url_for('static', filename='echarts.min.js') }}"></script>
+<script>
+    var myChart = echarts.init(document.getElementById('total'));
+    var data = JSON.parse('{{ total|safe }}');
+    option = {
+        title: {
+            left: "center",
+            text: '历年计划数',
+        },
+        grid: {
+            left: '1%',
+            right: '1%',
+            bottom: '1%',
+            containLabel: true
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                var text = '--'
+                if (params && params.length) {
+                    text = params[0].data[0]
+                    params.forEach(item => {
+                        var dotHtml = item.marker
+                        text += `<div style='text-align:left'>${dotHtml}${item.seriesName} : ${item.data[1] ? item.data[1] : '-'}</div>`
+                    })
+                }
+                return text
+            }
+        },
+        xAxis: {
+            type: 'time',
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+                data: data,
+                name: "计划数",
+                type: 'line',
+                smooth: true
+            }
+        ]
+    };
+    myChart.setOption(option);
+    window.onresize = function () {
+        myChart.resize();
+    };
+</script>
 {% endblock %}

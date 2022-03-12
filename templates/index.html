@@ -4,6 +4,8 @@
 <h1 class="center ud-margin">MyUNIV</h1>
 <h2 class="center">高考填报分析系统</h2>
 <br />
+<div id="total" class="center" style="width:auto;height:300px;"></div>
+<br />
 <div class="row">
     <div class="col-sm-6">
         <h4>快速</h4>
@@ -24,4 +26,53 @@
         <p>多种条件筛选符合要求的学校和专业，并可以根据相关要求自动筛选80个备选志愿供参考。</p>
     </div>
 </div>
+<script src="{{ url_for('static', filename='echarts.min.js') }}"></script>
+<script>
+    var myChart = echarts.init(document.getElementById('total'));
+    var data = JSON.parse('{{ total|safe }}');
+    option = {
+        title: {
+            left: "center",
+            text: '历年计划数',
+        },
+        grid: {
+            left: '1%',
+            right: '1%',
+            bottom: '1%',
+            containLabel: true
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                var text = '--'
+                if (params && params.length) {
+                    text = params[0].data[0]
+                    params.forEach(item => {
+                        var dotHtml = item.marker
+                        text += `<div style='text-align:left'>${dotHtml}${item.seriesName} : ${item.data[1] ? item.data[1] : '-'}</div>`
+                    })
+                }
+                return text
+            }
+        },
+        xAxis: {
+            type: 'time',
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+                data: data,
+                name: "计划数",
+                type: 'line',
+                smooth: true
+            }
+        ]
+    };
+    myChart.setOption(option);
+    window.onresize = function () {
+        myChart.resize();
+    };
+</script>
 {% endblock %}

@@ -67,17 +67,24 @@ def get_what_i_can_choose(mymust: str) -> List[str]:
     from itertools import combinations
     choices = [i for i in range(1, 8)]
     musts = list(map(int, list(mymust)))
-    ans = combinations(choices, 3)
-    ans = list(map(lambda x: "0" + str("".join(map(str, x))), ans))
-    for i in range(1, 3):
+    ans = ["0"]
+    for i in range(1, len(musts) + 1):
         for j in combinations(musts, i):
-            print(j)
             new_choice = choices[:]
             for p in j:
                 new_choice.remove(p)
             for p in combinations(new_choice, i - len(j)):
-                print(p)
-                print(j)
                 ans.append(str(i) + "".join(map(str, j + p)))
-    ans.append("3" + str(mymust))
     return ans
+
+
+def get_must_string(now: int) -> str:
+    from const import majors
+    if not now:
+        return majors[0]
+    now = str(now)
+    cnt = now[0]
+    ans = []
+    for i in now[1:]:
+        ans.append(majors[int(i)])
+    return ", ".join(ans) + " " + "(必选%d门)" % int(cnt)

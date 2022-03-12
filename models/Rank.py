@@ -7,9 +7,9 @@ from . import db
 class Rank(db.Model):
     __tablename__ = 'rank'
     rmid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    mid = db.Column(db.Integer, nullable=False)
-    year = db.Column(db.Integer, nullable=False)
-    rank = db.Column(db.Integer, nullable=False)
+    mid = db.Column(db.Integer, nullable=False, index=True)
+    year = db.Column(db.Integer, nullable=False, index=True)
+    rank = db.Column(db.Integer, nullable=False, index=True)
     schedule = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):

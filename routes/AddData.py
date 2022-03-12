@@ -3,11 +3,11 @@ from func import get_school_name, valid_csrf, admin_required
 from models import db
 from models.Major import Major
 from models.Univ import Univ
+from models.Must import Must
 from models.Tag import Tag
 from models.Rank import Rank
 from pandas import read_excel
-from const import allow_tags, provinces
-from tempfile import NamedTemporaryFile
+from const import allow_tags, provinces, majors
 import re
 import os
 
@@ -22,32 +22,28 @@ def adddata():
         return render_template('adddata.html', csrf=session["csrf"])
     if not valid_csrf():
         return redirect(url_for('AddData.adddata'))
-    fp = NamedTemporaryFile(delete=False)
     type = int(request.form["type"])
     year = int(request.form["year"])
     xlsx = request.files['xlsx']
-    xlsx.save(fp.name)
-    fp.close()
-    process_excel(fp.name, year, type)
+    process_excel(xlsx, year, type)
     return redirect(url_for('Index.index'))
 
 
 def process_excel(xlsx, year, type):
     data = read_excel(xlsx)
-    univs = [i.sid for i in Univ.query.all()]
+    univs = [i.uname for i in Univ.query.all()]
     if type == 1:
         pattern = re.compile(r'(?<=[\(])(%s).*?(?=[\)])' %
                              "|".join(allow_tags))
         tags = {i.tname: i.tid for i in Tag.query.all()}
         for i in data.values:
             univ_id = i[0]
-            univ_name = i[1]
+            univ_name = get_school_name(i[1])
             major = i[3]
             schedule = i[4]
             rank = i[6] if i[6] == i[6] else 0
-            if univ_id not in univs:
-                tag = pattern.findall(univ_name)
-                univ_name = get_school_name(univ_name)
+            if univ_name not in univs:
+                tag = pattern.findall(i[1])
                 tids = []
                 for j in tag:
                     if j not in tags:
@@ -62,7 +58,8 @@ def process_excel(xlsx, year, type):
                 tids = "," + ",".join(str(i) for i in tids) + ","
                 univs.append(univ_id)
                 db.session.add(
-                    Univ(sid=univ_id, uname=univ_name, utags=tids, province=0))
+                    Univ(uname=univ_name, utags=tids, province=0))
+                univs.append(univ_name)
             if Major.query.filter_by(sid=univ_id, mname=major).first() is None:
                 m = Major(sid=univ_id, mtags="", mname=major)
                 db.session.add(m)
@@ -79,31 +76,40 @@ def process_excel(xlsx, year, type):
                                                   "schedule":
                                                   schedule
                                               })
-        db.session.commit()
     elif type == 2:
         for i in data.values:
-            # school province
-            univ_name = get_school_name(i[1])
             province = i[0]
+            univ_name = i[1]
             major = i[2]
-            must = int("".join([
-                str(provinces.index(j)) for j in i[3].split("(")[0].split(",")
-            ]))
+            include = i[3] if i[3] == i[3] else ""
+            must = int("".join(
+                [str(majors.index(j)) for j in i[5].split("(")[0].split(",")]))
+            if must != 0:
+                must = int(re.search(r"\d+", i[5]).group(0) + str(must))
             province_id = list(provinces.keys())[list(
                 provinces.values()).index(province)]
             if univ_name not in univs:
                 univs.append(univ_name)
-                db.session.add(
-                    Univ(sid=univ_name, uname=univ_name, province=province_id))
+                univ = Univ(uname=univ_name, province=province_id)
+                db.session.add(univ)
+                db.session.flush()
+                univ_id = univ.sid
             else:
-                db.session.query(Univ).filter(Univ.uname == univ_name).update(
-                    {"province": province_id})
-            if Major.query.filter_by(sid=univ_name, mname=major,
-                                     year=year).first() is None:
+                univ = db.session.query(Univ).filter(
+                    Univ.uname == univ_name).first()
+                univ.province = province_id
+                univ_id = univ.sid
+            if (a := Must.query.filter_by(mname=major, sid=univ_id,
+                                          year=year).first()) is None:
                 db.session.add(
-                    Major(sid=univ_name, mtags="", mname=major, must=must))
+                    Must(mname=major,
+                         year=year,
+                         sid=univ_id,
+                         must=must,
+                         include=include))
             else:
-                db.session.query(Major).filter(
-                    Major.sid == univ_name, Major.mname == major,
-                    Major.year == year).update({"must": must})
-    os.remove(xlsx)
+                a.must = must
+                a.include = include
+            db.session.flush()
+            print(univ_id, major, must, include)
+    db.session.commit()

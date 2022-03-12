@@ -9,14 +9,16 @@
         <thead>
             <tr>
                 <th>年份</th>
+                <th>登记名称</th>
                 <th>必选科目</th>
             </tr>
         </thead>
         <tbody>
             {% for i in must %}
             <tr>
-                <td>{{ i.year }}</td>
-                <td>{{ i.must }}</td>
+                <td>{{ i["year"] }}</td>
+                <td>{{ i["mname"] }}</td>
+                <td>{{ i["must"] }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -42,4 +44,105 @@
         </tbody>
     </table>
 </div>
+<div class="row">
+    <div class="col-md-6">
+        <div id="total" class="center" style="width:auto;height:300px;"></div>
+    </div>
+    <div class="col-md-6">
+        <div id="rank" class="center" style="width:auto;height:300px;"></div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='echarts.min.js') }}"></script>
+<script>
+    var totalChart = echarts.init(document.getElementById('total'));
+    var totalChartdata = JSON.parse('{{ total|safe }}');
+    totalChartoption = {
+        title: {
+            left: "center",
+            text: '历年计划数',
+        },
+        grid: {
+            left: '1%',
+            right: '1%',
+            bottom: '1%',
+            containLabel: true
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                var text = '--'
+                if (params && params.length) {
+                    text = params[0].data[0]
+                    params.forEach(item => {
+                        var dotHtml = item.marker
+                        text += `<div style='text-align:left'>${dotHtml}${item.seriesName} : ${item.data[1] ? item.data[1] : '-'}</div>`
+                    })
+                }
+                return text
+            }
+        },
+        xAxis: {
+            type: 'time',
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+                data: totalChartdata,
+                name: "计划数",
+                type: 'line',
+                smooth: true
+            }
+        ]
+    };
+    totalChart.setOption(totalChartoption);
+    var rankChart = echarts.init(document.getElementById('rank'));
+    var rankChartdata = JSON.parse('{{ rank|safe }}');
+    rankChartoption = {
+        title: {
+            left: "center",
+            text: '历年位次号',
+        },
+        grid: {
+            left: '1%',
+            right: '1%',
+            bottom: '1%',
+            containLabel: true
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                var text = '--'
+                if (params && params.length) {
+                    text = params[0].data[0]
+                    params.forEach(item => {
+                        var dotHtml = item.marker
+                        text += `<div style='text-align:left'>${dotHtml}${item.seriesName} : ${item.data[1] ? item.data[1] : '-'}</div>`
+                    })
+                }
+                return text
+            }
+        },
+        xAxis: {
+            type: 'time',
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+                data: rankChartdata,
+                name: "位次号",
+                type: 'line',
+                smooth: true
+            }
+        ]
+    };
+    rankChart.setOption(rankChartoption);
+    window.onresize = function () {
+        totalChart.resize();
+        rankChart.resize();
+    };
+</script>
 {% endblock %}
