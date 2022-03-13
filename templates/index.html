@@ -1,8 +1,12 @@
-{% extends "base.html" %}
-{% block title %}首页{% endblock %}
-{% block content %}
-<h1 class="center ud-margin">MyUNIV</h1>
-<h2 class="center">高考志愿填报决策分析系统</h2>
+{% extends "base.html" %} {% block title %}首页{% endblock %} {% block content %}
+<h1 class="center">MyUNIV</h1>
+<h2 class="center ud-margin">高考志愿填报决策分析系统</h2>
+<p class="center">
+    本项目为二十三届全省学生信息素养提升实践活动参赛项目。
+</p>
+<p class="center">
+    孙奕凡，浙江省杭州高级中学
+</p>
 <br />
 <div id="total" class="center" style="width:auto;height:300px;"></div>
 <br />
@@ -43,7 +47,7 @@
         },
         tooltip: {
             trigger: 'axis',
-            formatter: function (params) {
+            formatter: function(params) {
                 var text = '--'
                 if (params && params.length) {
                     text = params[0].data[0]
@@ -61,17 +65,15 @@
         yAxis: {
             type: 'value'
         },
-        series: [
-            {
-                data: data,
-                name: "计划数",
-                type: 'line',
-                smooth: true
-            }
-        ]
+        series: [{
+            data: data,
+            name: "计划数",
+            type: 'line',
+            smooth: true
+        }]
     };
     myChart.setOption(option);
-    window.onresize = function () {
+    window.onresize = function() {
         myChart.resize();
     };
 </script>
