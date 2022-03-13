@@ -18,19 +18,20 @@ def adduser():
     if not valid_csrf():
         return redirect(url_for('AddUser.adduser'))
     users = request.form.get("users")
-    type = int(request.form.get("type"))
+    tp = int(request.form.get("type"))
     for line in users.splitlines():
         items = re.split(",| |\t", line)
         if (a := User.query.filter_by(uid=items[0]).first()) is None:
+            passwd = md5(str(items[2]).encode("utf-8")).hexdigest()
             db.session.add(
                 User(uid=items[0],
                      name=items[1],
                      password=passwd,
-                     admin=True if type else False))
+                     admin=True if tp else False))
         else:
             passwd = md5(str(items[2]).encode("utf-8")).hexdigest()
             a.password = passwd
             a.name = items[1]
-            a.admin = True if type else False
+            a.admin = True if tp else False
     db.session.commit()
     return redirect(url_for('AddUser.adduser'))
