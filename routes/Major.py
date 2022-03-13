@@ -16,10 +16,10 @@ major_bp = Blueprint('Major', __name__)
 def major(mid: int):
     major = Major.query.filter_by(mid=mid).first()
     univ = Univ.query.filter_by(sid=major.sid).first()
-    ranks = Rank.query.filter_by(mid=mid).order_by(Rank.year.desc()).all()
+    ranks = Rank.query.filter_by(mid=mid).order_by(Rank.year.asc()).all()
     must = db.session.query(Must, Major).filter(Major.sid == major.sid).filter(
         Major.mid == major.mid).filter(Must.sid == major.sid).filter(
-            Major.mname.contains(Must.mname)).order_by(Must.year.desc())
+            Major.mname.contains(Must.mname)).order_by(Must.year.asc())
     musts = []
     for i in must:
         content = {
