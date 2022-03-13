@@ -4,7 +4,6 @@ from typing import List
 
 
 def islogin():
-    return True
     if "uid" in session:
         return True
     else:
@@ -12,7 +11,6 @@ def islogin():
 
 
 def isadmin():
-    return True
     if islogin() and session["admin"] == True:
         return True
     else:
