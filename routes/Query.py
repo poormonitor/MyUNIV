@@ -88,6 +88,7 @@ def query():
         result = result.filter(
             db.or_(Must.include.contains(i) for i in info["sort"].split(" ")))
     cnt = len(result.all()) // 50 + 1
+    count = result.count()
     result = result.offset((page - 1) * 50).limit(50).all()
     musts = [(get_must_string(i[3].must), i[3].year) if i[3] else ""
              for i in result]
@@ -116,4 +117,5 @@ def query():
                            utags=all_tags,
                            musts=musts,
                            rank_years=rank_year_available,
-                           must_standard=must_year_available)
+                           must_standard=must_year_available,
+                           count=count)
