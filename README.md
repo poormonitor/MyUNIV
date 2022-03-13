@@ -4,15 +4,15 @@
 
 运行项目：
 
-(Microsoft Windows)
+Microsoft Windows (Built-in Server)
 
 ```powershell
 python app.py
 ```
 
-(Linux)
+Linux (Gunicorn)
 
 ```bash
-python3 gunicorn.py
+python3 run.py
 ```
 
