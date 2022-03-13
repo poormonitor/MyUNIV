@@ -7,11 +7,13 @@ from models.Must import Must
 from models.Tag import Tag
 from models.Rank import Rank
 from pandas import read_excel
+from concurrent.futures import ProcessPoolExecutor
 from const import allow_tags, provinces, majors
 import re
 import os
 
 add_data_bp = Blueprint('AddData', __name__)
+executor = ProcessPoolExecutor(2)
 
 
 @add_data_bp.route('/adddata', methods=['GET', 'POST'])
@@ -57,25 +59,26 @@ def process_excel(xlsx, year, type):
                     tids.append(tid)
                 tids = "," + ",".join(str(i) for i in tids) + ","
                 univs.append(univ_id)
-                db.session.add(
-                    Univ(uname=univ_name, utags=tids, province=0))
+                db.session.add(Univ(uname=univ_name, utags=tids, province=0))
                 univs.append(univ_name)
-            if Major.query.filter_by(sid=univ_id, mname=major).first() is None:
+            if (b := Major.query.filter_by(sid=univ_id,
+                                           mname=major).first()) is None:
                 m = Major(sid=univ_id, mtags="", mname=major)
                 db.session.add(m)
                 db.session.flush()
                 db.session.add(
                     Rank(mid=m.mid, year=year, rank=rank, schedule=schedule))
             else:
-                mid = db.session.query(Major).filter(Major.sid == univ_id,
-                                                     Major.mname == major)
-                db.session.query(Rank).filter(Rank.mid == mid.first().mid,
-                                              Rank.year == year).update({
-                                                  "rank":
-                                                  rank,
-                                                  "schedule":
-                                                  schedule
-                                              })
+                if (a := db.session.query(Rank).filter(
+                        Rank.mid == b.mid, Rank.year == year).first()) is None:
+                    db.session.add(
+                        Rank(mid=b.mid,
+                             year=year,
+                             rank=rank,
+                             schedule=schedule))
+                else:
+                    a.rank = rank
+                    a.schedule = schedule
     elif type == 2:
         for i in data.values:
             province = i[0]
@@ -111,5 +114,4 @@ def process_excel(xlsx, year, type):
                 a.must = must
                 a.include = include
             db.session.flush()
-            print(univ_id, major, must, include)
     db.session.commit()

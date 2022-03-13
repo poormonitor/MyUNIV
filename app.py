@@ -8,7 +8,6 @@ from flask import Flask
 from models import init_app as models_init_app
 from routes import init_app as routes_init_app
 from models.User import User
-from flask_migrate import Migrate
 import os
 
 
@@ -23,8 +22,6 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
     db = models_init_app(app)
-    migrate = Migrate()
-    migrate.init_app(app, db)
     routes_init_app(app)
     exists = os.path.isfile(
         os.path.join(os.path.dirname(__file__), "data.sqlite"))
