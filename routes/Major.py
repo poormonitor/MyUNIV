@@ -21,13 +21,16 @@ def major(mid: int):
         Major.mid == major.mid).filter(Must.sid == major.sid).filter(
             Major.mname.contains(Must.mname)).order_by(Must.year.asc())
     musts = []
+    include = []
     for i in must:
         content = {
             "year": i[0].year,
             "must": get_must_string(i[0].must),
-            "mname": i[0].mname
+            "mname": i[0].mname,
         }
+        include += list(i[0].include.split("、"))
         musts.append(content)
+    include = list(set(include))
     tags = Tag.query.filter_by().all()
     totals = [[str(i.year), i.schedule] for i in ranks]
     totals = json.dumps(totals)
@@ -40,4 +43,5 @@ def major(mid: int):
                            univ=univ,
                            must=musts,
                            total=totals,
-                           rank=rank)
+                           rank=rank,
+                           include=include)

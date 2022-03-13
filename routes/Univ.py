@@ -31,7 +31,11 @@ def univ(sid: int):
     for i in mts:
         if i.year not in musts:
             musts[i.year] = []
-        content = {"must": get_must_string(i.must), "mname": i.mname}
+        content = {
+            "must": get_must_string(i.must),
+            "mname": i.mname,
+            "include": i.include
+        }
         musts[i.year].append(content)
     totals = db.session.query(Rank.year, db.func.sum(Rank.schedule)).filter(
         Rank.mid.in_(db.session.query(

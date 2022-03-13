@@ -2,6 +2,11 @@
 {% block content %}
 <h2>{{ major.mname }}</h2>
 <h4>{{ univ.uname }}</h4>
+<div id="tags">
+    {% for tag in include %}
+    <span class="badge bg-primary">{{ tag }}</span>
+    {% endfor %}
+</div>
 <div>
     <hr />
     <h4>必选科目信息</h4>
@@ -11,6 +16,7 @@
                 <th>年份</th>
                 <th>登记名称</th>
                 <th>必选科目</th>
+                <th>包含专业</th>
             </tr>
         </thead>
         <tbody>
@@ -19,6 +25,7 @@
                 <td>{{ i["year"] }}</td>
                 <td>{{ i["mname"] }}</td>
                 <td>{{ i["must"] }}</td>
+                <td>{{ i["include"] }}</td>
             </tr>
             {% endfor %}
         </tbody>

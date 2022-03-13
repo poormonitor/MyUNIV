@@ -30,6 +30,7 @@
                                     <th>年份</th>
                                     <th>专业</th>
                                     <th>必选科目</th>
+                                    <th>包含专业</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -38,6 +39,7 @@
                                     <td>{{ i[0] }}</td>
                                     <td>{{ j["mname"] }}</td>
                                     <td>{{ j["must"] }}</td>
+                                    <td>{{ j["include"] }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

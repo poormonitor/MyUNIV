@@ -24,7 +24,15 @@
         </div>
         <div class="col-md-3">
             <label for="year" class="form-label">年份</label>
-            <input type="text" class="form-control" id="year" name="year" value="{{ request['year'] }}">
+            <select class="selectpicker form-control" id="year" name="year">
+                {% for i in rank_years %}
+                {% if i == info['year'] %}
+                <option value="{{ i }}" selected>{{ i }}</option>
+                {% else %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
         </div>
     </div>
     <div class="row g-3">
@@ -43,7 +51,15 @@
         </div>
         <div class="col-md-3">
             <label for="standard" class="form-label">选考科目标准</label>
-            <input type="text" class="form-control" id="standard" name="standard" value="{{ request['standard'] }}">
+            <select class="selectpicker form-control" id="standard" name="standard">
+                {% for i in must_standard %}
+                {% if i == info["standard"] %}
+                <option value="{{ i }}" selected>{{ i }}</option>
+                {% else %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
         </div>
     </div>
     <div class="row g-3">
@@ -52,9 +68,10 @@
             <div class="mt-2">
                 {% for i,e in must_string %}
                 <div class="form-check form-check-inline">
-                    <label class="form-check-label" for="must{{ i + 1 }}">{{ e }}</label> {% if i + 1 in info["mymust"] %}
-                    <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}" value="{{ i + 1 }}"
-                        checked> {% else %}
+                    <label class="form-check-label" for="must{{ i + 1 }}">{{ e }}</label> {% if i + 1 in info["mymust"]
+                    %}
+                    <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}"
+                        value="{{ i + 1 }}" checked> {% else %}
                     <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}"
                         value="{{ i + 1 }}"> {% endif %}
                 </div>

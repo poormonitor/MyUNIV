@@ -17,11 +17,8 @@ def query():
     page = int(request.args.get("page")) if "page" in request.args else 1
     last_year = a.year if (a := Rank.query.order_by(
         Rank.year.desc()).first()) else ""
-    result = db.session.query(Major, Univ, Rank, Must).outerjoin(
-        Must, db.and_(Must.sid == Major.sid,
-                      Major.mname.contains(Must.mname))).filter(
-                          Univ.sid == Major.sid,
-                          Major.mid == Rank.mid).order_by(Univ.sid)
+    result = db.session.query(Major, Univ, Rank, Must).filter(
+        Univ.sid == Major.sid, Major.mid == Rank.mid).order_by(Univ.sid)
     info = {
         "rank": "",
         "year": last_year,
@@ -68,13 +65,15 @@ def query():
         info["utags"] = utags
     if "standard" in request.args and request.args["standard"] != "":
         info["standard"] = int(request.args["standard"])
-        result = result.filter(Must.year == info["standard"])
+    if not info["standard"]:
+        last_year_must = a.year if (a := Must.query.order_by(
+            Must.year.desc()).first()) else ""
+        info["standard"] = last_year_must
+    result = result.outerjoin(
+        Must,
+        db.and_(Must.sid == Major.sid, Major.mname.contains(Must.mname),
+                Must.year == info["standard"]))
     if "mymust" in request.args and request.args["mymust"] != "":
-        if not info["standard"]:
-            last_year_must = a.year if (a := Must.query.order_by(
-                Must.year.desc()).first()) else ""
-            info["standard"] = last_year_must
-            result = result.filter(Must.year == info["standard"])
         mymust = request.args.getlist("mymust")
         info["mymust"] = list(map(int, mymust))
         mymust = "".join(mymust)
@@ -97,6 +96,14 @@ def query():
         for i in (1, page - 1, page, page + 1, cnt)
     ]
     all_tags = Tag.query.all()
+    rank_year_available = [
+        i.year for i in Rank.query.group_by(Rank.year).order_by(
+            Rank.year.desc()).all()
+    ]
+    must_year_available = [
+        i.year for i in Must.query.group_by(Must.year).order_by(
+            Must.year.desc()).all()
+    ]
     return render_template('query.html',
                            result=enumerate(result),
                            request=info,
@@ -107,4 +114,6 @@ def query():
                            provinces=provinces.items(),
                            must_string=enumerate(majors[1:]),
                            utags=all_tags,
-                           musts=musts)
+                           musts=musts,
+                           rank_years=rank_year_available,
+                           must_standard=must_year_available)
