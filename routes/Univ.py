@@ -43,9 +43,12 @@ def univ(sid: int):
                 Rank.year.asc()).all()
     totals = [[str(i[0]), i[1]] for i in totals]
     totals = json.dumps(totals)
+    rank = [[str(i[0]), max(j[1].rank for j in i[1])] for i in ranks.items()]
+    rank = json.dumps(rank)
     return render_template('univ.html',
                            univ=univ,
                            ranks=ranks,
                            musts=musts,
                            tags=tags,
-                           total=totals)
+                           total=totals,
+                           rank=rank)

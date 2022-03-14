@@ -24,21 +24,22 @@ def adddata():
         return render_template('adddata.html', csrf=session["csrf"])
     if not valid_csrf():
         return redirect(url_for('AddData.adddata'))
-    type = int(request.form["type"])
+    tp = int(request.form["type"])
     year = int(request.form["year"])
     xlsx = request.files['xlsx']
-    process_excel(xlsx, year, type)
+    process_excel(xlsx, year, tp)
     return redirect(url_for('Index.index'))
 
 
-def process_excel(xlsx, year, type):
+def process_excel(xlsx, year, tp):
     data = read_excel(xlsx)
     univs = [i.uname for i in Univ.query.all()]
-    if type == 1:
+    if tp == 1:
         pattern = re.compile(r'(?<=[\(])(%s).*?(?=[\)])' %
                              "|".join(allow_tags))
         tags = {i.tname: i.tid for i in Tag.query.all()}
         for i in data.values:
+            print(i[0])
             univ_id = i[0]
             univ_name = get_school_name(i[1])
             major = i[3]
@@ -58,28 +59,22 @@ def process_excel(xlsx, year, type):
                         tid = tags[j]
                     tids.append(tid)
                 tids = "," + ",".join(str(i) for i in tids) + ","
-                univs.append(univ_id)
                 db.session.add(Univ(uname=univ_name, utags=tids, province=0))
                 univs.append(univ_name)
             if (b := Major.query.filter_by(sid=univ_id,
                                            mname=major).first()) is None:
-                m = Major(sid=univ_id, mtags="", mname=major)
-                db.session.add(m)
+                b = Major(sid=univ_id, mtags="", mname=major)
+                db.session.add(b)
                 db.session.flush()
+            if (a := db.session.query(Rank).filter(Rank.mid == b.mid, Rank.year
+                                                   == year).first()) is None:
                 db.session.add(
-                    Rank(mid=m.mid, year=year, rank=rank, schedule=schedule))
+                    Rank(mid=b.mid, year=year, rank=rank, schedule=schedule))
             else:
-                if (a := db.session.query(Rank).filter(
-                        Rank.mid == b.mid, Rank.year == year).first()) is None:
-                    db.session.add(
-                        Rank(mid=b.mid,
-                             year=year,
-                             rank=rank,
-                             schedule=schedule))
-                else:
-                    a.rank = rank
-                    a.schedule = schedule
-    elif type == 2:
+                a.rank = rank
+                a.schedule = schedule
+                db.session.flush()
+    elif tp == 2:
         for i in data.values:
             province = i[0]
             univ_name = i[1]

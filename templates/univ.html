@@ -95,12 +95,19 @@
     </div>
 </div>
 <br />
-<div id="total" class="center" style="width:auto;height:300px;"></div>
+<div class="row">
+    <div class="col-md-6">
+        <div id="total" class="center" style="width:auto;height:300px;"></div>
+    </div>
+    <div class="col-md-6">
+        <div id="rank" class="center" style="width:auto;height:300px;"></div>
+    </div>
+</div>
 <script src="{{ url_for('static', filename='echarts.min.js') }}"></script>
 <script>
-    var myChart = echarts.init(document.getElementById('total'));
-    var data = JSON.parse('{{ total|safe }}');
-    option = {
+    var totalChart = echarts.init(document.getElementById('total'));
+    var totalChartdata = JSON.parse('{{ total|safe }}');
+    totalChartoption = {
         title: {
             left: "center",
             text: '历年计划数',
@@ -133,16 +140,60 @@
         },
         series: [
             {
-                data: data,
+                data: totalChartdata,
                 name: "计划数",
                 type: 'line',
                 smooth: true
             }
         ]
     };
-    myChart.setOption(option);
+    totalChart.setOption(totalChartoption);
+    var rankChart = echarts.init(document.getElementById('rank'));
+    var rankChartdata = JSON.parse('{{ rank|safe }}');
+    rankChartoption = {
+        title: {
+            left: "center",
+            text: '历年(最高)位次号',
+        },
+        grid: {
+            left: '1%',
+            right: '1%',
+            bottom: '1%',
+            containLabel: true
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                var text = '--'
+                if (params && params.length) {
+                    text = params[0].data[0]
+                    params.forEach(item => {
+                        var dotHtml = item.marker
+                        text += `<div style='text-align:left'>${dotHtml}${item.seriesName} : ${item.data[1] ? item.data[1] : '-'}</div>`
+                    })
+                }
+                return text
+            }
+        },
+        xAxis: {
+            type: 'category',
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+                data: rankChartdata,
+                name: "位次号",
+                type: 'line',
+                smooth: true
+            }
+        ]
+    };
+    rankChart.setOption(rankChartoption);
     window.onresize = function () {
-        myChart.resize();
+        totalChart.resize();
+        rankChart.resize();
     };
 </script>
 {% endblock %}
