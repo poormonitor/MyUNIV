@@ -3,7 +3,6 @@ from functools import wraps
 
 
 def islogin():
-    return True
     if "uid" in session:
         return True
     else:
@@ -44,7 +43,7 @@ def admin_required(f):
         if not islogin():
             return redirect(url_for('Login.login'))
         elif not isadmin():
-            return redirect(url_for('Index.Index'))
+            return redirect(url_for('Index.index'))
         else:
             return f(*args, **kwargs)
 

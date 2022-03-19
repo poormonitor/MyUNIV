@@ -1,39 +1,42 @@
 {% extends "base.html" %}
 {% block title %}登录{% endblock %}
 {% block content %}
-<div class="col-sm-6 offset-sm-3">
-    <br />
-    <h2 class="center ud-margin">登录</h2>
-    {% if error %}
-    <br />
-    <div class="center">
-        <span class="alert alert-danger" role="alert">
+<div class="row">
+    <div class="col-lg-4 box-shadow">
+        <br />
+        <h2 class="center ud-margin">登录</h2>
+        {% if error %}
+        <div class="alert alert-danger m-3 center" role="alert">
             <strong>{{ error }}</strong>
-        </span>
+        </div>
+        {% endif %}
+        <div id="form">
+            <form method="POST" role="form" onsubmit="return SubmitCheck()">
+                <div class="mb-3">
+                    <label for="uid" class="form-label">用户名</label>
+                    <input type="text" class="form-control" id="uid" name="uid" autocomplete="username" placeholder="用户名"
+                        required>
+                </div>
+                <div class="mb-3">
+                    <label for="passwd" class="form-label">密码</label>
+                    <input type="password" class="form-control" id="passwd-fake" autocomplete="current-password"
+                        placeholder="密码" required>
+                    <input type="hidden" id="nonce" value="{{ nonce }}">
+                    <input type="hidden" id="passwd" name="passwd">
+                </div>
+                <br />
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <div class="center">
+                    <button type="submit" class="btn btn-primary">登录</button>
+                </div>
+            </form>
+        </div>
     </div>
-    <br />
-    {% endif %}
-    <div id="form">
-        <form method="POST" role="form" onsubmit="return SubmitCheck()">
-            <div class="mb-3">
-                <label for="uid" class="form-label">用户名</label>
-                <input type="text" class="form-control" id="uid" name="uid" autocomplete="username" placeholder="用户名" required>
-            </div>
-            <div class="mb-3">
-                <label for="passwd" class="form-label">密码</label>
-                <input type="password" class="form-control" id="passwd-fake" autocomplete="current-password"
-                    placeholder="密码" required>
-                <input type="hidden" id="nonce" value="{{ nonce }}">
-                <input type="hidden" id="passwd" name="passwd">
-            </div>
-            <br />
-            <input type="hidden" name="csrf" value="{{ csrf }}">
-            <div class="center">
-                <button type="submit" class="btn btn-primary">登录</button>
-            </div>
-        </form>
+    <div class="col-lg-7 offset-lg-1">
+        <img title="Gate" class="img-round mb-4 mt-4 img-fluid align-middle" src="{{ url_for('static', filename='gate.jpg') }}">
     </div>
 </div>
+
 <script src="{{ url_for('static', filename='md5.min.js') }}"></script>
 <script>
     function SubmitCheck() {

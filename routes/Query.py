@@ -4,7 +4,7 @@ from models.Rank import Rank
 from models.Tag import Tag
 from models.Must import Must
 from models import db
-from flask import Blueprint, render_template, url_for, request
+from flask import Blueprint, render_template, url_for, request, session
 from func import login_required, get_what_i_can_choose, get_must_string
 from const import majors, provinces
 
@@ -17,8 +17,9 @@ def query():
     page = int(request.args.get("page")) if "page" in request.args else 1
     last_year = a.year if (a := Rank.query.order_by(
         Rank.year.desc()).first()) else ""
-    result = db.session.query(Major, Univ, Rank, Must).filter(
-        Univ.sid == Major.sid, Major.mid == Rank.mid).order_by(Univ.sid)
+    result = db.session.query(Major, Univ, Rank, Must)
+    result = result.outerjoin(Major, Major.mid == Rank.mid)
+    result = result.outerjoin(Univ, Univ.sid == Major.sid)
     info = {
         "rank": "",
         "year": last_year,
@@ -87,6 +88,11 @@ def query():
         mymust = "".join(mymust)
         what_i_can = get_what_i_can_choose(mymust)
         result = result.filter(Must.must.in_(what_i_can))
+    elif "must" in session and session["must"] != "":
+        mymust = str(session["must"])
+        info["mymust"] = list(map(int, list(mymust)))
+        what_i_can = get_what_i_can_choose(mymust)
+        result = result.filter(Must.must.in_(what_i_can))
     if "province" in request.args and request.args["province"] != "":
         province = info["province"] = list(
             map(int, request.args.getlist("province")))
@@ -95,8 +101,8 @@ def query():
         info["sort"] = request.args["sort"]
         result = result.filter(
             db.or_(Must.include.contains(i) for i in info["sort"].split(" ")))
-    cnt = len(result.all()) // 50 + 1
     count = result.count()
+    cnt = count // 50 + 1
     result = result.offset((page - 1) * 50).limit(50).all()
     musts = [(get_must_string(i[3].must), i[3].year) if i[3] else ""
              for i in result]

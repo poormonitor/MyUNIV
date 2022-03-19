@@ -13,14 +13,13 @@ def adddata():
         return render_template('adddata.html', csrf=session["csrf"])
     if not valid_csrf():
         return redirect(url_for('AddData.adddata'))
-    tp = int(request.form["type"])
     year = int(request.form["year"])
     xlsx = request.files['xlsx']
-    process_excel(xlsx, year, tp)
+    process_excel(xlsx, year)
     return redirect(url_for('Index.index'))
 
 
-def process_excel(xlsx, year, tp):
+def process_excel(xlsx, year):
     from models import db
     from models.Major import Major
     from models.Univ import Univ
@@ -31,15 +30,13 @@ def process_excel(xlsx, year, tp):
     from const import allow_tags, provinces, majors
     from func import get_school_name
     import re
-    import os
     data = read_excel(xlsx)
-    univs = [i.uname for i in Univ.query.all()]
-    if tp == 1:
+    if "位次号" in data.columns.tolist():
+        univs = {i.uname: i.sid for i in Univ.query.all()}
         pattern = re.compile(r'(?<=[\(])(%s).*?(?=[\)])' %
                              "|".join(allow_tags))
         tags = {i.tname: i.tid for i in Tag.query.all()}
         for i in data.values:
-            univ_id = i[0]
             univ_name = get_school_name(i[1])
             major = i[3]
             schedule = i[4]
@@ -58,9 +55,11 @@ def process_excel(xlsx, year, tp):
                         tid = tags[j]
                     tids.append(tid)
                 tids = "," + ",".join(str(i) for i in tids) + ","
-                db.session.add(
-                    Univ(uname=univ_name, utags=tids, province=0, sid=univ_id))
-                univs.append(univ_name)
+                univ = Univ(uname=univ_name, utags=tids, province=0)
+                db.session.add(univ)
+                db.session.flush()
+                univs[univ_name] = univ.sid
+            univ_id = univs[univ_name]
             if (b := Major.query.filter_by(sid=univ_id,
                                            mname=major).first()) is None:
                 b = Major(sid=univ_id, mname=major)
@@ -70,11 +69,13 @@ def process_excel(xlsx, year, tp):
                                                    == year).first()) is None:
                 db.session.add(
                     Rank(mid=b.mid, year=year, rank=rank, schedule=schedule))
+                db.session.flush()
             else:
                 a.rank = rank
                 a.schedule = schedule
                 db.session.flush()
-    elif tp == 2:
+    elif "选考科目要求" in data.columns.tolist():
+        univs = {i.uname: i.sid for i in Univ.query.all()}
         for i in data.values:
             province = i[0]
             univ_name = get_school_name(i[1])
@@ -87,11 +88,11 @@ def process_excel(xlsx, year, tp):
             province_id = list(provinces.keys())[list(
                 provinces.values()).index(province)]
             if univ_name not in univs:
-                univs.append(univ_name)
                 univ = Univ(uname=univ_name, province=province_id)
                 db.session.add(univ)
                 db.session.flush()
                 univ_id = univ.sid
+                univs[univ_name] = univ_id
             else:
                 univ = db.session.query(Univ).filter(
                     Univ.uname == univ_name).first()

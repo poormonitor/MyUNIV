@@ -7,56 +7,60 @@
     <span class="badge bg-primary">{{ tag }}</span>
     {% endfor %}
 </div>
-<div>
-    <hr />
-    <h4>必选科目信息</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>年份</th>
-                <th>登记名称</th>
-                <th>必选科目</th>
-                <th>包含专业</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for i in must %}
-            <tr>
-                <td>{{ i["year"] }}</td>
-                <td>{{ i["mname"] }}</td>
-                <td>{{ i["must"] }}</td>
-                <td>{{ i["include"] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <hr />
-    <h4>历年投档信息</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>年份</th>
-                <th>位次号</th>
-                <th>计划人数</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for i in ranks %}
-            <tr>
-                <td>{{ i.year }}</td>
-                <td>{{ i.rank }}</td>
-                <td>{{ i.schedule }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
 <div class="row">
     <div class="col-md-6">
         <div id="total" class="center" style="width:auto;height:300px;"></div>
     </div>
     <div class="col-md-6">
         <div id="rank" class="center" style="width:auto;height:300px;"></div>
+    </div>
+</div>
+<div>
+    <hr />
+    <h4>必选科目信息</h4>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>年份</th>
+                    <th>登记名称</th>
+                    <th>必选科目</th>
+                    <th>包含专业</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in must %}
+                <tr>
+                    <td>{{ i["year"] }}</td>
+                    <td>{{ i["mname"] }}</td>
+                    <td>{{ i["must"] }}</td>
+                    <td>{{ i["include"] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <hr />
+    <h4>历年投档信息</h4>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>年份</th>
+                    <th>位次号</th>
+                    <th>计划人数</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in ranks %}
+                <tr>
+                    <td>{{ i.year }}</td>
+                    <td>{{ i.rank }}</td>
+                    <td>{{ i.schedule }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 <script src="{{ url_for('static', filename='echarts.min.js') }}"></script>
@@ -99,7 +103,8 @@
                 data: totalChartdata,
                 name: "计划数",
                 type: 'line',
-                smooth: true
+                smooth: true,
+                color: "#78c2ad"
             }
         ]
     };
@@ -142,7 +147,8 @@
                 data: rankChartdata,
                 name: "位次号",
                 type: 'line',
-                smooth: true
+                smooth: true,
+                color: "#78c2ad"
             }
         ]
     };

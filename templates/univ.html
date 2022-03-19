@@ -28,7 +28,7 @@
             <div id="mustscollapse{{ i[0] }}" class="accordion-collapse collapse" aria-labelledby="mustsheading{{ i[0] }}" data-bs-parent="#musts">
                 <div class="accordion-body">
                     <div class="table-responsive">
-                        <table class="table">
+                        <table class="table table-striped">
                             <thead>
                                 <tr>
                                     <th>年份</th>
@@ -70,7 +70,7 @@
             <div id="rankscollapse{{ i[0] }}" class="accordion-collapse collapse" aria-labelledby="ranksheading{{ i[0] }}" data-bs-parent="#ranks">
                 <div class="accordion-body">
                     <div class="table-responsive">
-                        <table class="table">
+                        <table class="table table-striped">
                             <thead>
                                 <tr>
                                     <th>年份</th>
@@ -138,7 +138,8 @@
             data: totalChartdata,
             name: "计划数",
             type: 'line',
-            smooth: true
+            smooth: true,
+            color: "#78c2ad"
         }]
     };
     totalChart.setOption(totalChartoption);
@@ -179,7 +180,8 @@
             data: rankChartdata,
             name: "位次号",
             type: 'line',
-            smooth: true
+            smooth: true,
+            color: "#78c2ad"
         }]
     };
     rankChart.setOption(rankChartoption);

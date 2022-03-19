@@ -6,6 +6,7 @@ from .AddUser import add_user_bp
 from .Modify import modify_bp
 from .Major import major_bp
 from .Univ import univ_bp
+from .AddTag import add_tag_bp
 
 
 def init_app(app):
@@ -17,4 +18,5 @@ def init_app(app):
     app.register_blueprint(univ_bp)
     app.register_blueprint(add_data_bp, url_prefix='/admin')
     app.register_blueprint(add_user_bp, url_prefix='/admin')
+    app.register_blueprint(add_tag_bp, url_prefix='/admin')
     return app

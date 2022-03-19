@@ -4,11 +4,33 @@
 <div class="center">
     <h2>修改用户信息</h2>
 </div>
-<div class="center">
-    <p>
-        修改密码。
-    </p>
-</div>
+<h4 class="center mt-4">修改我的选课</h4>
+<form method="POST">
+    <div class="center">
+        <div class="m-3">
+            {% for i,e in must_string %}
+            <div class="form-check form-check-inline">
+                <label class="form-check-label" for="must{{ i + 1 }}">{{ e }}</label>
+                {% if i + 1 in mymust %}
+                <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}"
+                    value="{{ i + 1 }}" checked>
+                {% else %}
+                <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}"
+                    value="{{ i + 1 }}">
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="action" value="must">
+        <div class="center mt-2">
+            <button type="submit" class="btn btn-primary">提交</button>
+        </div>
+    </div>
+</form>
+<h4 class="center mt-4">
+    修改密码
+</h4>
 {% if error %}
 <br />
 <div class="center">
@@ -35,6 +57,7 @@
             <input id="new_password_confirm" type="password" class="form-control" required>
         </div>
         <input name="csrf" type="hidden" value="{{ csrf }}">
+        <input name="action" type="hidden" value="password">
         <div class="center">
             <button type="submit" class="btn btn-primary">提交</button>
         </div>
