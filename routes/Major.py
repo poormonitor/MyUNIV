@@ -27,6 +27,7 @@ def major(mid: int):
             "year": i[0].year,
             "must": get_must_string(i[0].must),
             "mname": i[0].mname,
+            "include": i[0].include
         }
         include += list(i[0].include.split("、"))
         musts.append(content)

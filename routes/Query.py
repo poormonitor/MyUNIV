@@ -88,7 +88,7 @@ def query():
         mymust = "".join(mymust)
         what_i_can = get_what_i_can_choose(mymust)
         result = result.filter(Must.must.in_(what_i_can))
-    elif "must" in session and session["must"] != "":
+    elif "must" in session and session["must"] != 0:
         mymust = str(session["must"])
         info["mymust"] = list(map(int, list(mymust)))
         what_i_can = get_what_i_can_choose(mymust)
