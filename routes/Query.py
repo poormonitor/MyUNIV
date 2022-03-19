@@ -60,9 +60,17 @@ def query():
     if "utags" in request.args and request.args["utags"] != "":
         utags = list(map(int, request.args.getlist("utags")))
         utags.sort()
-        for i in utags:
-            result = result.filter(Univ.utags.like("%," + str(i) + ",%"))
+        condition = db.or_(
+            Univ.utags.like("%," + str(i) + ",%") for i in utags)
+        result = result.filter(condition)
         info["utags"] = utags
+    if "nutags" in request.args and request.args["nutags"] != "":
+        nutags = list(map(int, request.args.getlist("nutags")))
+        nutags.sort()
+        ncondition = db.not_(
+            db.and_(Univ.utags.like("%," + str(i) + ",%") for i in nutags))
+        result = result.filter(ncondition)
+        info["nutags"] = nutags
     if "standard" in request.args and request.args["standard"] != "":
         info["standard"] = int(request.args["standard"])
     if not info["standard"]:

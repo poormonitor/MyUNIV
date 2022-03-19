@@ -14,7 +14,10 @@ add_user_bp = Blueprint('AddUser', __name__)
 def adduser():
     if request.method == "GET":
         session['csrf'] = os.urandom(16).hex()
-        return render_template('adduser.html', csrf=session["csrf"])
+        users = User.query.all()
+        return render_template('adduser.html',
+                               csrf=session["csrf"],
+                               users=users)
     if not valid_csrf():
         return redirect(url_for('AddUser.adduser'))
     users = request.form.get("users")

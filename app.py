@@ -19,7 +19,9 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
         os.path.dirname(__file__), "data.sqlite")
     app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['UPLOAD_PATH'] = os.path.join(os.path.dirname(__file__),
+                                             "upload/")
 
     db = models_init_app(app)
     routes_init_app(app)

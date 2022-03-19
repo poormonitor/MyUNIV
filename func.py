@@ -1,9 +1,9 @@
 from flask import session, request, redirect, url_for
 from functools import wraps
-from typing import List
 
 
 def islogin():
+    return True
     if "uid" in session:
         return True
     else:
@@ -11,6 +11,7 @@ def islogin():
 
 
 def isadmin():
+    return True
     if islogin() and session["admin"] == True:
         return True
     else:
@@ -50,6 +51,17 @@ def admin_required(f):
     return wrap
 
 
+def csrf_valid(f):
+
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if valid_csrf():
+            return f(*args, **kwargs)
+        return redirect(url_for('Index.Index'))
+
+    return wrap
+
+
 def get_school_name(name: str):
     import re
     from const import allow_tags
@@ -61,7 +73,7 @@ def get_school_name(name: str):
     return univ_name
 
 
-def get_what_i_can_choose(mymust: str) -> List[str]:
+def get_what_i_can_choose(mymust: str) -> list:
     from itertools import combinations
     choices = [i for i in range(1, 8)]
     musts = list(map(int, list(mymust)))

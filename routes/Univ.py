@@ -20,7 +20,7 @@ def univ(sid: int):
         if i:
             tags.append(Tag.query.filter_by(tid=int(i)).first().tname)
     rks = db.session.query(Major, Rank).filter(Major.mid == Rank.mid).filter(
-        Major.sid == univ.sid).all()
+        Major.sid == univ.sid).order_by(Rank.year.asc()).order_by(Rank.rank.asc()).all()
     ranks = {}
     for i in rks:
         if i[1].year not in ranks:

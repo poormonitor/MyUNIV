@@ -1,13 +1,18 @@
-{% extends "base.html" %}
-{% block title %}学校信息{% endblock %}
-{% block content %}
+{% extends "base.html" %} {% block title %}学校信息{% endblock %} {% block content %}
 <h2>{{ univ.uname }}</h2>
 <div id="tags">
     {% for tag in tags %}
-    <span class="badge bg-primary">{{ tag }}</span>
-    {% endfor %}
+    <span class="badge bg-primary">{{ tag }}</span> {% endfor %}
 </div>
 <div id="info">
+    <div class="row">
+        <div class="col-md-6">
+            <div id="total" class="center" style="width:auto;height:300px;"></div>
+        </div>
+        <div class="col-md-6">
+            <div id="rank" class="center" style="width:auto;height:300px;"></div>
+        </div>
+    </div>
     <hr />
     <h4>必选科目信息</h4>
     <div class="accordion" id="musts">
@@ -20,8 +25,7 @@
                     {{ i[0] }}
                 </button>
             </h2>
-            <div id="mustscollapse{{ i[0] }}" class="accordion-collapse collapse"
-                aria-labelledby="mustsheading{{ i[0] }}" data-bs-parent="#musts">
+            <div id="mustscollapse{{ i[0] }}" class="accordion-collapse collapse" aria-labelledby="mustsheading{{ i[0] }}" data-bs-parent="#musts">
                 <div class="accordion-body">
                     <div class="table-responsive">
                         <table class="table">
@@ -63,8 +67,7 @@
                     {{ i[0] }}
                 </button>
             </h2>
-            <div id="rankscollapse{{ i[0] }}" class="accordion-collapse collapse"
-                aria-labelledby="ranksheading{{ i[0] }}" data-bs-parent="#ranks">
+            <div id="rankscollapse{{ i[0] }}" class="accordion-collapse collapse" aria-labelledby="ranksheading{{ i[0] }}" data-bs-parent="#ranks">
                 <div class="accordion-body">
                     <div class="table-responsive">
                         <table class="table">
@@ -80,7 +83,7 @@
                                 {% for j in i[1] %}
                                 <tr>
                                     <td>{{ j[1].year }}</td>
-                                    <td>{{ j[0].mname }}</td>
+                                    <td><a href="{{ url_for('Major.major', mid=j[0].mid) }}">{{ j[0].mname }}</a></td>
                                     <td>{{ j[1].rank }}</td>
                                     <td>{{ j[1].schedule }}</td>
                                 </tr>
@@ -94,15 +97,8 @@
         {% endfor %}
     </div>
 </div>
+<hr />
 <br />
-<div class="row">
-    <div class="col-md-6">
-        <div id="total" class="center" style="width:auto;height:300px;"></div>
-    </div>
-    <div class="col-md-6">
-        <div id="rank" class="center" style="width:auto;height:300px;"></div>
-    </div>
-</div>
 <script src="{{ url_for('static', filename='echarts.min.js') }}"></script>
 <script>
     var totalChart = echarts.init(document.getElementById('total'));
@@ -120,7 +116,7 @@
         },
         tooltip: {
             trigger: 'axis',
-            formatter: function (params) {
+            formatter: function(params) {
                 var text = '--'
                 if (params && params.length) {
                     text = params[0].data[0]
@@ -138,14 +134,12 @@
         yAxis: {
             type: 'value'
         },
-        series: [
-            {
-                data: totalChartdata,
-                name: "计划数",
-                type: 'line',
-                smooth: true
-            }
-        ]
+        series: [{
+            data: totalChartdata,
+            name: "计划数",
+            type: 'line',
+            smooth: true
+        }]
     };
     totalChart.setOption(totalChartoption);
     var rankChart = echarts.init(document.getElementById('rank'));
@@ -163,7 +157,7 @@
         },
         tooltip: {
             trigger: 'axis',
-            formatter: function (params) {
+            formatter: function(params) {
                 var text = '--'
                 if (params && params.length) {
                     text = params[0].data[0]
@@ -181,17 +175,15 @@
         yAxis: {
             type: 'value'
         },
-        series: [
-            {
-                data: rankChartdata,
-                name: "位次号",
-                type: 'line',
-                smooth: true
-            }
-        ]
+        series: [{
+            data: rankChartdata,
+            name: "位次号",
+            type: 'line',
+            smooth: true
+        }]
     };
     rankChart.setOption(rankChartoption);
-    window.onresize = function () {
+    window.onresize = function() {
         totalChart.resize();
         rankChart.resize();
     };

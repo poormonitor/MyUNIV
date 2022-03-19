@@ -14,7 +14,9 @@ class Univ(db.Model):
     def __repr__(self):
         return '<Univ %r>' % self.sid
 
-    def __init__(self, uname, utags="", province=0):
+    def __init__(self, uname, utags="", province=0, sid=None):
+        if not sid:
+            self.sid = sid
         self.uname = uname
         self.utags = utags
         self.province = province
