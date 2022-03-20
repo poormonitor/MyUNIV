@@ -1,6 +1,5 @@
 from flask import Blueprint, redirect, render_template, session, request, url_for
 from func import valid_csrf, admin_required
-from const import majors
 from models import db
 from models.Tag import Tag
 from models.Univ import Univ

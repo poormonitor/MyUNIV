@@ -1,4 +1,3 @@
-from urllib.parse import urlparse
 from flask import Blueprint, redirect, render_template, session, request, url_for
 from func import admin_required, valid_csrf
 from models import db

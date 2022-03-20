@@ -1,9 +1,7 @@
-from flask import Blueprint, redirect, render_template, session, request, url_for
-from func import login_required, valid_csrf
-from const import majors
+from flask import Blueprint, request
+from func import login_required
 from models import db
 from models.Rank import Rank
-import os
 
 score_bp = Blueprint('Score', __name__)
 
