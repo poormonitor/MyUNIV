@@ -78,6 +78,7 @@ def process_excel(xlsx, year):
             else:
                 a.rank = rank
                 a.schedule = schedule
+                a.score = score
                 db.session.flush()
     elif "选考科目要求" in data.columns.tolist():
         univs = {i.uname: i.sid for i in Univ.query.all()}

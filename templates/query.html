@@ -15,7 +15,7 @@
                 <div>
                     <div class="mb-3">
                         <label for="exyear" class="form-label">数据年份</label>
-                        <select class="selectpicker form-control" id="exyear" name="exyear">
+                        <select class="selectpicker form-control" id="exyear">
                             {% for i in rank_years %}
                             {% if i == info['year'] %}
                             <option value="{{ i }}" selected>{{ i }}</option>
@@ -27,7 +27,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="passwd" class="form-label">分数</label>
-                        <input type="score" class="form-control" id="score" required>
+                        <input type="text" class="form-control" id="score" required>
                     </div>
                 </div>
             </div>
@@ -216,7 +216,7 @@
 <script>
     function exRank() {
         var exyear = $("select#exyear").val();
-        var score = $("input.score").val();
+        var score = $("input#score").val();
         $.post("{{ url_for('Score.score') }}", {
             exyear: exyear,
             score: score

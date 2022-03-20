@@ -54,7 +54,7 @@ def query():
         result = result.filter(
             rank - info["rank_range"] <= Rank.rank,
             Rank.rank <= rank + info["rank_range"]).filter(Rank.rank != 0)
-        result = result.order_by(db.text("ABS(rank.rank - %d) ASC" % rank))
+        result = result.order_by(db.func.abs(Rank.score - rank).asc())
         info["rank"] = rank
     else:
         result = result.order_by(Univ.sid.asc())

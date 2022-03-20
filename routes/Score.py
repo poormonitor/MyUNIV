@@ -10,9 +10,10 @@ score_bp = Blueprint('Score', __name__)
 
 @score_bp.route('/score', methods=['POST'])
 @login_required
-def modify():
+def score():
     year = int(request.form["exyear"])
-    score = int(request.form["rank"])
-    rank = Rank.query.filter_by(Rank.year == year).order_by(
-        db.func.abs(Rank.score - score).asc()).first().rank
+    score = int(request.form["score"])
+    rank = Rank.query.filter_by(year=year).filter(Rank.rank != 0).order_by(
+        db.func.abs(Rank.score - score).asc()).first()
+    rank = str(rank.rank) if rank else "0"
     return rank, 200
