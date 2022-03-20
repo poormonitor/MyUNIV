@@ -1,11 +1,22 @@
-{% extends "base.html" %} {% block title %}专业信息{% endblock %}
-{% block content %}
-<h2>{{ major.mname }}</h2>
-<h4>{{ univ.uname }}</h4>
+{% extends "base.html" %} {% block title %}专业信息{% endblock %} {% block content %}
+<style>
+    .img-building {
+        border-radius: 30px;
+        background: url("{{ url_for('static', filename='building.jpg') }}") no-repeat 100% 20%/ cover;
+        color: #fff;
+        word-break: break-all;
+        line-break: strict;
+    }
+</style>
+<div class="img-building pt-3 pb-3 ps-4 mb-3">
+    <div class="w-50">
+        <h2>{{ major.mname }}</h2>
+        <h4>{{ univ.uname }}</h4>
+    </div>
+</div>
 <div id="tags">
     {% for tag in include %}
-    <span class="badge bg-primary m-1">{{ tag }}</span>
-    {% endfor %}
+    <span class="badge bg-primary mt-1 mb-1">{{ tag }}</span> {% endfor %}
 </div>
 <div class="row">
     <div class="col-md-6">
@@ -80,7 +91,7 @@
         },
         tooltip: {
             trigger: 'axis',
-            formatter: function (params) {
+            formatter: function(params) {
                 var text = '--'
                 if (params && params.length) {
                     text = params[0].data[0]
@@ -98,15 +109,13 @@
         yAxis: {
             type: 'value'
         },
-        series: [
-            {
-                data: totalChartdata,
-                name: "计划数",
-                type: 'line',
-                smooth: true,
-                color: "#78c2ad"
-            }
-        ]
+        series: [{
+            data: totalChartdata,
+            name: "计划数",
+            type: 'line',
+            smooth: true,
+            color: "#78c2ad"
+        }]
     };
     totalChart.setOption(totalChartoption);
     var rankChart = echarts.init(document.getElementById('rank'));
@@ -124,7 +133,7 @@
         },
         tooltip: {
             trigger: 'axis',
-            formatter: function (params) {
+            formatter: function(params) {
                 var text = '--'
                 if (params && params.length) {
                     text = params[0].data[0]
@@ -142,18 +151,16 @@
         yAxis: {
             type: 'value'
         },
-        series: [
-            {
-                data: rankChartdata,
-                name: "位次号",
-                type: 'line',
-                smooth: true,
-                color: "#78c2ad"
-            }
-        ]
+        series: [{
+            data: rankChartdata,
+            name: "位次号",
+            type: 'line',
+            smooth: true,
+            color: "#78c2ad"
+        }]
     };
     rankChart.setOption(rankChartoption);
-    window.onresize = function () {
+    window.onresize = function() {
         totalChart.resize();
         rankChart.resize();
     };

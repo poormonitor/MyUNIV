@@ -40,6 +40,7 @@ def process_excel(xlsx, year):
             univ_name = get_school_name(i[1])
             major = i[3]
             schedule = i[4]
+            score = i[5]
             rank = i[6] if i[6] == i[6] else 0
             if univ_name not in univs:
                 tag = pattern.findall(i[1])
@@ -68,7 +69,11 @@ def process_excel(xlsx, year):
             if (a := db.session.query(Rank).filter(Rank.mid == b.mid, Rank.year
                                                    == year).first()) is None:
                 db.session.add(
-                    Rank(mid=b.mid, year=year, rank=rank, schedule=schedule))
+                    Rank(mid=b.mid,
+                         year=year,
+                         rank=rank,
+                         schedule=schedule,
+                         score=score))
                 db.session.flush()
             else:
                 a.rank = rank
