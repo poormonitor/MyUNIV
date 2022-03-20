@@ -10,7 +10,6 @@ def islogin():
 
 
 def isadmin():
-    return True
     if islogin() and session["admin"] == True:
         return True
     else:
