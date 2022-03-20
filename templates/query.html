@@ -1,5 +1,44 @@
 {% extends "base.html" %} {% block title %}查询{% endblock %} {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-select.min.css') }}">
+<div class="modal fade" id="exRank" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="exRankLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exRankLabel">分数转换</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    根据输入的分数自动确认位次号。
+                </p>
+                <div>
+                    <div class="mb-3">
+                        <label for="exyear" class="form-label">数据年份</label>
+                        <select class="selectpicker form-control" id="exyear" name="exyear">
+                            {% for i in rank_years %}
+                            {% if i == info['year'] %}
+                            <option value="{{ i }}" selected>{{ i }}</option>
+                            {% else %}
+                            <option value="{{ i }}">{{ i }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="passwd" class="form-label">分数</label>
+                        <input type="score" class="form-control" id="score" required>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                    onclick='return exRank()'>确定</button>
+            </div>
+        </div>
+    </div>
+</div>
 <form method="GET">
     <div class="row g-3">
         <div class="col-md-3">
@@ -45,20 +84,28 @@
     </div>
     <div class="row g-3">
         <div class="col-md-3">
-            <label for="major" class="form-label">专业</label>
+            <label for="major" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="专业类的名称。这是招生时登记的专业名称。">专业</label>
             <input type="text" class="form-control" id="major" name="major" value="{{ request['major'] }}">
         </div>
         <div class="col-md-3">
-            <label for="sort" class="form-label">专业细分</label>
+            <label for="sort" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="大专业下属的小专业。">专业细分</label>
             <input type="text" class="form-control" id="sort" name="sort" value="{{ request['sort'] }}">
         </div>
         <div class="col-md-3">
-            <label for="rank" class="form-label">位次号</label>
+            <label for="rank" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="搜索的位次号。需配合区间使用。">位次号</label>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exRank">
+                分数转换
+            </button>
             <input type="text" class="form-control" id="rank" name="rank" value="{{ request['rank'] }}">
         </div>
         <div class="col-md-3">
-            <label for="rank_range" class="form-label">区间</label>
-            <input type="text" class="form-control" id="rank_range" name="rank_range" value="{{ request['rank_range'] }}">
+            <label for="rank_range" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="位次号允许的偏差区间。如1000意为筛选在前输入框中位次号前后1000名的专业。">区间</label>
+            <input type="text" class="form-control" id="rank_range" name="rank_range"
+                value="{{ request['rank_range'] }}">
         </div>
     </div>
     <div class="row g-3">
@@ -67,15 +114,19 @@
             <div class="mt-2">
                 {% for i,e in must_string %}
                 <div class="form-check form-check-inline">
-                    <label class="form-check-label" for="must{{ i + 1 }}">{{ e }}</label> {% if i + 1 in info["mymust"] %}
-                    <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}" value="{{ i + 1 }}" checked> {% else %}
-                    <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}" value="{{ i + 1 }}"> {% endif %}
+                    <label class="form-check-label" for="must{{ i + 1 }}">{{ e }}</label> {% if i + 1 in info["mymust"]
+                    %}
+                    <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}"
+                        value="{{ i + 1 }}" checked> {% else %}
+                    <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}"
+                        value="{{ i + 1 }}"> {% endif %}
                 </div>
                 {% endfor %}
             </div>
         </div>
         <div class="col-md-2">
-            <label for="standard" class="form-label">选考科目标准</label>
+            <label for="standard" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="浙江省教育考试院公布的选考科目标准的年份。">选考科目标准</label>
             <select class="selectpicker form-control" id="standard" name="standard">
                 {% for i in must_standard %}
                 {% if i == info["standard"] %}
@@ -87,7 +138,8 @@
             </select>
         </div>
         <div class="col-md-2">
-            <label for="year" class="form-label">年份</label>
+            <label for="year" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="投档位次号的年份。">年份</label>
             <select class="selectpicker form-control" id="year" name="year">
                 {% for i in rank_years %}
                 {% if i == info['year'] %}
@@ -162,10 +214,26 @@
 <script src="{{ url_for('static', filename='bootstrap-select.min.js') }}"></script>
 <script src="{{ url_for('static', filename='defaults-zh_CN.js') }}"></script>
 <script>
-    $('input.musts').on('change', function(e) {
+    function exRank() {
+        var exyear = $("select#exyear").val();
+        var score = $("input.score").val();
+        $.post("{{ url_for('Score.score') }}", {
+            exyear: exyear,
+            score: score
+        }, function (data, status) {
+            if (status == "success") {
+                $("input#rank").val(data)
+            }
+        });
+    }
+    $('input.musts').on('change', function (e) {
         if ($('input.musts:checked').length > 3) {
             $(this).prop('checked', false);
         }
     });
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
 </script>
 {% endblock %}
