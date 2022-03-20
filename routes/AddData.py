@@ -31,7 +31,7 @@ def process_excel(xlsx, year):
     from func import get_school_name
     import re
     data = read_excel(xlsx)
-    if "位次号" in data.columns.tolist():
+    if "位次" in data.columns.tolist():
         univs = {i.uname: i.sid for i in Univ.query.all()}
         pattern = re.compile(r'(?<=[\(])(%s).*?(?=[\)])' %
                              "|".join(allow_tags))
