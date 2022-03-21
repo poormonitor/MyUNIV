@@ -17,6 +17,9 @@
     <a class="btn btn-outline-primary" data-bs-toggle="offcanvas" href="#AddUser" role="button" aria-controls="AddUser">
         添加用户
     </a>
+    <a class="btn btn-outline-primary" data-bs-toggle="offcanvas" href="#Change" role="button" aria-controls="Change">
+        修改选课
+    </a>
     <a class="btn btn-outline-primary" data-bs-toggle="offcanvas" href="#DelUser" role="button" aria-controls="DelUser">
         删除用户
     </a>
@@ -28,6 +31,7 @@
                 <tr>
                     <th>用户名</th>
                     <th>姓名</th>
+                    <th>选考科目</th>
                     <th>管理员</th>
                     <th>密码</th>
                     <th>删除</th>
@@ -38,6 +42,7 @@
                 <tr id="uid-{{ i.uid }}">
                     <td>{{ i.uid }}</td>
                     <td>{{ i.name }}</td>
+                    <td>{{ get_func(i.must) }}</td>
                     <td>
                         <a id="admin-{{ i.uid }}" href="#" onclick='setAdmin("{{ i.uid }}")'>
                             {{ "是" if i.admin else "否"}}
@@ -140,6 +145,34 @@
                 </div>
             </div>
             <input type="hidden" name="action" value="add">
+            <div class="center">
+                <button type="submit" class="btn btn-primary">提交</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="offcanvas offcanvas-start" tabindex="-1" id="Change" aria-labelledby="ChangeLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="ChangeLabel">添加用户</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="center">
+            <p>
+                逗号或空格分隔，每行一个用户，格式为：用户名、选考科目。
+            </p>
+            <p>
+                选考科目为一个整数，1-7分别对应物理、化学、生物、政治、历史、地理、技术。
+                例如，123对应选考物理、化学、生物。
+            </p>
+        </div>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="users" class="control-label">用户</label>
+                <textarea id="users" type="text" name="users" class="form-control mt-2" rows="10" required></textarea>
+            </div>
+            <input name="csrf" type="hidden" value="{{ csrf }}">
+            <input type="hidden" name="action" value="change">
             <div class="center">
                 <button type="submit" class="btn btn-primary">提交</button>
             </div>

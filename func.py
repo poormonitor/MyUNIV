@@ -97,3 +97,14 @@ def get_must_string(now: int) -> str:
     for i in now[1:]:
         ans.append(majors[int(i)])
     return ", ".join(ans) + " " + "(必选%d门)" % int(cnt)
+
+
+def get_mymust_string(now: int) -> str:
+    from const import majors
+    if not now:
+        return ""
+    now = str(now)
+    ans = []
+    for i in now:
+        ans.append(majors[int(i)])
+    return ", ".join(ans)

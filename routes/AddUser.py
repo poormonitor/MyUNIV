@@ -13,13 +13,14 @@ add_user_bp = Blueprint('AddUser', __name__)
 @admin_required
 def adduser():
     if request.method == "GET":
+        from func import get_mymust_string
         session['csrf'] = os.urandom(16).hex()
         page = int(request.args.get("page")) if "page" in request.args else 1
         info = {"checkString": ""}
         result = User.query
         if "checkString" in request.args and request.args["checkString"] != "":
             info["checkString"] = request.args["checkString"]
-            result.filter(
+            result = result.filter(
                 db.or_(User.name.contains(info["checkString"]),
                        User.uid.contains(info["checkString"])))
         count = result.count()
@@ -35,7 +36,8 @@ def adduser():
                                cnt=cnt,
                                string=urls,
                                page=page,
-                               info=info)
+                               info=info,
+                               get_func=get_mymust_string)
     if not valid_csrf():
         return redirect(url_for('AddUser.adduser'))
     typ = request.form['action']
@@ -44,26 +46,35 @@ def adduser():
         tp = int(request.form.get("type"))
         for line in users.splitlines():
             items = re.split(",| |\t", line)
-            print(items)
             if (a := User.query.filter_by(uid=items[0]).first()) is None:
                 passwd = md5(str(items[2]).encode("utf-8")).hexdigest()
                 db.session.add(
                     User(uid=items[0],
                          name=items[1],
                          password=passwd,
-                         admin=True if tp else False))
+                         admin=True if tp else False,
+                         must=int(items[3]) if len(items) > 3 else 0))
             else:
                 passwd = md5(str(items[2]).encode("utf-8")).hexdigest()
                 a.password = passwd
                 a.name = items[1]
                 a.admin = True if tp else False
+                if len(items) > 3:
+                    a.must = int(items[3])
+    elif typ == "change":
+        users = request.form.get("users")
+        for line in users.splitlines():
+            items = re.split(",| |\t", line)
+            if (a := User.query.filter_by(uid=items[0]).first()) is not None:
+                a.must = int(items[1])
+                db.session.flush()
     elif typ == "del":
         user = request.form.get("users")
         if (a := User.query.filter_by(uid=user).first()) is not None:
             db.session.delete(a)
         db.session.commit()
         return "success", 200
-    elif typ=="delete":
+    elif typ == "delete":
         users = request.form.get("users")
         for line in users.splitlines():
             item = re.split(",| |\t", line)[0]
