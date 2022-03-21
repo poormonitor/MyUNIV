@@ -81,11 +81,11 @@ def adduser():
             if (a := User.query.filter_by(uid=item).first()) is not None:
                 db.session.delete(a)
     elif typ == "passwd":
-        users = request.form.get("users")
-        for line in users.splitlines():
-            items = re.split(",| |\t", line)
-            if (a := User.query.filter_by(uid=items[0]).first()) is not None:
-                a.admin = True if int(items[1]) else False
+        user = request.form.get("user")
+        passwd = request.form.get("passwd")
+        if (a := User.query.filter_by(uid=user).first()) is not None:
+            a.passwd = passwd
+            db.session.flush()
     elif typ == "set":
         user = request.form.get("user")
         if (a := User.query.filter_by(uid=user).first()) is not None:
