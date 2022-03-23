@@ -13,20 +13,16 @@ import os
 
 def create_app():
     app = Flask(__name__)
-
+    database = os.path.join(os.path.dirname(__file__), "data.sqlite")
     app.config['SECRET_KEY'] = os.urandom(24)
     app.config['SESSION_COOKIE_PATH'] = '/'
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
-        os.path.dirname(__file__), "data.sqlite")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + database
     app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['UPLOAD_PATH'] = os.path.join(os.path.dirname(__file__),
-                                             "upload/")
 
     db = models_init_app(app)
     routes_init_app(app)
-    exists = os.path.isfile(
-        os.path.join(os.path.dirname(__file__), "data.sqlite"))
+    exists = os.path.isfile(database)
     with app.app_context():
         db.create_all()
         if not exists:
