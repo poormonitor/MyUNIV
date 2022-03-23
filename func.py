@@ -85,6 +85,19 @@ def get_what_i_can_choose(mymust: str) -> list:
                 ans.append(str(i) + "".join(map(str, j + p)))
     return ans
 
+def get_what_i_can_choose_most(mymust: str) -> list:
+    from itertools import combinations
+    choices = [i for i in range(1, 8)]
+    musts = list(map(int, list(mymust)))
+    ans = []
+    for i in range((len(musts)+1)//2, len(musts) + 1):
+        for j in combinations(musts, i):
+            new_choice = choices[:]
+            for p in j:
+                new_choice.remove(p)
+            for p in combinations(new_choice, i - len(j)):
+                ans.append(str(i) + "".join(map(str, j + p)))
+    return ans
 
 def get_must_string(now: int) -> str:
     from const import majors

@@ -93,7 +93,7 @@
                 title="大专业下属的小专业。">专业细分</label>
             <input type="text" class="form-control" id="sort" name="sort" value="{{ request['sort'] }}">
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <label for="rank" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
                 title="搜索的位次号。需配合区间使用。">位次号</label>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exRank">
@@ -101,17 +101,30 @@
             </button>
             <input type="text" class="form-control" id="rank" name="rank" value="{{ request['rank'] }}">
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <label for="rank_range" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
                 title="位次号允许的偏差区间。如1000意为筛选在前输入框中位次号前后1000名的专业。">区间</label>
             <input type="text" class="form-control" id="rank_range" name="rank_range"
                 value="{{ request['rank_range'] }}">
         </div>
+        <div class="col-md-2">
+            <label for="year" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="投档位次号的年份。">投档数据年份</label>
+            <select class="selectpicker form-control" id="year" name="year">
+                {% for i in rank_years %}
+                {% if i == info['year'] %}
+                <option value="{{ i }}" selected>{{ i }}</option>
+                {% else %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
     </div>
     <div class="row g-3">
-        <div class="col-md-8">
-            <label>选考科目</label>
-            <div class="mt-2">
+        <div class="col-md-7">
+            <label for="must">选考科目</label>
+            <div class="mt-2" id="must">
                 {% for i,e in must_string %}
                 <div class="form-check form-check-inline">
                     <label class="form-check-label" for="must{{ i + 1 }}">{{ e }}</label> {% if i + 1 in info["mymust"]
@@ -125,24 +138,26 @@
             </div>
         </div>
         <div class="col-md-2">
+            <label data-bs-toggle="tooltip" data-bs-placement="top"
+                title="要求专业至少必选我的一半选考科目，且根据匹配度排序。例如若选择三门则筛选必需同时选考其中至少两门的专业，且同时要求三门选考的专业优先展示。">一致优先</label>
+            <div class="mt-2">
+                <div class="form-check">
+                    <label class="form-check-label" for="accordation">是</label>
+                    {% if info["accordation"] %}
+                    <input class="form-check-input" type="checkbox" name="accordation" id="accordation" value="1"
+                        checked>
+                    {% else %}
+                    <input class="form-check-input" type="checkbox" name="accordation" id="accordation" value="1">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
             <label for="standard" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
-                title="浙江省教育考试院公布的选考科目标准的年份。">选考科目标准</label>
+                title="浙江省教育考试院公布的选考科目标准的年份。2024及以后参加高考学生适用2024标准，2020-2023参加高考学生适用2020标准。">选考科目标准</label>
             <select class="selectpicker form-control" id="standard" name="standard">
                 {% for i in must_standard %}
                 {% if i == info["standard"] %}
-                <option value="{{ i }}" selected>{{ i }}</option>
-                {% else %}
-                <option value="{{ i }}">{{ i }}</option>
-                {% endif %}
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label for="year" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
-                title="投档位次号的年份。">年份</label>
-            <select class="selectpicker form-control" id="year" name="year">
-                {% for i in rank_years %}
-                {% if i == info['year'] %}
                 <option value="{{ i }}" selected>{{ i }}</option>
                 {% else %}
                 <option value="{{ i }}">{{ i }}</option>
@@ -156,16 +171,19 @@
     </div>
 </form>
 <span>共计有{{ count }}个结果。</span>
+{% if count <= 1000 %}
+<a href="{{ url_for('Excel.excel', **info) }}" class="btn btn-sm btn-outline-secondary">导出为Excel</a>
+{% endif %}
 <div class="table-responsive">
-    <table class="table table-striped">
+    <table class="table table-striped" id="resultTable">
         <thead>
             <tr>
-                <th>学校序号</th>
                 <th>学校名称</th>
                 <th>专业名称</th>
                 <th>招生计划</th>
                 <th>年份</th>
                 <th>位次号</th>
+                <th>录取分数</th>
                 <th>选考科目</th>
                 <th>选考科目标准</th>
             </tr>
@@ -173,24 +191,29 @@
         <tbody>
             {% for i, item in result %}
             <tr>
-                <td>{{ item[0].sid }}</td>
                 <td><a href="{{ url_for('Univ.univ', sid=item[1].sid) }}" target="_blank">{{ item[1].uname }}</a></td>
                 <td><a href="{{ url_for('Major.major', mid=item[0].mid) }}" target="_blank">{{ item[0].mname }}</a></td>
                 <td>{{ item[2].schedule }}</td>
                 <td>{{ item[2].year }}</td>
                 <td>{{ item[2].rank }}</td>
+                <td>{{ item[2].score }}</td>
                 <td>{{ musts[i][0] }}</td>
                 <td>{{ musts[i][1] }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <nav aria-label="Page navigation example">
+    <nav aria-label="navigation">
         <ul class="pagination justify-content-center">
-            {% if page != 1 %}
+            {% if page > 2 %}
             <li class="page-item">
-                <a class="page-link" href="{{ string[0] }}">First</a>
+                <a class="page-link" href="{{ string[0] }}">1</a>
             </li>
+            <li class="page-item disabled" aria-current="page">
+                <span class="page-link">...</span>
+            </li>
+            {% endif %}
+            {% if page != 1 %}
             <li class="page-item">
                 <a class="page-link" href="{{ string[1] }}">{{ page - 1 }}</a>
             </li>
@@ -202,8 +225,11 @@
             <li class="page-item">
                 <a class="page-link" href="{{ string[3] }}">{{ page + 1 }}</a>
             </li>
+            <li class="page-item disabled" aria-current="page">
+                <span class="page-link">...</span>
+            </li>
             <li class="page-item">
-                <a class="page-link" href="{{ string[4] }}">Last</a>
+                <a class="page-link" href="{{ string[4] }}">{{ cnt }}</a>
             </li>
             {% endif %}
         </ul>

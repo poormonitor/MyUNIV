@@ -4,17 +4,19 @@ from models.Rank import Rank
 from models.Tag import Tag
 from models.Must import Must
 from models import db
-from flask import Blueprint, render_template, url_for, request, session
+from flask import Blueprint, render_template, url_for, request, session, make_response
 from func import login_required, get_what_i_can_choose, get_must_string, get_what_i_can_choose_most
 from const import majors, provinces
+import pandas as pd
+import hashlib
+import io
 
-query_bp = Blueprint('Query', __name__)
+excel_bp = Blueprint('Excel', __name__)
 
 
-@query_bp.route('/query', methods=['GET'])
+@excel_bp.route('/excel', methods=['GET'])
 @login_required
-def query():
-    page = int(request.args.get("page")) if "page" in request.args else 1
+def excel():
     last_year = a.year if (a := db.session.query(
         Rank.year).distinct().order_by(Rank.year.desc()).first()) else ""
     result = db.session.query(Major, Univ, Rank, Must)
@@ -54,9 +56,9 @@ def query():
         mymust = request.args.getlist("mymust")
         info["mymust"] = list(map(int, mymust))
         mymust = "".join(mymust)
-        result = result.order_by(Must.must.desc())
         if info["accordation"]:
             what_i_can = get_what_i_can_choose_most(mymust)
+            result = result.order_by(Must.must.desc())
         else:
             what_i_can = get_what_i_can_choose(mymust)
         result = result.filter(Must.must.in_(what_i_can))
@@ -110,35 +112,25 @@ def query():
         info["sort"] = request.args["sort"]
         result = result.filter(
             db.or_(Must.include.contains(i) for i in info["sort"].split(" ")))
-    count = result.count()
-    cnt = count // 50 + 1
-    result = result.offset((page - 1) * 50).limit(50).all()
-    musts = [(get_must_string(i[3].must), i[3].year) if i[3] else ""
-             for i in result]
-    urls = [
-        str(url_for('Query.query', page=i, **info))
-        for i in (1, page - 1, page, page + 1, cnt)
-    ]
-    all_tags = Tag.query.all()
-    rank_year_available = [
-        i.year for i in Rank.query.group_by(Rank.year).order_by(
-            Rank.year.desc()).all()
-    ]
-    must_year_available = [
-        i.year for i in Must.query.group_by(Must.year).order_by(
-            Must.year.desc()).all()
-    ]
-    return render_template('query.html',
-                           result=enumerate(result),
-                           request=info,
-                           info=info,
-                           page=page,
-                           cnt=cnt,
-                           string=urls,
-                           provinces=provinces.items(),
-                           must_string=enumerate(majors[1:]),
-                           utags=all_tags,
-                           musts=musts,
-                           rank_years=rank_year_available,
-                           must_standard=must_year_available,
-                           count=count)
+    result = result.all()
+    data = [(item[1].uname, item[0].mname, item[2].schedule,
+             item[2].year, item[2].rank, item[2].score,
+             get_must_string(item[3].must) if item[3] else "",
+             item[3].year if item[3] else "") for item in result]
+    df = pd.DataFrame(data,
+                      columns=[
+                          '学校名称', '专业名称', '招生计划', '年份', '位次号', '录取分数', '选考科目',
+                          '选考科目标准'
+                      ])
+    filename = hashlib.md5(str(info).encode()).hexdigest() + ".xlsx"
+    out = io.BytesIO()
+    writer = pd.ExcelWriter(out, engine='openpyxl')
+    df.to_excel(excel_writer=writer, sheet_name='志愿信息', index=False)
+    writer.save()
+    writer.close()
+    response = make_response(out.getvalue())
+    response.headers[
+        "Content-Disposition"] = "attachment; filename*=utf-8''{}".format(
+            filename)
+    response.headers["Content-type"] = "application/x-xlsx"
+    return response
