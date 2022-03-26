@@ -1,5 +1,6 @@
 {% extends "base.html" %} {% block title %}查询{% endblock %} {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-select.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-icons.css') }}">
 <div class="modal fade" id="exRank" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
     aria-labelledby="exRankLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -34,12 +35,12 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
-                    onclick='return exRank()'>确定</button>
+                    onclick='exRank()'>确定</button>
             </div>
         </div>
     </div>
 </div>
-<form method="GET">
+<form method="GET" id="queryForm">
     <div class="row g-3">
         <div class="col-md-3">
             <label for="province" class="form-label">省份</label>
@@ -95,10 +96,10 @@
         </div>
         <div class="col-md-2">
             <label for="rank" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
-                title="搜索的位次号。需配合区间使用。">位次号</label>
-            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exRank">
-                分数转换
-            </button>
+                title="搜索的位次号。需配合区间使用。">位次号
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exRank">
+                    分数转换
+                </button></label>
             <input type="text" class="form-control" id="rank" name="rank" value="{{ request['rank'] }}">
         </div>
         <div class="col-md-2">
@@ -170,10 +171,17 @@
         <button type="submit" class="btn btn-primary col-sm-4">Go</button>
     </div>
 </form>
-<span>共计有{{ count }}个结果。</span>
-{% if count <= 1000 %}
-<a href="{{ url_for('Excel.excel', **info) }}" class="btn btn-sm btn-outline-secondary">导出为Excel</a>
-{% endif %}
+<div class="mb-2">
+    <span>共计有<b id="cnt">{{ count }}</b>个结果。</span>
+    {% if count <= 1000 %}
+    <a href="{{ url_for('Excel.excel', **info) }}" class="btn btn-sm btn-outline-secondary">导出为Excel</a>
+    {% endif %}
+    {%if count <= 100 %} 
+    <a href="#" onclick="addAll(this)" class="btn btn-sm btn-outline-secondary">结果加入备选</a>
+    {% endif %}
+    <a href="#" onclick="addThisPage(this)" class="btn btn-sm btn-outline-secondary">本页加入备选</a>
+    <span class="badge bg-success ms-2 visually-hidden">成功</span>
+</div>
 <div class="table-responsive">
     <table class="table table-striped" id="resultTable">
         <thead>
@@ -186,60 +194,102 @@
                 <th>录取分数</th>
                 <th>选考科目</th>
                 <th>选考科目标准</th>
+                <th>加入备选</th>
             </tr>
         </thead>
         <tbody>
             {% for i, item in result %}
             <tr>
-                <td><a href="{{ url_for('Univ.univ', sid=item[1].sid) }}" target="_blank">{{ item[1].uname }}</a></td>
-                <td><a href="{{ url_for('Major.major', mid=item[0].mid) }}" target="_blank">{{ item[0].mname }}</a></td>
+                <td class="text-nowrap"><a href="{{ url_for('Univ.univ', sid=item[1].sid) }}" target="_blank">{{ item[1].uname }}</a>
+                </td>
+                <td><a href="{{ url_for('Major.major', mid=item[0].mid) }}" target="_blank">{{ item[0].mname }}</a>
+                </td>
                 <td>{{ item[2].schedule }}</td>
                 <td>{{ item[2].year }}</td>
                 <td>{{ item[2].rank }}</td>
                 <td>{{ item[2].score }}</td>
-                <td>{{ musts[i][0] }}</td>
+                <td class="text-nowrap">{{ musts[i][0] }}</td>
                 <td>{{ musts[i][1] }}</td>
+                <td>
+                    {% if item[0].mid not in session['my'] %}
+                    <button onclick='addMyMajor("{{ item[0].mid }}", this)' type="button"
+                        class="btn btn-sm btn-primary my-major">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                    {% else %}
+                    <button onclick='deleteMyMajor("{{ item[0].mid }}", this)' type="button"
+                        class="btn btn-sm btn-danger my-major">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <nav aria-label="navigation">
-        <ul class="pagination justify-content-center">
-            {% if page > 2 %}
-            <li class="page-item">
-                <a class="page-link" href="{{ string[0] }}">1</a>
-            </li>
-            <li class="page-item disabled" aria-current="page">
-                <span class="page-link">...</span>
-            </li>
-            {% endif %}
-            {% if page != 1 %}
-            <li class="page-item">
-                <a class="page-link" href="{{ string[1] }}">{{ page - 1 }}</a>
-            </li>
-            {% endif %}
-            <li class="page-item active" aria-current="page">
-                <span class="page-link" href="{{ string[2] }}">{{ page }}</span>
-            </li>
-            {% if page != cnt %}
-            <li class="page-item">
-                <a class="page-link" href="{{ string[3] }}">{{ page + 1 }}</a>
-            </li>
-            <li class="page-item disabled" aria-current="page">
-                <span class="page-link">...</span>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="{{ string[4] }}">{{ cnt }}</a>
-            </li>
-            {% endif %}
-        </ul>
-    </nav>
 </div>
+<nav aria-label="navigation" class="mt-2">
+    <ul class="pagination justify-content-center">
+        {% if page > 2 %}
+        <li class="page-item">
+            <a class="page-link" href="{{ string[0] }}">1</a>
+        </li>
+        <li class="page-item disabled" aria-current="page">
+            <span class="page-link">...</span>
+        </li>
+        {% endif %}
+        {% if page != 1 %}
+        <li class="page-item">
+            <a class="page-link" href="{{ string[1] }}">{{ page - 1 }}</a>
+        </li>
+        {% endif %}
+        <li class="page-item active" aria-current="page">
+            <span class="page-link" href="{{ string[2] }}" id="page-now">{{ page }}</span>
+        </li>
+        {% if page != cnt %}
+        <li class="page-item">
+            <a class="page-link" href="{{ string[3] }}">{{ page + 1 }}</a>
+        </li>
+        <li class="page-item disabled" aria-current="page">
+            <span class="page-link">...</span>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="{{ string[4] }}">{{ cnt }}</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
 <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
 {% endblock %} {% block script %}
 <script src="{{ url_for('static', filename='bootstrap-select.min.js') }}"></script>
 <script src="{{ url_for('static', filename='defaults-zh_CN.js') }}"></script>
 <script>
+    function addMyMajor(id, self) {
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", {
+            mid: id,
+            action: "id"
+        }, function (data, status) {
+            if (data == "success") {
+                $(self).removeClass("btn-primary").addClass("btn-danger");
+                $(self).attr("onclick", "deleteMyMajor(" + id + ", this)");
+                $(self).children().first().attr("class", "bi bi-x-lg");
+            }
+        });
+    }
+
+    function deleteMyMajor(id, self) {
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", {
+            mid: id,
+            action: "delete"
+        }, function (data, status) {
+            if (data == "success") {
+                $(self).removeClass("btn-danger").addClass("btn-primary");
+                $(self).attr("onclick", "addMyMajor(" + id + ", this)");
+                $(self).children().first().attr("class", "bi bi-plus-lg");
+            }
+        });
+    }
+
     function exRank() {
         var exyear = $("select#exyear").val();
         var score = $("input#score").val();
@@ -252,11 +302,50 @@
             }
         });
     }
+
+    function addThisPage(self) {
+        var data = $("form#queryForm").serializeArray();
+        var page = $("span#page-now").text();
+        data.push({
+            name: "page",
+            value: page
+        });
+        data.push({
+            name: "action",
+            value: "query"
+        });
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", data, function (data, status) {
+            if (status == "success") {
+                $(self).siblings(".visually-hidden").removeClass("visually-hidden");
+                $(".my-major").removeClass("btn-primary").addClass("btn-danger");
+                $(".my-major").attr("onclick", "deleteMyMajor(this)");
+                $(".my-major").children().first().attr("class", "bi bi-x-lg");
+            }
+        });
+    }
+
+    function addAll(self) {
+        var data = $("form#queryForm").serializeArray();
+        data.push({
+            name: "action",
+            value: "query"
+        });
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", data, function (data, status) {
+            if (status == "success") {
+                $(self).siblings(".visually-hidden").removeClass("visually-hidden");
+                $(".my-major").removeClass("btn-primary").addClass("btn-danger");
+                $(".my-major").attr("onclick", "deleteMyMajor(this)");
+                $(".my-major").children().first().attr("class", "bi bi-x-lg");
+            }
+        });
+    }
+
     $('input.musts').on('change', function (e) {
         if ($('input.musts:checked').length > 3) {
             $(this).prop('checked', false);
         }
     });
+
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)

@@ -40,6 +40,7 @@
                             {{ session["name"] }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('MyMajor.mymajor') }}">备选专业</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('Modify.modify') }}">修改个人数据</a></li>
                             {% if session['admin'] %}
                             <li>

@@ -1,34 +1,32 @@
+from flask import Blueprint, session, request
+from func import get_what_i_can_choose, get_what_i_can_choose_most, login_required_ajax
 from models.Major import Major
 from models.Univ import Univ
 from models.Rank import Rank
 from models.Must import Must
 from models import db
-from flask import Blueprint, request, session, make_response
-from func import login_required, get_what_i_can_choose, get_must_string, get_what_i_can_choose_most
-import pandas as pd
-import hashlib
-import io
 
-excel_bp = Blueprint('Excel', __name__)
+add_my_major_bp = Blueprint('AddMyMajor', __name__)
 
 
-@excel_bp.route('/excel', methods=['GET'])
-@login_required
-def excel():
-    last_year = a.year if (a := db.session.query(
-        Rank.year).distinct().order_by(Rank.year.desc()).first()) else ""
-    result = db.session.query(Major, Univ, Rank, Must)
-    result = result.outerjoin(Major, Major.mid == Rank.mid)
-    result = result.outerjoin(Univ, Univ.sid == Major.sid)
-    if "my" in request.args and request.args.get("my") == '1':
-        info = session["my"]
-        result = result.filter(Major.mid.in_(info))
-        result = result.outerjoin(
-            Must,
-            db.and_(Must.sid == Major.sid,
-                    Major.mname.contains(Must.mname))).group_by(Major.mid)
-        result = result.order_by(Rank.score.desc())
-    else:
+@add_my_major_bp.route('/my/add', methods=['GET'])
+@login_required_ajax
+def addmymajor():
+    if request.args.get("action") == "id":
+        id = int(request.args.get("mid"))
+        session["my"].append(id)
+    elif request.args.get("action") == "delete":
+        id = int(request.args.get("mid"))
+        session["my"].remove(id)
+    elif request.args.get("action") == "del":
+        session["my"] = []
+    elif request.args.get("action") == "query":
+        page = int(request.args.get("page")) if "page" in request.args else None
+        last_year = a.year if (a := db.session.query(
+            Rank.year).distinct().order_by(Rank.year.desc()).first()) else ""
+        result = db.session.query(Major, Univ, Rank, Must)
+        result = result.outerjoin(Major, Major.mid == Rank.mid)
+        result = result.outerjoin(Univ, Univ.sid == Major.sid)
         info = {
             "rank": "",
             "year": last_year,
@@ -63,9 +61,9 @@ def excel():
             mymust = request.args.getlist("mymust")
             info["mymust"] = list(map(int, mymust))
             mymust = "".join(mymust)
+            result = result.order_by(Must.must.desc())
             if info["accordation"]:
                 what_i_can = get_what_i_can_choose_most(mymust)
-                result = result.order_by(Must.must.desc())
             else:
                 what_i_can = get_what_i_can_choose(mymust)
             result = result.filter(Must.must.in_(what_i_can))
@@ -77,14 +75,12 @@ def excel():
         if "rank" in request.args and request.args["rank"] != "":
             rank = int(request.args["rank"])
             if not info["rank_range"]:
-                result = result.filter(Rank.rank >= rank).filter(
-                    Rank.rank != 0)
+                result = result.filter(Rank.rank >= rank).filter(Rank.rank != 0)
                 result = result.order_by(db.func.abs(Rank.rank).asc())
             else:
                 result = result.filter(
                     rank - info["rank_range"] <= Rank.rank,
-                    Rank.rank <= rank + info["rank_range"]).filter(
-                        Rank.rank != 0)
+                    Rank.rank <= rank + info["rank_range"]).filter(Rank.rank != 0)
                 result = result.order_by(db.func.abs(Rank.rank - rank).asc())
             info["rank"] = rank
         else:
@@ -112,7 +108,7 @@ def excel():
         result = result.outerjoin(
             Must,
             db.and_(Must.sid == Major.sid, Major.mname.contains(Must.mname),
-                    Must.year == info["standard"]))
+                    Must.year == info["standard"])).group_by(Major.mid)
         if "province" in request.args and request.args["province"] != "":
             province = info["province"] = list(
                 map(int, request.args.getlist("province")))
@@ -120,26 +116,11 @@ def excel():
         if "sort" in request.args and request.args["sort"] != "":
             info["sort"] = request.args["sort"]
             result = result.filter(
-                db.or_(
-                    Must.include.contains(i) for i in info["sort"].split(" ")))
-    result = result.all()
-    data = [(item[1].uname, item[0].mname, item[2].schedule,
-             item[2].year, item[2].rank, item[2].score,
-             get_must_string(item[3].must) if item[3] else "",
-             item[3].year if item[3] else "") for item in result]
-    df = pd.DataFrame(data,
-                      columns=[
-                          '学校名称', '专业名称', '招生计划', '年份', '位次号', '录取分数', '选考科目',
-                          '选考科目标准'
-                      ])
-    filename = hashlib.md5(str(info).encode()).hexdigest() + ".xlsx"
-    out = io.BytesIO()
-    writer = pd.ExcelWriter(out, engine='openpyxl')
-    df.to_excel(excel_writer=writer, sheet_name='志愿信息', index=False)
-    writer.close()
-    response = make_response(out.getvalue())
-    response.headers[
-        "Content-Disposition"] = "attachment; filename*=utf-8''{}".format(
-            filename)
-    response.headers["Content-type"] = "application/x-xlsx"
-    return response
+                db.or_(Must.include.contains(i) for i in info["sort"].split(" ")))
+        if page:
+            result = result.offset((page - 1) * 50).limit(50)
+        result = result.all()
+        for i in result:
+            session["my"].append(i[0].mid)
+    session["my"] = list(set(session["my"]))
+    return "success"
