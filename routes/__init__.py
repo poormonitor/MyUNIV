@@ -10,6 +10,8 @@ from .AddTag import add_tag_bp
 from .Score import score_bp
 from .Help import help_bp
 from .Excel import excel_bp
+from .MyMajor import my_major_bp
+from .AddMyMajor import add_my_major_bp
 
 
 def init_app(app):
@@ -22,6 +24,8 @@ def init_app(app):
     app.register_blueprint(score_bp)
     app.register_blueprint(help_bp)
     app.register_blueprint(excel_bp)
+    app.register_blueprint(my_major_bp)
+    app.register_blueprint(add_my_major_bp)
     app.register_blueprint(add_data_bp, url_prefix='/admin')
     app.register_blueprint(add_user_bp, url_prefix='/admin')
     app.register_blueprint(add_tag_bp, url_prefix='/admin')

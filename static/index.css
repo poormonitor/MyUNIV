@@ -46,3 +46,9 @@
 .content {
     opacity: 1;
 }
+
+.my-major {
+    width: 2.5em;
+    height: 2em;
+    padding: 0 0.25em;
+}

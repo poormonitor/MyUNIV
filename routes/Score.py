@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from func import login_required
+from func import login_required_ajax
 from models import db
 from models.Rank import Rank
 
@@ -7,7 +7,7 @@ score_bp = Blueprint('Score', __name__)
 
 
 @score_bp.route('/score', methods=['POST'])
-@login_required
+@login_required_ajax
 def score():
     year = int(request.form["exyear"])
     score = int(request.form["score"])

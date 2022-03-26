@@ -101,7 +101,7 @@ def query():
     result = result.outerjoin(
         Must,
         db.and_(Must.sid == Major.sid, Major.mname.contains(Must.mname),
-                Must.year == info["standard"]))
+                Must.year == info["standard"])).group_by(Major.mid)
     if "province" in request.args and request.args["province"] != "":
         province = info["province"] = list(
             map(int, request.args.getlist("province")))
