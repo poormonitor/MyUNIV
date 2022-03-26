@@ -48,6 +48,19 @@ def query():
     if "rank_range" in request.args and request.args["rank_range"] != "":
         rank_range = int(request.args["rank_range"])
         info["rank_range"] = rank_range
+    if "rank" in request.args and request.args["rank"] != "":
+        rank = int(request.args["rank"])
+        if not info["rank_range"]:
+            result = result.filter(Rank.rank >= rank).filter(Rank.rank != 0)
+            result = result.order_by(db.func.abs(Rank.rank).asc())
+        else:
+            result = result.filter(
+                rank - info["rank_range"] <= Rank.rank,
+                Rank.rank <= rank + info["rank_range"]).filter(Rank.rank != 0)
+            result = result.order_by(db.func.abs(Rank.rank - rank).asc())
+        info["rank"] = rank
+    else:
+        result = result.order_by(Univ.sid.asc())
     if "accordation" in request.args and request.args["accordation"] == "1":
         info["accordation"] = 1
     if "mymust" in request.args and request.args["mymust"] != "":
@@ -65,19 +78,6 @@ def query():
         info["mymust"] = list(map(int, list(mymust)))
         what_i_can = get_what_i_can_choose(mymust)
         result = result.filter(Must.must.in_(what_i_can))
-    if "rank" in request.args and request.args["rank"] != "":
-        rank = int(request.args["rank"])
-        if not info["rank_range"]:
-            result = result.filter(Rank.rank >= rank).filter(Rank.rank != 0)
-            result = result.order_by(db.func.abs(Rank.rank).asc())
-        else:
-            result = result.filter(
-                rank - info["rank_range"] <= Rank.rank,
-                Rank.rank <= rank + info["rank_range"]).filter(Rank.rank != 0)
-            result = result.order_by(db.func.abs(Rank.rank - rank).asc())
-        info["rank"] = rank
-    else:
-        result = result.order_by(Univ.sid.asc())
     if "utags" in request.args and request.args["utags"] != "":
         utags = list(map(int, request.args.getlist("utags")))
         utags.sort()
