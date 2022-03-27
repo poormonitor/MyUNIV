@@ -252,9 +252,13 @@
         <li class="page-item">
             <a class="page-link" href="{{ string[3] }}">{{ page + 1 }}</a>
         </li>
+        {% endif %}
+        {% if page < cnt - 2 %}
         <li class="page-item disabled" aria-current="page">
             <span class="page-link">...</span>
         </li>
+        {% endif %}
+        {% if page < cnt - 1 %}
         <li class="page-item">
             <a class="page-link" href="{{ string[4] }}">{{ cnt }}</a>
         </li>

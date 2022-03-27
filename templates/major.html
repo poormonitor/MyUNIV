@@ -11,15 +11,15 @@
 <div class="img-building pt-3 pb-3 ps-4 mb-3">
     <div class="w-50">
         <h2>
-            <span>
+            <span class="me-2">
                 {{ major.mname }}
             </span>
             {% if major.mid not in session['my'] %}
-            <button onclick='addMyMajor("{{ major.mid }}", this)' type="button" class="ms-2 btn btn-primary">
+            <button onclick='addMyMajor("{{ major.mid }}", this)' type="button" class="btn btn-sm btn-primary">
                 添加备选
             </button>
             {% else %}
-            <button onclick='deleteMyMajor("{{ major.mid }}", this)' type="button" class="ms-2 btn btn-danger">
+            <button onclick='deleteMyMajor("{{ major.mid }}", this)' type="button" class="btn btn-sm btn-danger">
                 删除备选
             </button>
             {% endif %}
