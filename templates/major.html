@@ -10,7 +10,20 @@
 </style>
 <div class="img-building pt-3 pb-3 ps-4 mb-3">
     <div class="w-50">
-        <h2>{{ major.mname }}</h2>
+        <h2>
+            <span>
+                {{ major.mname }}
+            </span>
+            {% if major.mid not in session['my'] %}
+            <button onclick='addMyMajor("{{ major.mid }}", this)' type="button" class="ms-2 btn btn-primary">
+                添加备选
+            </button>
+            {% else %}
+            <button onclick='deleteMyMajor("{{ major.mid }}", this)' type="button" class="ms-2 btn btn-danger">
+                删除备选
+            </button>
+            {% endif %}
+        </h2>
         <h4>{{ univ.uname }}</h4>
     </div>
 </div>
@@ -91,7 +104,7 @@
         },
         tooltip: {
             trigger: 'axis',
-            formatter: function(params) {
+            formatter: function (params) {
                 var text = '--'
                 if (params && params.length) {
                     text = params[0].data[0]
@@ -118,6 +131,7 @@
         }]
     };
     totalChart.setOption(totalChartoption);
+
     var rankChart = echarts.init(document.getElementById('rank'));
     var rankChartdata = JSON.parse('{{ rank|safe }}');
     rankChartoption = {
@@ -133,7 +147,7 @@
         },
         tooltip: {
             trigger: 'axis',
-            formatter: function(params) {
+            formatter: function (params) {
                 var text = '--'
                 if (params && params.length) {
                     text = params[0].data[0]
@@ -160,9 +174,35 @@
         }]
     };
     rankChart.setOption(rankChartoption);
-    window.onresize = function() {
+    window.onresize = function () {
         totalChart.resize();
         rankChart.resize();
     };
+
+    function addMyMajor(id, self) {
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", {
+            mid: id,
+            action: "id"
+        }, function (data, status) {
+            if (data == "success") {
+                $(self).removeClass("btn-primary").addClass("btn-danger");
+                $(self).attr("onclick", "deleteMyMajor(" + id + ", this)");
+                $(self).text("删除备选")
+            }
+        });
+    }
+
+    function deleteMyMajor(id, self) {
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", {
+            mid: id,
+            action: "delete"
+        }, function (data, status) {
+            if (data == "success") {
+                $(self).removeClass("btn-danger").addClass("btn-primary");
+                $(self).attr("onclick", "addMyMajor(" + id + ", this)");
+                $(self).text("添加备选")
+            }
+        });
+    }
 </script>
 {% endblock %}

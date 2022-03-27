@@ -13,7 +13,7 @@
 </div>
 <div class="table-responsive">
     <table class="table table-striped" id="resultTable">
-        <thead>
+        <thead class="text-nowrap">
             <tr>
                 <th>学校名称</th>
                 <th>专业名称</th>
@@ -29,8 +29,12 @@
         <tbody>
             {% for i, item in result %}
             <tr id="resultRow">
-                <td class="text-nowrap"><a href="{{ url_for('Univ.univ', sid=item[1].sid) }}" target="_blank">{{ item[1].uname }}</a></td>
-                <td><a href="{{ url_for('Major.major', mid=item[0].mid) }}" target="_blank">{{ item[0].mname }}</a></td>
+                <td class="text-nowrap">
+                    <a href="{{ url_for('Univ.univ', sid=item[1].sid) }}" target="_blank">{{ item[1].uname }}</a>
+                </td>
+                <td class="text-nowrap">
+                    <a href="{{ url_for('Major.major', mid=item[0].mid) }}" target="_blank">{{ item[0].mname }}</a>
+                </td>
                 <td>{{ item[2].schedule }}</td>
                 <td>{{ item[2].year }}</td>
                 <td>{{ item[2].rank }}</td>
