@@ -95,11 +95,13 @@
             <input type="text" class="form-control" id="sort" name="sort" value="{{ request['sort'] }}">
         </div>
         <div class="col-md-2">
-            <label for="rank" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
-                title="搜索的位次号。需配合区间使用。">位次号
+            <label for="rank" class="form-label">
+                <span data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="搜索的位次号。需配合区间使用。">位次号</span>
                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exRank">
                     分数转换
-                </button></label>
+                </button>
+            </label>
             <input type="text" class="form-control" id="rank" name="rank" value="{{ request['rank'] }}">
         </div>
         <div class="col-md-2">
