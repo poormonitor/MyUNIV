@@ -137,7 +137,7 @@ def findResult(page, info):
         result = result.filter(condition)
     if info["nutags"]:
         ncondition = db.not_(
-            db.and_(Univ.utags.like("%," + str(i) + ",%") for i in nutags))
+            db.and_(Univ.utags.like("%," + str(i) + ",%") for i in info["nutags"]))
         result = result.filter(ncondition)
     result = result.outerjoin(
         Must,
