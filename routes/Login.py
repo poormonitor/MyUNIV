@@ -18,7 +18,7 @@ def login():
             "2": "参数错误",
             "3": "账号不存在"
         }[error] if error else None
-        return render_template('login.html',
+        return render_template('login.html.j2',
                                csrf=session["csrf"],
                                nonce=session["nonce"],
                                error=error)

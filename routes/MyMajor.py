@@ -26,7 +26,7 @@ def mymajor():
     result = result.all()
     musts = [(get_must_string(i[3].must), i[3].year) if i[3] else ""
              for i in result]
-    return render_template('mymajor.html',
+    return render_template('mymajor.html.j2',
                            result=enumerate(result),
                            cnt=len(result),
                            musts=musts)

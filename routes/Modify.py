@@ -17,7 +17,7 @@ def modify():
             error = {"1": "原密码错误"}[request.args["error"]]
         session['csrf'] = os.urandom(16).hex()
         mymust = list(map(int, list(str(session["must"]))))
-        return render_template('modify.html',
+        return render_template('modify.html.j2',
                                csrf=session["csrf"],
                                error=error,
                                must_string=enumerate(majors[1:]),

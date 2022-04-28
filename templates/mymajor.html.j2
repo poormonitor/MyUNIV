@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}备选专业{% endblock %} {% block content %}
+{% extends "base.html.j2" %} {% block title %}备选专业{% endblock %} {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-icons.css') }}">
 <div class="mb-2">
     <span>共计有<b id="cnt">{{ cnt }}</b>个结果。</span>

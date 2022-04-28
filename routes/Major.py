@@ -37,7 +37,7 @@ def major(mid: int):
     totals = json.dumps(totals)
     rank = [[str(i.year), i.rank] for i in ranks]
     rank = json.dumps(rank)
-    return render_template('major.html',
+    return render_template('major.html.j2',
                            major=major,
                            ranks=ranks,
                            tags=tags,

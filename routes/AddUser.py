@@ -30,7 +30,7 @@ def adduser():
             str(url_for('AddUser.adduser', page=i, **info))
             for i in (1, page - 1, page, page + 1, cnt)
         ]
-        return render_template('adduser.html',
+        return render_template('adduser.html.j2',
                                csrf=session["csrf"],
                                users=users,
                                cnt=cnt,

@@ -12,4 +12,4 @@ def index():
         Rank.year).order_by(Rank.year.asc()).all()
     totals = [[str(i[0]), i[1]] for i in totals]
     totals = json.dumps(totals)
-    return render_template('index.html', total=totals)
+    return render_template('index.html.j2', total=totals)

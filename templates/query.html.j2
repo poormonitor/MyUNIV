@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}查询{% endblock %} {% block content %}
+{% extends "base.html.j2" %} {% block title %}查询{% endblock %} {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-select.min.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-icons.css') }}">
 <div class="modal fade" id="exRank" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
@@ -234,35 +234,37 @@
 </div>
 <nav aria-label="navigation" class="mt-2">
     <ul class="pagination justify-content-center">
-        {% if page > 2 %}
+        {% if page > 3 %}
         <li class="page-item">
             <a class="page-link" href="{{ string[0] }}">1</a>
         </li>
+        {% endif %}
+        {% if page > 4 %}
         <li class="page-item disabled" aria-current="page">
             <span class="page-link">...</span>
         </li>
         {% endif %}
-        {% if page != 1 %}
+
+        {% for i in range(5) %}
+        {% if 0 < page + i - 2 < cnt + 1 %}
+        {% if i == 2 %}
+        <li class="page-item active">
+        {% else %}
         <li class="page-item">
-            <a class="page-link" href="{{ string[1] }}">{{ page - 1 }}</a>
+        {% endif%}
+            <a class="page-link" href="{{ string[i + 1] }}">{{ page + i - 2 }}</a>
         </li>
         {% endif %}
-        <li class="page-item active" aria-current="page">
-            <span class="page-link" href="{{ string[2] }}" id="page-now">{{ page }}</span>
-        </li>
-        {% if page != cnt %}
-        <li class="page-item">
-            <a class="page-link" href="{{ string[3] }}">{{ page + 1 }}</a>
+        {% endfor %}
+
+        {% if page < cnt - 3 %}
+        <li class="page-item disabled" aria-current="page">
+            <span class="page-link">...</span>
         </li>
         {% endif %}
         {% if page < cnt - 2 %}
-        <li class="page-item disabled" aria-current="page">
-            <span class="page-link">...</span>
-        </li>
-        {% endif %}
-        {% if page < cnt - 1 %}
         <li class="page-item">
-            <a class="page-link" href="{{ string[4] }}">{{ cnt }}</a>
+            <a class="page-link" href="{{ string[6] }}">{{ cnt }}</a>
         </li>
         {% endif %}
     </ul>

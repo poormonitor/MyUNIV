@@ -10,7 +10,7 @@ add_data_bp = Blueprint('AddData', __name__)
 def adddata():
     if request.method == "GET":
         session['csrf'] = os.urandom(16).hex()
-        return render_template('adddata.html', csrf=session["csrf"])
+        return render_template('adddata.html.j2', csrf=session["csrf"])
     if not valid_csrf():
         return redirect(url_for('AddData.adddata'))
     year = int(request.form["year"])

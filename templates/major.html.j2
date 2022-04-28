@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}专业信息{% endblock %} {% block content %}
+{% extends "base.html.j2" %} {% block title %}专业信息{% endblock %} {% block content %}
 <style>
     .img-building {
         border-radius: 30px;
@@ -72,6 +72,7 @@
                 <tr>
                     <th>年份</th>
                     <th>位次号</th>
+                    <th>分数线</th>
                     <th>计划人数</th>
                 </tr>
             </thead>
@@ -80,6 +81,7 @@
                 <tr>
                     <td>{{ i.year }}</td>
                     <td>{{ i.rank }}</td>
+                    <td>{{ i.score }}</td>
                     <td>{{ i.schedule }}</td>
                 </tr>
                 {% endfor %}

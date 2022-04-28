@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}学校信息{% endblock %} {% block content %}
+{% extends "base.html.j2" %} {% block title %}学校信息{% endblock %} {% block content %}
 <h2>{{ univ.uname }}</h2>
 <div id="tags">
     {% for tag in tags %}
@@ -76,6 +76,7 @@
                                     <th>年份</th>
                                     <th>专业</th>
                                     <th>位次号</th>
+                                    <th>分数线</th>
                                     <th>计划人数</th>
                                 </tr>
                             </thead>
@@ -85,6 +86,7 @@
                                     <td>{{ j[1].year }}</td>
                                     <td><a href="{{ url_for('Major.major', mid=j[0].mid) }}">{{ j[0].mname }}</a></td>
                                     <td>{{ j[1].rank }}</td>
+                                    <td>{{ j[1].score }}</td>
                                     <td>{{ j[1].schedule }}</td>
                                 </tr>
                                 {% endfor %}

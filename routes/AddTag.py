@@ -14,7 +14,7 @@ def addtag():
     if request.method == "GET":
         session['csrf'] = os.urandom(16).hex()
         return render_template(
-            'addtag.html',
+            'addtag.html.j2',
             csrf=session["csrf"],
         )
     if not valid_csrf():
