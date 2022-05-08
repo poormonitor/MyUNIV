@@ -69,8 +69,7 @@ def query():
             Must.year.desc()).first()) else ""
         info["standard"] = last_year_must
     if "province" in request.args and request.args["province"] != "":
-        province = info["province"] = list(
-            map(int, request.args.getlist("province")))
+        info["province"] = list(map(int, request.args.getlist("province")))
     if "sort" in request.args and request.args["sort"] != "":
         info["sort"] = request.args["sort"]
     count, result, rank_year_available, must_year_available = findResult(
@@ -102,20 +101,29 @@ def query():
 @hash_dict
 @lru_cache(128)
 def findResult(page, info):
-    result = db.session.query(Major, Univ, Rank, Must)
+
+    if not info["mymust"] and not info["sort"]:
+        result = db.session.query(Rank.rmid)
+    else:
+        result = db.session.query(Major, Univ, Rank, Must)
+
+    result = result.select_from(Rank)
     result = result.outerjoin(Major, Major.mid == Rank.mid)
     result = result.outerjoin(Univ, Univ.sid == Major.sid)
+
     if info["school"]:
         for i in info["school"].split(" "):
             result = result.filter(Univ.uname.like("%" + i + "%"))
+
     if info["major"]:
         result = result.filter(Major.mname.like("%" + info["major"] + "%"))
     result = result.filter(Rank.year == info["year"])
+
     if info["rank"]:
         rank = info["rank"]
         if not info["rank_range"]:
             result = result.filter(Rank.rank >= rank).filter(Rank.rank != 0)
-            result = result.order_by(db.func.abs(Rank.rank).asc())
+            result = result.order_by(Rank.rank.asc())
         else:
             result = result.filter(
                 rank - info["rank_range"] <= Rank.rank,
@@ -123,6 +131,7 @@ def findResult(page, info):
             result = result.order_by(db.func.abs(Rank.rank - rank).asc())
     else:
         result = result.order_by(Univ.sid.asc())
+
     if info["mymust"]:
         mymust = "".join(map(str, info["mymust"]))
         result = result.order_by(Must.must.desc())
@@ -131,32 +140,70 @@ def findResult(page, info):
         else:
             what_i_can = get_what_i_can_choose(mymust)
         result = result.filter(Must.must.in_(what_i_can))
+
     if info["utags"]:
         condition = db.or_(
             Univ.utags.like("%," + str(i) + ",%") for i in info["utags"])
         result = result.filter(condition)
+
     if info["nutags"]:
         ncondition = db.not_(
-            db.and_(Univ.utags.like("%," + str(i) + ",%") for i in info["nutags"]))
+            db.and_(
+                Univ.utags.like("%," + str(i) + ",%") for i in info["nutags"]))
         result = result.filter(ncondition)
-    result = result.outerjoin(
-        Must,
-        db.and_(Must.sid == Major.sid, Major.mname.contains(Must.mname),
-                Must.year == info["standard"])).group_by(Major.mid)
+
     if info["province"]:
         result = result.filter(Univ.province.in_(info["province"]))
+
     if info["sort"]:
         result = result.filter(
             db.or_(Must.include.contains(i) for i in info["sort"].split(" ")))
-    count = result.count()
-    result = result.offset((page - 1) * 50).limit(50).all()
+
+    if not info["mymust"] and not info["sort"]:
+        count = result.count()
+        res = result.offset((page - 1) * 50).limit(50)
+        result = db.session.query(Major, Univ, Rank, Must)
+        result = result.select_from(Rank)
+        result = result.outerjoin(Major, Major.mid == Rank.mid)
+        result = result.outerjoin(Univ, Univ.sid == Major.sid)
+        result = result.filter(Rank.rmid.in_(res.subquery().select()))
+
+        if info["rank"]:
+            if not info["rank_range"]:
+                result = result.order_by(Rank.rank.asc())
+            else:
+                result = result.order_by(db.func.abs(Rank.rank - rank).asc())
+        else:
+            result = result.order_by(Univ.sid.asc())
+        if info["mymust"]:
+            result = result.order_by(Must.must.desc())
+
+    result = result.outerjoin(
+        Must,
+        db.and_(
+            Must.sid == Major.sid,
+            db.or_(Major.mname.contains(Must.mname),
+                   Must.mname.contains(Major.mname)),
+            Must.year == info["standard"]))
+
+    result = result.group_by(Major.mid)
+
+    if not info["mymust"] and not info["sort"]:
+        result = result.all()
+    else:
+        count = result.count()
+        result = result.offset((page - 1) * 50).limit(50).all()
+
     db.session.expunge_all()
+
     rank_year_available = [
         i.year for i in Rank.query.group_by(Rank.year).order_by(
             Rank.year.desc()).all()
     ]
+
     must_year_available = [
         i.year for i in Must.query.group_by(Must.year).order_by(
             Must.year.desc()).all()
     ]
+
     return count, result, rank_year_available, must_year_available
