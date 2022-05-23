@@ -183,9 +183,9 @@ def findResult(page, info):
         db.and_(
             Must.sid == Major.sid,
             db.or_(Major.mname.contains(Must.mname),
-                   Must.mname.contains(Major.mname)),
+                   Must.mname.contains(Major.mname),
+                   Must.include.contains(Major.mname)),
             Must.year == info["standard"]))
-
     result = result.group_by(Major.mid)
 
     if not info["mymust"] and not info["sort"]:

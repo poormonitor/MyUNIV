@@ -1,5 +1,6 @@
 {% extends "base.html.j2" %} {% block title %}学校信息{% endblock %} {% block content %}
-<h2>{{ univ.uname }}</h2>
+<h2 class="mb-1">{{ univ.uname }}</h2>
+<h5 class="mb-3">{{ province }}</h5>
 <div id="tags">
     {% for tag in tags %}
     <span class="badge bg-primary">{{ tag }}</span> {% endfor %}

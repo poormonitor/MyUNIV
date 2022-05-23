@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template
 from func import login_required, get_must_string
+from const import provinces
 from models import db
 from models.Major import Major
 from models.Univ import Univ
@@ -45,10 +46,12 @@ def univ(sid: int):
     totals = json.dumps(totals)
     rank = [[str(i[0]), max(j[1].rank for j in i[1])] for i in ranks.items()]
     rank = json.dumps(rank)
+    province = provinces[univ.province]
     return render_template('univ.html.j2',
                            univ=univ,
                            ranks=ranks,
                            musts=musts,
                            tags=tags,
                            total=totals,
-                           rank=rank)
+                           rank=rank,
+                           province=province)
