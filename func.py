@@ -179,3 +179,25 @@ def freezeDict(dict):
         i[0]: tuple(i[1]) if isinstance(i[1], list) else i[1]
         for i in dict.items()
     }
+
+
+def unifyBracket(st):
+    return st.replace("（", "(").replace("）", ")")
+
+
+def findNearestMust(major, year):
+    from models.Must import Must
+    from models.Major import Major
+    from models import db
+
+    result = db.session.query(Must, Major)
+    result = result.outerjoin(Must, Must.sid == Major.sid)
+    result = result.filter(Major.mid == int(major.mid))
+    result = result.filter(
+        db.or_(Major.mname == Must.mname, Major.mname.contains(Must.mname),
+               Must.mname.contains(Major.mname),
+               Must.include.contains(Major.mname)))
+    result = result.order_by(db.func.abs(Must.year - year).asc())
+    result = result.order_by(db.func.length(Must.mname).desc())
+    result = result.first()
+    return result[0] if result else None

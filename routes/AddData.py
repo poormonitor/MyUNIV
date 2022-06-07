@@ -1,5 +1,5 @@
 from flask import Blueprint, redirect, render_template, session, request, url_for
-from func import valid_csrf, admin_required
+from func import valid_csrf, admin_required, unifyBracket
 import os
 
 add_data_bp = Blueprint('AddData', __name__)
@@ -38,7 +38,8 @@ def process_excel(xlsx, year):
         tags = {i.tname: i.tid for i in Tag.query.all()}
         for i in data.values:
             univ_name = get_school_name(i[1])
-            major = i[3]
+            univ_name = unifyBracket(univ_name)
+            major = unifyBracket(i[3])
             schedule = i[4]
             score = i[5]
             rank = i[6] if i[6] == i[6] else 0
@@ -85,8 +86,9 @@ def process_excel(xlsx, year):
         for i in data.values:
             province = i[0]
             univ_name = get_school_name(i[1])
-            major = i[2]
-            include = i[3] if i[3] == i[3] else ""
+            univ = unifyBracket(univ_name)
+            major = unifyBracket(i[2])
+            include = unifyBracket(i[3]) if i[3] == i[3] else ""
             must = int("".join(
                 [str(majors.index(j)) for j in i[5].split("(")[0].split(",")]))
             if must != 0:

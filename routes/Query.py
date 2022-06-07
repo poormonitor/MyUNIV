@@ -5,7 +5,7 @@ from models.Tag import Tag
 from models.Must import Must
 from models import db
 from flask import Blueprint, render_template, url_for, request, session
-from func import login_required, get_what_i_can_choose, get_must_string, get_what_i_can_choose_most, hash_dict, freezeDict
+from func import login_required, get_what_i_can_choose, get_must_string, get_what_i_can_choose_most, hash_dict, freezeDict, findNearestMust
 from const import majors, provinces
 from functools import lru_cache
 
@@ -99,7 +99,7 @@ def query():
 
 
 @hash_dict
-@lru_cache(128)
+@lru_cache(512)
 def findResult(page, info):
 
     if not info["mymust"] and not info["sort"]:
@@ -182,7 +182,7 @@ def findResult(page, info):
         Must,
         db.and_(
             Must.sid == Major.sid,
-            db.or_(Major.mname.contains(Must.mname),
+            db.or_(Major.mname == Must.mname, Major.mname.contains(Must.mname),
                    Must.mname.contains(Major.mname),
                    Must.include.contains(Major.mname)),
             Must.year == info["standard"]))
@@ -193,6 +193,12 @@ def findResult(page, info):
     else:
         count = result.count()
         result = result.offset((page - 1) * 50).limit(50).all()
+
+    result = [
+        i if i[3] else
+        (i[0], i[1], i[2], findNearestMust(i[0], info["standard"]))
+        for i in result
+    ]
 
     db.session.expunge_all()
 
