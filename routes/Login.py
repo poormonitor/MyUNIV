@@ -25,7 +25,7 @@ def login():
     uid = request.form['uid']
     passwd = request.form['passwd']
     csrf = request.form['csrf']
-    nonce = session["nonce"]
+    nonce = session.get("nonce", "")
     result = User.query.filter_by(uid=uid).first()
     if not result:
         return redirect(url_for('Login.login', error=3))
