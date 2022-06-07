@@ -37,7 +37,8 @@ def login():
     session["name"] = result.name
     session["admin"] = result.admin
     session["must"] = result.must
-    session["my"] = []
+    session["my"] = list(map(
+        int, result.mymajor.split(","))) if result.mymajor else []
     # update last login
     result.last_login = db.func.now()
     db.session.commit()

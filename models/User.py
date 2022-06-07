@@ -12,6 +12,7 @@ class User(db.Model):
     passwd = db.Column(db.String(64), nullable=False)
     last_login = db.Column(db.DateTime, nullable=True)
     must = db.Column(db.Integer, nullable=True)
+    mymajor = db.Column(db.Text, nullable=True, default="")
 
     def __repr__(self):
         return '<User %r>' % self.uid

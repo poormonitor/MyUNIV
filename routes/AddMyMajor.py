@@ -4,6 +4,7 @@ from models.Major import Major
 from models.Univ import Univ
 from models.Rank import Rank
 from models.Must import Must
+from models.User import User
 from models import db
 
 add_my_major_bp = Blueprint('AddMyMajor', __name__)
@@ -12,16 +13,18 @@ add_my_major_bp = Blueprint('AddMyMajor', __name__)
 @add_my_major_bp.route('/my/add', methods=['GET'])
 @login_required_ajax
 def addmymajor():
+    my = session["my"]
     if request.args.get("action") == "id":
         id = int(request.args.get("mid"))
-        session["my"].append(id)
+        my.append(id)
     elif request.args.get("action") == "delete":
         id = int(request.args.get("mid"))
-        session["my"].remove(id)
+        my.remove(id)
     elif request.args.get("action") == "del":
-        session["my"] = []
+        my = []
     elif request.args.get("action") == "query":
-        page = int(request.args.get("page")) if "page" in request.args else None
+        page = int(
+            request.args.get("page")) if "page" in request.args else None
         last_year = a.year if (a := db.session.query(
             Rank.year).distinct().order_by(Rank.year.desc()).first()) else ""
         result = db.session.query(Major, Univ, Rank, Must)
@@ -75,12 +78,14 @@ def addmymajor():
         if "rank" in request.args and request.args["rank"] != "":
             rank = int(request.args["rank"])
             if not info["rank_range"]:
-                result = result.filter(Rank.rank >= rank).filter(Rank.rank != 0)
+                result = result.filter(Rank.rank >= rank).filter(
+                    Rank.rank != 0)
                 result = result.order_by(db.func.abs(Rank.rank).asc())
             else:
                 result = result.filter(
                     rank - info["rank_range"] <= Rank.rank,
-                    Rank.rank <= rank + info["rank_range"]).filter(Rank.rank != 0)
+                    Rank.rank <= rank + info["rank_range"]).filter(
+                        Rank.rank != 0)
                 result = result.order_by(db.func.abs(Rank.rank - rank).asc())
             info["rank"] = rank
         else:
@@ -116,11 +121,14 @@ def addmymajor():
         if "sort" in request.args and request.args["sort"] != "":
             info["sort"] = request.args["sort"]
             result = result.filter(
-                db.or_(Must.include.contains(i) for i in info["sort"].split(" ")))
+                db.or_(
+                    Must.include.contains(i) for i in info["sort"].split(" ")))
         if page:
             result = result.offset((page - 1) * 50).limit(50)
         result = result.all()
         for i in result:
-            session["my"].append(i[0].mid)
-    session["my"] = list(set(session["my"]))
+            my.append(i[0].mid)
+    session["my"] = my
+    my = ",".join(list(map(str, list(set(my)))))
+    User.query.filter_by(uid=session["uid"]).update({"mymajor": my})
     return "success"

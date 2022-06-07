@@ -5,6 +5,7 @@ from models.Univ import Univ
 from models.Tag import Tag
 from models.Rank import Rank
 from models.Must import Must
+from models.User import User
 from models import db
 import json
 
@@ -20,8 +21,12 @@ def mymajor():
     result = result.filter(Major.mid.in_(mymajor))
     result = result.outerjoin(Univ, Univ.sid == Major.sid)
     result = result.outerjoin(
-        Must, db.and_(Must.sid == Major.sid,
-                      Major.mname.contains(Must.mname))).group_by(Major.mid)
+        Must,
+        db.and_(
+            Must.sid == Major.sid,
+            db.or_(Major.mname == Must.mname, Major.mname.contains(Must.mname),
+                   Must.mname.contains(Major.mname),
+                   Must.include.contains(Major.mname)))).group_by(Major.mid)
     result = result.order_by(Rank.score.desc())
     result = result.all()
     musts = [(get_must_string(i[3].must), i[3].year) if i[3] else ""
