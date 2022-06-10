@@ -24,18 +24,20 @@ def modify():
                                mymust=mymust)
     if not valid_csrf():
         return redirect(url_for('Modify.modify'))
-    type = request.form['action']
-    if type == "password":
+    tp = request.form['action']
+    if tp == "password":
         result = User.query.filter_by(uid=session['uid']).first()
         old_password = request.form['old_password']
         new_password = request.form['new_password']
         if result.passwd != old_password:
             return redirect(url_for('Modify.modify', error="1"))
         result.passwd = new_password
-    elif type == "must":
+        session["notice"] = "密码修改成功"
+    elif tp == "must":
         result = User.query.filter_by(uid=session['uid']).first()
         result.must = int("".join(request.form.getlist("mymust"))) if "mymust" in request.form else 0
         session["must"] = result.must
         db.session.flush()
+        session["notice"] = "选考科目修改成功"
     db.session.commit()
     return redirect(url_for('Index.index'))

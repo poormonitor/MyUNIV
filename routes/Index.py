@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, session
 from models.Rank import Rank
 from models import db
 import json
@@ -12,4 +12,6 @@ def index():
         Rank.year).order_by(Rank.year.asc()).all()
     totals = [[str(i[0]), i[1]] for i in totals]
     totals = json.dumps(totals)
-    return render_template('index.html.j2', total=totals)
+    notice = session.get("notice", None)
+    session["notice"] = ""
+    return render_template('index.html.j2', total=totals, notice=notice)

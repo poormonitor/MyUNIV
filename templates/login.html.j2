@@ -2,12 +2,17 @@
 {% block title %}登录{% endblock %}
 {% block content %}
 <div class="row">
-    <div class="col-lg-4 box-shadow">
+    <div class="col-lg-4 box-shadow py-4 px-5">
         <br />
         <h2 class="center ud-margin">登录</h2>
         {% if error %}
         <div class="alert alert-danger m-3 center" role="alert">
             <strong>{{ error }}</strong>
+        </div>
+        {% endif %}
+        {% if suc %}
+        <div class="alert alert-success m-3 center" role="alert">
+            <strong>{{ suc }}</strong>
         </div>
         {% endif %}
         <div id="form">
@@ -28,6 +33,7 @@
                 <input type="hidden" name="csrf" value="{{ csrf }}">
                 <div class="center">
                     <button type="submit" class="btn btn-primary">登录</button>
+                    <a class='btn btn-info' href="{{ url_for('Reg.reg') }}">注册</a>
                 </div>
             </form>
         </div>

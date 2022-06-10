@@ -35,6 +35,18 @@ def login_required(f):
     return wrap
 
 
+def not_login_required(f):
+
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if islogin():
+            return redirect(url_for('Login.login'))
+        else:
+            return f(*args, **kwargs)
+
+    return wrap
+
+
 def login_required_ajax(f):
 
     @wraps(f)
@@ -42,7 +54,7 @@ def login_required_ajax(f):
         if islogin():
             return f(*args, **kwargs)
         else:
-            return "Not Login"
+            return "not logged in"
 
     return wrap
 
@@ -52,9 +64,9 @@ def admin_required_ajax(f):
     @wraps(f)
     def wrap(*args, **kwargs):
         if not islogin():
-            return "Not Login"
+            return "not logged in"
         elif not isadmin():
-            return "Not Admin"
+            return "not admin"
         else:
             return f(*args, **kwargs)
 

@@ -36,4 +36,5 @@ def addtag():
             utags.append(str(tag_id))
             a.utags = "," + ",".join(utags) + ","
     db.session.commit()
+    session["notice"] = "标签添加成功"
     return redirect(url_for('Index.index'))

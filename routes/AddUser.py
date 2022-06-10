@@ -69,7 +69,7 @@ def adduser():
                 a.must = int(items[1])
                 db.session.flush()
     elif typ == "del":
-        user = request.form.get("users")
+        user = request.form.get("user")
         if (a := User.query.filter_by(uid=user).first()) is not None:
             db.session.delete(a)
         db.session.commit()

@@ -34,8 +34,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
-                    onclick='exRank()'>确定</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick='exRank()'>确定</button>
             </div>
         </div>
     </div>
@@ -96,8 +95,7 @@
         </div>
         <div class="col-md-2">
             <label for="rank" class="form-label">
-                <span data-bs-toggle="tooltip" data-bs-placement="top"
-                    title="搜索的位次号。需配合区间使用。">位次号</span>
+                <span data-bs-toggle="tooltip" data-bs-placement="top" title="搜索的位次号。需配合区间使用。">位次号</span>
                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exRank">
                     分数转换
                 </button>
@@ -127,15 +125,20 @@
     <div class="row g-3">
         <div class="col-md-7">
             <label for="must">选考科目</label>
+            <a class="btn btn-primary btn-sm" href='javascript:setOption()'>
+                勾选我的
+            </a>
             <div class="mt-2" id="must">
                 {% for i,e in must_string %}
                 <div class="form-check form-check-inline">
-                    <label class="form-check-label" for="must{{ i + 1 }}">{{ e }}</label> {% if i + 1 in info["mymust"]
-                    %}
+                    <label class="form-check-label" for="must{{ i + 1 }}">{{ e }}</label> 
+                    {% if i + 1 in info["mymust"] %}
                     <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}"
-                        value="{{ i + 1 }}" checked> {% else %}
+                        value="{{ i + 1 }}" checked>
+                    {% else %}
                     <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}"
-                        value="{{ i + 1 }}"> {% endif %}
+                        value="{{ i + 1 }}">
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
@@ -178,7 +181,7 @@
     {% if count <= 1000 %}
     <a href="{{ url_for('Excel.excel', **info) }}" class="btn btn-sm btn-outline-secondary">导出为Excel</a>
     {% endif %}
-    {%if count <= 100 %} 
+    {%if count <= 100 %}
     <a href="#" onclick="addAll(this)" class="btn btn-sm btn-outline-secondary">结果加入备选</a>
     {% endif %}
     <a href="#" onclick="addThisPage(this)" class="btn btn-sm btn-outline-secondary">本页加入备选</a>
@@ -249,9 +252,9 @@
         {% if 0 < page + i - 2 < cnt + 1 %}
         {% if i == 2 %}
         <li class="page-item active">
-        {% else %}
+            {% else %}
         <li class="page-item">
-        {% endif%}
+            {% endif%}
             <a class="page-link" href="{{ string[i + 1] }}">{{ page + i - 2 }}</a>
         </li>
         {% endif %}
@@ -270,11 +273,49 @@
     </ul>
 </nav>
 <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
-{% endblock %} {% block script %}
+{% endblock %}
+{% block script %}
 <script src="{{ url_for('static', filename='bootstrap-select.min.js') }}"></script>
 <script src="{{ url_for('static', filename='defaults-zh_CN.js') }}"></script>
+<script src="{{ url_for('static', filename='sweetalert.min.js') }}"></script>
 <script>
+    function loggedInOnly() {
+        var logged = JSON.parse("{{ 'true' if 'uid' in session else 'false' }}");
+        if (!logged) {
+            swal({
+                title: "尚未登陆",
+                text: "该功能仅限登录用户！",
+                icon: "info",
+                buttons: {
+                    cancel: "取消",
+                    catch: {
+                        text: "去登录",
+                        value: "login",
+                    },
+                }
+            }).then((value) => {
+                if (value == "login") {
+                    window.location.href = "{{ url_for('Login.login') }}";
+                }
+            })
+            return false
+        } else {
+            return true
+        }
+    }
+
+    function setOption() {
+        if (!loggedInOnly()) { return; }
+        var mymust = JSON.parse("{{ info['mymust'] }}");
+        $("input.musts").prop("checked", false)
+        for (var i = 0; i < mymust.length; i++) {
+            var id = mymust[i]
+            $("input.musts#must" + id).prop("checked", true)
+        }
+    }
+
     function addMyMajor(id, self) {
+        if (!loggedInOnly()) { return; }
         $.get("{{ url_for('AddMyMajor.addmymajor') }}", {
             mid: id,
             action: "id"
@@ -288,6 +329,7 @@
     }
 
     function deleteMyMajor(id, self) {
+        if (!loggedInOnly()) { return; }
         $.get("{{ url_for('AddMyMajor.addmymajor') }}", {
             mid: id,
             action: "delete"
@@ -314,6 +356,7 @@
     }
 
     function addThisPage(self) {
+        if (!loggedInOnly()) { return; }
         var data = $("form#queryForm").serializeArray();
         var page = $("span#page-now").text();
         data.push({
@@ -335,6 +378,7 @@
     }
 
     function addAll(self) {
+        if (!loggedInOnly()) { return; }
         var data = $("form#queryForm").serializeArray();
         data.push({
             name: "action",

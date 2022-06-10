@@ -84,4 +84,15 @@
         myChart.resize();
     };
 </script>
+{% if notice %}
+<script src="{{ url_for('static', filename='sweetalert.min.js') }}"></script>
+<script>
+    swal({
+        title: "成功",
+        text: "{{ notice }}",
+        icon: "success",
+        timer: 2000
+    });
+</script>
+{% endif %}
 {% endblock %}

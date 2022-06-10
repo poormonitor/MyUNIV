@@ -16,6 +16,7 @@ def adddata():
     year = int(request.form["year"])
     xlsx = request.files['xlsx']
     process_excel(xlsx, year)
+    session["notice"] = "数据导入成功"
     return redirect(url_for('Index.index'))
 
 

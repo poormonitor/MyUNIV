@@ -18,10 +18,13 @@ def login():
             "2": "参数错误",
             "3": "账号不存在"
         }[error] if error else None
+        suc = request.args.get('suc', None)
+        suc = {"1": "账号注册成功"}[suc] if suc else None
         return render_template('login.html.j2',
                                csrf=session["csrf"],
                                nonce=session["nonce"],
-                               error=error)
+                               error=error,
+                               suc=suc)
     uid = request.form['uid']
     passwd = request.form['passwd']
     csrf = request.form['csrf']

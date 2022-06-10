@@ -13,7 +13,6 @@ query_bp = Blueprint('Query', __name__)
 
 
 @query_bp.route('/query', methods=['GET'])
-@login_required
 def query():
     last_year = a.year if (a := db.session.query(
         Rank.year).distinct().order_by(Rank.year.desc()).first()) else ""
@@ -51,9 +50,6 @@ def query():
     if "mymust" in request.args and request.args["mymust"] != "":
         mymust = request.args.getlist("mymust")
         info["mymust"] = list(map(int, mymust))
-    elif "must" in session and session["must"] != 0:
-        mymust = str(session["must"])
-        info["mymust"] = list(map(int, list(mymust)))
     if "utags" in request.args and request.args["utags"] != "":
         utags = list(map(int, request.args.getlist("utags")))
         utags.sort()
