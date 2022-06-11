@@ -1,6 +1,23 @@
 {% extends "base.html.j2" %} {% block title %}学校信息{% endblock %} {% block content %}
-<h2 class="mb-1">{{ univ.uname }}</h2>
-<h5 class="mb-3">{{ province }}</h5>
+<style>
+    .img-luxun {
+        border-radius: 30px;
+        background: url("{{ url_for('static', filename='luxun.jpg') }}") no-repeat 100% 48%/ cover;
+        color: #fff;
+        word-break: break-all;
+        line-break: strict;
+    }
+</style>
+<div class="img-luxun pt-3 pb-3 ps-4 mb-3">
+    <div class="w-50">
+        <h2>
+            <span class="me-2">
+                {{ univ.uname }}
+            </span>
+        </h2>
+        <h5>{{ province }}</h5>
+    </div>
+</div>
 <div id="tags">
     {% for tag in tags %}
     <span class="badge bg-primary">{{ tag }}</span> {% endfor %}
