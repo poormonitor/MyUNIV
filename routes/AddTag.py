@@ -34,6 +34,7 @@ def addtag():
         utags = [i for i in a.utags.split(",") if i != ""]
         if tag_id not in utags:
             utags.append(str(tag_id))
+            utags = list(set(utags))
             a.utags = "," + ",".join(utags) + ","
     db.session.commit()
     session["notice"] = "标签添加成功"

@@ -44,9 +44,15 @@
                     <td>{{ i.name }}</td>
                     <td>{{ get_func(i.must) }}</td>
                     <td>
-                        <a id="admin-{{ i.uid }}" href="#" onclick='setAdmin("{{ i.uid }}")'>
-                            {{ "是" if i.admin else "否"}}
+                        {% if i.admin %}
+                        <a class="text-danger" id="admin-{{ i.uid }}" href='javascript:setAdmin("{{ i.uid }}")'>
+                            是
                         </a>
+                        {% else %}
+                        <a class="text-success" id="admin-{{ i.uid }}" href='javascript:setAdmin("{{ i.uid }}")'>
+                            否
+                        </a>
+                        {% endif %}
                     </td>
                     <td>
                         <a data-bs-toggle="offcanvas" onclick="editItem('{{ i.uid }}')" href="#EditPasswd" role="button"
@@ -55,7 +61,7 @@
                         </a>
                     </td>
                     <td>
-                        <a href="#" onclick='deleteUser("{{ i.uid }}")'>
+                        <a href='javascript:deleteUser("{{ i.uid }}")'>
                             删除
                         </a>
                     </td>
@@ -227,7 +233,10 @@
             }
         });
     }
+
     function setAdmin(uid) {
+        var Classes = ["text-success", "text-danger"]
+        var current = Classes.indexOf($("a#admin-" + uid).attr("class"))
         $.post("{{ url_for('AddUser.adduser') }}", {
             action: "set",
             user: uid,
@@ -235,9 +244,9 @@
         }, function (data, status) {
             if (status == "success") {
                 $("a#admin-" + uid).text(data);
+                $("a#admin-" + uid).attr("class", Classes[1 - current])
             }
         });
     }
 </script>
-
 {% endblock %}

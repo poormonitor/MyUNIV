@@ -2,12 +2,7 @@
 {% block title %}注册{% endblock %}
 {% block content %}
 <div class="row">
-    <div class="col-lg-5 col-xl-6">
-        <img title="Path" class="img-round mb-4 mt-4 img-fluid align-middle" src="{{ url_for('static', filename='path.jpg') }}">
-        <img title="Statue" class="img-round mb-4 mt-4 img-fluid align-middle" src="{{ url_for('static', filename='statue.jpg') }}">
-    </div>
-    <div class="col-lg-1"></div>
-    <div class="col-lg-6 col-xl-5 box-shadow">
+    <div class="col-lg-6 col-xl-5 offset-md-1 box-shadow order-lg-2">
         <br />
         <h2 class="center ud-margin">注册</h2>
         {% if error %}
@@ -55,10 +50,14 @@
                     <button type="submit" class="btn btn-primary">注册</button>
                 </div>
                 <div class='mt-3 text-center'>
-                    <span>已有账号？去<a href="{{ url_for('Reg.reg') }}">登录</a>！</span>
+                    <span>已有账号？去<a href="{{ url_for('Login.login') }}">登录</a>！</span>
                 </div>
             </form>
         </div>
+    </div>
+    <div class="col-lg-5 col-xl-6 order-lg-1">
+        <img title="Path" class="img-round mb-4 mt-4 img-fluid align-middle" src="{{ url_for('static', filename='path.jpg') }}">
+        <img title="Statue" class="img-round mb-4 mt-4 img-fluid align-middle" src="{{ url_for('static', filename='statue.jpg') }}">
     </div>
 </div>
 {% endblock %}

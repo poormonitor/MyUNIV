@@ -79,19 +79,19 @@
         </div>
         <div class="col-md-3">
             <label for="school" class="form-label">学校</label>
-            <input type="text" class="form-control" id="school" name="school" value="{{ request['school'] }}">
+            <input type="text" class="form-control" id="school" name="school" value="{{ info['school'] }}">
         </div>
     </div>
     <div class="row g-3">
         <div class="col-md-3">
             <label for="major" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
                 title="专业类的名称。这是招生时登记的专业名称。">专业</label>
-            <input type="text" class="form-control" id="major" name="major" value="{{ request['major'] }}">
+            <input type="text" class="form-control" id="major" name="major" value="{{ info['major'] }}">
         </div>
         <div class="col-md-3">
             <label for="sort" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
                 title="大专业下属的小专业。">专业细分</label>
-            <input type="text" class="form-control" id="sort" name="sort" value="{{ request['sort'] }}">
+            <input type="text" class="form-control" id="sort" name="sort" value="{{ info['sort'] }}">
         </div>
         <div class="col-md-2">
             <label for="rank" class="form-label">
@@ -100,13 +100,12 @@
                     分数转换
                 </button>
             </label>
-            <input type="text" class="form-control" id="rank" name="rank" value="{{ request['rank'] }}">
+            <input type="text" class="form-control" id="rank" name="rank" value="{{ info['rank'] }}">
         </div>
         <div class="col-md-2">
             <label for="rank_range" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
                 title="位次号允许的偏差区间。如1000意为筛选在前输入框中位次号前后1000名的专业。">区间</label>
-            <input type="text" class="form-control" id="rank_range" name="rank_range"
-                value="{{ request['rank_range'] }}">
+            <input type="text" class="form-control" id="rank_range" name="rank_range" value="{{ info['rank_range'] }}">
         </div>
         <div class="col-md-2">
             <label for="year" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -131,7 +130,7 @@
             <div class="mt-2" id="must">
                 {% for i,e in must_string %}
                 <div class="form-check form-check-inline">
-                    <label class="form-check-label" for="must{{ i + 1 }}">{{ e }}</label> 
+                    <label class="form-check-label" for="must{{ i + 1 }}">{{ e }}</label>
                     {% if i + 1 in info["mymust"] %}
                     <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}"
                         value="{{ i + 1 }}" checked>
@@ -182,10 +181,11 @@
     <a href="{{ url_for('Excel.excel', **info) }}" class="btn btn-sm btn-outline-secondary">导出为Excel</a>
     {% endif %}
     {%if count <= 100 %}
-    <a href="#" onclick="addAll(this)" class="btn btn-sm btn-outline-secondary">结果加入备选</a>
+    <a href="javascript:addAll(this)" class="btn btn-sm btn-outline-secondary">结果加入备选</a>
+    <a href="javascript:delAll(this)" class="btn btn-sm btn-outline-secondary">结果删除备选</a>
     {% endif %}
-    <a href="#" onclick="addThisPage(this)" class="btn btn-sm btn-outline-secondary">本页加入备选</a>
-    <span class="badge bg-success ms-2 visually-hidden">成功</span>
+    <a href="javascript:addThisPage(this)" class="btn btn-sm btn-outline-secondary">本页加入备选</a>
+    <a href="javascript:delThisPage(this)" class="btn btn-sm btn-outline-secondary">本页删除备选</a>
 </div>
 <div class="table-responsive">
     <table class="table table-striped text-nowrap" id="resultTable">
@@ -219,13 +219,13 @@
                 <td>{{ musts[i][1] }}</td>
                 <td>
                     {% if item[0].mid not in session['my'] %}
-                    <button onclick='addMyMajor("{{ item[0].mid }}", this)' type="button"
-                        class="btn btn-sm btn-primary my-major">
+                    <button onclick='addMyMajor(this)' type="button" class="btn btn-sm btn-primary my-major"
+                        data-id="{{ item[0].mid }}">
                         <i class="bi bi-plus-lg"></i>
                     </button>
                     {% else %}
-                    <button onclick='deleteMyMajor("{{ item[0].mid }}", this)' type="button"
-                        class="btn btn-sm btn-danger my-major">
+                    <button onclick='deleteMyMajor(this)' type="button" class="btn btn-sm btn-danger my-major"
+                        data-id="{{ item[0].mid }}">
                         <i class="bi bi-x-lg"></i>
                     </button>
                     {% endif %}
@@ -252,11 +252,17 @@
         {% if 0 < page + i - 2 < cnt + 1 %}
         {% if i == 2 %}
         <li class="page-item active">
-            {% else %}
-        <li class="page-item">
-            {% endif%}
-            <a class="page-link" href="{{ string[i + 1] }}">{{ page + i - 2 }}</a>
+            <a class="page-link" href="{{ string[i + 1] }}">
+                <span id='page-now'>{{ page + i - 2 }}</span>
+            </a>
         </li>
+        {% else %}
+        <li class="page-item">
+            <a class="page-link" href="{{ string[i + 1] }}">
+                <span>{{ page + i - 2 }}</span>
+            </a>
+        </li>
+        {% endif %}
         {% endif %}
         {% endfor %}
 
@@ -306,7 +312,7 @@
 
     function setOption() {
         if (!loggedInOnly()) { return; }
-        var mymust = JSON.parse("{{ info['mymust'] }}");
+        var mymust = "{{ mymust }}";
         $("input.musts").prop("checked", false)
         for (var i = 0; i < mymust.length; i++) {
             var id = mymust[i]
@@ -314,29 +320,31 @@
         }
     }
 
-    function addMyMajor(id, self) {
+    function addMyMajor(self) {
         if (!loggedInOnly()) { return; }
+        var id = $(self).attr("data-id")
         $.get("{{ url_for('AddMyMajor.addmymajor') }}", {
             mid: id,
             action: "id"
         }, function (data, status) {
             if (data == "success") {
                 $(self).removeClass("btn-primary").addClass("btn-danger");
-                $(self).attr("onclick", "deleteMyMajor(" + id + ", this)");
+                $(self).attr("onclick", "deleteMyMajor(this)");
                 $(self).children().first().attr("class", "bi bi-x-lg");
             }
         });
     }
 
-    function deleteMyMajor(id, self) {
+    function deleteMyMajor(self) {
         if (!loggedInOnly()) { return; }
+        var id = $(self).attr("data-id")
         $.get("{{ url_for('AddMyMajor.addmymajor') }}", {
             mid: id,
             action: "delete"
         }, function (data, status) {
             if (data == "success") {
                 $(self).removeClass("btn-danger").addClass("btn-primary");
-                $(self).attr("onclick", "addMyMajor(" + id + ", this)");
+                $(self).attr("onclick", "addMyMajor(this)");
                 $(self).children().first().attr("class", "bi bi-plus-lg");
             }
         });
@@ -369,10 +377,46 @@
         });
         $.get("{{ url_for('AddMyMajor.addmymajor') }}", data, function (data, status) {
             if (status == "success") {
-                $(self).siblings(".visually-hidden").removeClass("visually-hidden");
+                swal({
+                    title: "成功",
+                    text: "添加页面至备选成功！",
+                    icon: "success",
+                    timer: 1000
+                })
                 $(".my-major").removeClass("btn-primary").addClass("btn-danger");
                 $(".my-major").attr("onclick", "deleteMyMajor(this)");
                 $(".my-major").children().attr("class", "bi bi-x-lg");
+            }
+        });
+    }
+
+    function delThisPage(self) {
+        if (!loggedInOnly()) { return; }
+        var data = $("form#queryForm").serializeArray();
+        var page = $("span#page-now").text();
+        data.push({
+            name: "page",
+            value: page
+        });
+        data.push({
+            name: "action",
+            value: "query"
+        });
+        data.push({
+            name: "del",
+            value: 1
+        });
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", data, function (data, status) {
+            if (status == "success") {
+                swal({
+                    title: "成功",
+                    text: "删除页面备选成功！",
+                    icon: "success",
+                    timer: 1000
+                })
+                $(".my-major").removeClass("btn-danger").addClass("btn-primary");
+                $(".my-major").attr("onclick", "addMyMajor(this)");
+                $(".my-major").children().attr("class", "bi bi-plus-lg");
             }
         });
     }
@@ -386,10 +430,41 @@
         });
         $.get("{{ url_for('AddMyMajor.addmymajor') }}", data, function (data, status) {
             if (status == "success") {
-                $(self).siblings(".visually-hidden").removeClass("visually-hidden");
+                swal({
+                    title: "成功",
+                    text: "添加所有结果至备选成功！",
+                    icon: "success",
+                    timer: 1000
+                })
                 $(".my-major").removeClass("btn-primary").addClass("btn-danger");
                 $(".my-major").attr("onclick", "deleteMyMajor(this)");
-                $(".my-major").children().first().attr("class", "bi bi-x-lg");
+                $(".my-major").children().attr("class", "bi bi-x-lg");
+            }
+        });
+    }
+
+    function delAll(self) {
+        if (!loggedInOnly()) { return; }
+        var data = $("form#queryForm").serializeArray();
+        data.push({
+            name: "action",
+            value: "query",
+        });
+        data.push({
+            name: "del",
+            value: 1
+        })
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", data, function (data, status) {
+            if (status == "success") {
+                swal({
+                    title: "成功",
+                    text: "删除所有结果备选成功！",
+                    icon: "success",
+                    timer: 1000
+                })
+                $(".my-major").removeClass("btn-danger").addClass("btn-primary");
+                $(".my-major").attr("onclick", "addMyMajor(this)");
+                $(".my-major").children().attr("class", "bi bi-plus-lg");
             }
         });
     }

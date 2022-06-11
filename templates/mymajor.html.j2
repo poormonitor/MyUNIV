@@ -1,15 +1,49 @@
 {% extends "base.html.j2" %} {% block title %}备选专业{% endblock %} {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-select.min.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-icons.css') }}">
-<div class="mb-2">
-    <span>共计有<b id="cnt">{{ cnt }}</b>个结果。</span>
-    <a href="{{ url_for('Excel.excel', my='1') }}" class="btn btn-sm btn-outline-secondary">
-        导出为Excel
-    </a>
-    {% if cnt > 0 %}
-    <a href="#" onclick="deleteAllMyMajor()" class="btn btn-sm btn-outline-secondary">
-        删除所有
-    </a>
-    {% endif %}
+<div class="row">
+    <div class="col-md-4 my-auto">
+        <span class="my-auto">共计有<b id="cnt">{{ cnt }}</b>个结果。</span>
+        <a href="javascript:downloadExcel()" class="btn btn-sm btn-outline-secondary">
+            导出为Excel
+        </a>
+        {% if cnt > 0 %}
+        <a href="javascript:deleteAllMyMajor()" class="btn btn-sm btn-outline-secondary">
+            删除所有
+        </a>
+        {% endif %}
+    </div>
+    <form class="col-md-8 row form-inline">
+        <div class="col-md-5 form-inline">
+            <label for="standard" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="浙江省教育考试院公布的选考科目标准的年份。2024及以后参加高考学生适用2024标准，2020-2023参加高考学生适用2020标准。">选考科目标准</label>
+            <select class="selectpicker form-control" id="standard" name="standard">
+                {% for i in must_standard %}
+                {% if i == standard %}
+                <option value="{{ i }}" selected>{{ i }}</option>
+                {% else %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-5 form-inline">
+            <label for="year" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="投档位次号的年份。">投档数据年份</label>
+            <select class="selectpicker form-control" id="year" name="year">
+                {% for i in rank_years %}
+                {% if i == year %}
+                <option value="{{ i }}" selected>{{ i }}</option>
+                {% else %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="submit" class="btn btn-primary" val="Go">
+        </div>
+    </form>
 </div>
 <div class="table-responsive">
     <table class="table table-striped text-nowrap" id="resultTable">
@@ -74,5 +108,16 @@
             }
         });
     }
+
+    function downloadExcel() {
+        var standard = $("#standard").val()
+        var year = $("#year").val()
+        window.location.href = "{{ url_for('Excel.excel', my='1') }}&standard=" + standard + "&year=" + year
+    }
 </script>
+<script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+{% endblock %}
+{% block script %}
+<script src="{{ url_for('static', filename='bootstrap-select.min.js') }}"></script>
+<script src="{{ url_for('static', filename='defaults-zh_CN.js') }}"></script>
 {% endblock %}

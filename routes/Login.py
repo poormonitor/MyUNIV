@@ -8,6 +8,11 @@ login_bp = Blueprint('Login', __name__)
 
 @login_bp.route('/login', methods=['POST', 'GET'])
 def login():
+    if "uid" in session:
+        if (url := session.pop('referer', None)):
+            return redirect(url_for(url[0], **url[1]))
+        return redirect(url_for('Index.index'))
+
     if request.method == 'GET':
         import os
         session["nonce"] = os.urandom(16).hex()
@@ -25,6 +30,7 @@ def login():
                                nonce=session["nonce"],
                                error=error,
                                suc=suc)
+                               
     uid = request.form['uid']
     passwd = request.form['passwd']
     csrf = request.form['csrf']
@@ -45,6 +51,8 @@ def login():
     # update last login
     result.last_login = db.func.now()
     db.session.commit()
+    if (url := session.pop('referer', None)):
+        return redirect(url_for(url[0], **url[1]))
     return redirect(url_for('Index.index'))
 
 

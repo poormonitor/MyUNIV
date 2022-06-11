@@ -1,5 +1,5 @@
 from flask import session, request, redirect, url_for
-from functools import wraps
+from functools import wraps, lru_cache
 
 
 def islogin():
@@ -30,6 +30,7 @@ def login_required(f):
         if islogin():
             return f(*args, **kwargs)
         else:
+            session['referer'] = (request.endpoint, request.view_args)
             return redirect(url_for('Login.login'))
 
     return wrap
@@ -40,7 +41,7 @@ def not_login_required(f):
     @wraps(f)
     def wrap(*args, **kwargs):
         if islogin():
-            return redirect(url_for('Login.login'))
+            return redirect(url_for('Login.logout'))
         else:
             return f(*args, **kwargs)
 
@@ -213,3 +214,122 @@ def findNearestMust(major, year):
     result = result.order_by(db.func.length(Must.mname).desc())
     result = result.first()
     return result[0] if result else None
+
+
+@hash_dict
+@lru_cache(512)
+def findResult(page, info):
+    from models.Major import Major
+    from models.Univ import Univ
+    from models.Rank import Rank
+    from models.Tag import Tag
+    from models.Must import Must
+    from models import db
+
+    if not info["mymust"] and not info["sort"]:
+        result = db.session.query(Rank.rmid)
+    else:
+        result = db.session.query(Major, Univ, Rank, Must)
+
+    result = result.select_from(Rank)
+    result = result.outerjoin(Major, Major.mid == Rank.mid)
+    result = result.outerjoin(Univ, Univ.sid == Major.sid)
+
+    if info["school"]:
+        for i in info["school"].split(" "):
+            result = result.filter(Univ.uname.like("%" + i + "%"))
+
+    if info["major"]:
+        result = result.filter(Major.mname.like("%" + info["major"] + "%"))
+    result = result.filter(Rank.year == info["year"])
+
+    if info["rank"]:
+        rank = info["rank"]
+        if not info["rank_range"]:
+            result = result.filter(Rank.rank >= rank).filter(Rank.rank != 0)
+            result = result.order_by(Rank.rank.asc())
+        else:
+            result = result.filter(
+                rank - info["rank_range"] <= Rank.rank,
+                Rank.rank <= rank + info["rank_range"]).filter(Rank.rank != 0)
+            result = result.order_by(db.func.abs(Rank.rank - rank).asc())
+    else:
+        result = result.order_by(Univ.sid.asc())
+
+    if info["mymust"]:
+        mymust = "".join(map(str, info["mymust"]))
+        result = result.order_by(Must.must.desc())
+        if info["accordation"]:
+            what_i_can = get_what_i_can_choose_most(mymust)
+        else:
+            what_i_can = get_what_i_can_choose(mymust)
+        result = result.filter(Must.must.in_(what_i_can))
+
+    if info["utags"]:
+        condition = db.or_(
+            Univ.utags.like("%," + str(i) + ",%") for i in info["utags"])
+        result = result.filter(condition)
+
+    if info["nutags"]:
+        ncondition = db.not_(
+            db.and_(
+                Univ.utags.like("%," + str(i) + ",%") for i in info["nutags"]))
+        result = result.filter(ncondition)
+
+    if info["province"]:
+        result = result.filter(Univ.province.in_(info["province"]))
+
+    if info["sort"]:
+        result = result.filter(
+            db.or_(Must.include.contains(i) for i in info["sort"].split(" ")))
+
+    if not info["mymust"] and not info["sort"]:
+        count = result.count()
+        if page:
+            res = result.offset((page - 1) * 50).limit(50)
+        else:
+            res = result
+        result = db.session.query(Major, Univ, Rank, Must)
+        result = result.select_from(Rank)
+        result = result.outerjoin(Major, Major.mid == Rank.mid)
+        result = result.outerjoin(Univ, Univ.sid == Major.sid)
+        result = result.filter(Rank.rmid.in_(res.subquery().select()))
+
+        if info["rank"]:
+            if not info["rank_range"]:
+                result = result.order_by(Rank.rank.asc())
+            else:
+                result = result.order_by(db.func.abs(Rank.rank - rank).asc())
+        else:
+            result = result.order_by(Univ.sid.asc())
+        if info["mymust"]:
+            result = result.order_by(Must.must.desc())
+
+    result = result.outerjoin(
+        Must,
+        db.and_(
+            Must.sid == Major.sid,
+            db.or_(Major.mname == Must.mname, Major.mname.contains(Must.mname),
+                   Must.mname.contains(Major.mname),
+                   Must.include.contains(Major.mname)),
+            Must.year == info["standard"]))
+    result = result.group_by(Major.mid)
+
+    if not page:
+        count = result.count()
+        result = result.all()
+    elif not info["mymust"] and not info["sort"]:
+        result = result.all()
+    else:
+        count = result.count()
+        result = result.offset((page - 1) * 50).limit(50).all()
+
+    result = [
+        i if i[3] else
+        (i[0], i[1], i[2], findNearestMust(i[0], info["standard"]))
+        for i in result
+    ]
+
+    db.session.expunge_all()
+
+    return count, result
