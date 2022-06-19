@@ -72,6 +72,10 @@
     });
 
     function checkValid() {
+
+        var pwdRegex = new RegExp('(?=.*[0-9])(?=.*[a-zA-Z]).{8,30}');
+        var userRegex = new RegExp('^[A-Za-z_]{3,30}$');
+
         if ($('input.musts:checked').length != 3) {
             swal({
                 title: "选考科目错误",
@@ -81,6 +85,7 @@
             });
             return false
         }
+
         if ($('#passwd-fake').val() != $("#rp-passwd").val()) {
             swal({
                 title: "密码不一致",
@@ -90,6 +95,27 @@
             });
             return false
         }
+
+        if (!pwdRegex.test($("#rp-passwd").val())) {
+            swal({
+                title: "密码复杂度太低",
+                text: "密码中必须包含字母、数字，不少于8位且不多于30位",
+                icon: "error",
+                timer: 2000
+            });
+            return false
+        }
+
+        if (!userRegex.test($("#uid").val())) {
+            swal({
+                title: "请修改用户名",
+                text: "用户名必须由大小写字母、数字和下划线组成",
+                icon: "error",
+                timer: 2000
+            });
+            return false
+        }
+
         SubmitCheck()
         return true
     }
