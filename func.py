@@ -437,3 +437,71 @@ def process_excel(xlsx, year, bar=False):
                 a.include = include
             db.session.flush()
     db.session.commit()
+
+
+def stringSim(a, b):
+    from difflib import SequenceMatcher
+    return SequenceMatcher(None, a, b).quick_ratio()
+
+
+def findNearestMustInAll(name, sequence):
+    m = -1
+    res = None
+    for i in sequence:
+        temp = max([stringSim(name, i.mname)] +
+                   [stringSim(name, j) for j in i.include.split("、")])
+        if temp > m:
+            m = temp
+            res = i
+    return res
+
+
+@lru_cache(256)
+def findNearestMustInAllSchool(name, sequence):
+    for i in sequence:
+        temp = max([stringSim(name, i.mname)] +
+                   [stringSim(name, j) for j in i.include.split("、")])
+        if temp > 0.9:
+            return i
+    return None
+
+
+def connectMust(bar=False):
+    from models.Conn import Conn
+    from models.Major import Major
+    from models.Rank import Rank
+    from models.Must import Must
+    from models import db
+    from tqdm import tqdm
+    from itertools import groupby
+    allMajor = Major.query.all()
+    allMust = Must.query.all()
+    allMustByYearSchool = {
+        i: {k: [l for l in m]
+            for k, m in groupby(j, lambda x: x.sid)}
+        for i, j in groupby(allMust, lambda x: x.year)
+    }
+    allMustByYear = {
+        i: [k for k in j]
+        for i, j in groupby(allMust, lambda x: x.year)
+    }
+    must_years = [
+        i.year for i in Must.query.group_by(Must.year).order_by(
+            Must.year.desc()).all()
+    ]
+    for i in tqdm(allMajor) if bar else allMajor:
+        for j in must_years:
+            res = findNearestMustInAll(
+                i.mname,
+                allMustByYearSchool.get(j, []).get(i.sid, []))
+            if not res:
+                res = findNearestMustInAllSchool(i.mname,
+                                                 allMustByYear.get(j, []))
+            if not res:
+                continue
+            if (a := Conn.query.filter_by(mid=i.mid, year=j).first()) is None:
+                conn = Conn(i.mid, res.mmid, j)
+                db.session.add(conn)
+            elif a.mmid != res.mmid:
+                a.mmid = res.mmid
+    db.session.commit()
