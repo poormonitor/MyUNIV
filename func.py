@@ -206,26 +206,13 @@ def unifyBracket(st):
     return st.replace("（", "(").replace("）", ")")
 
 
+@lru_cache(256)
 def findNearestMust(major, year):
     from models.Must import Must
-    from models.Major import Major
-    from models import db
 
-    result = db.session.query(Must, Major)
-    result = result.outerjoin(Must, Must.sid == Major.sid)
-    result = result.filter(Major.mid == int(major.mid))
-    result = result.filter(
-        db.or_(
-            Major.mname == Must.mname,
-            Major.mname.contains(Must.mname),
-            Must.mname.contains(Major.mname),
-            Must.include.contains(Major.mname),
-        )
-    )
-    result = result.order_by(db.func.abs(Must.year - year).asc())
-    result = result.order_by(db.func.length(Must.mname).desc())
-    result = result.first()
-    return result[0] if result else None
+    allMust = Must.query.filter(Must.year == year).all()
+    result = findNearestMustInAll(major, year)
+    return result
 
 
 @hash_dict
@@ -308,7 +295,7 @@ def findResult(page, info):
         result = result.all()
 
     result = [
-        i if i[3] else (i[0], i[1], i[2], findNearestMust(i[0], info["standard"]))
+        i if i[3] else (i[0], i[1], i[2], findNearestMust(i[0].mname, info["standard"]))
         for i in result
     ]
 
