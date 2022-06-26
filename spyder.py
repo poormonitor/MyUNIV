@@ -1,9 +1,9 @@
 from bs4 import BeautifulSoup
 import pandas
 import requests
+from tqdm import tqdm
 
-df = pandas.DataFrame(
-    columns=['省份', '院校名称', '专业（类）名称', '类中所含专业', '层次', '选考科目要求'])
+df = pandas.DataFrame(columns=["省份", "院校名称", "专业（类）名称", "类中所含专业", "层次", "选考科目要求"])
 
 root = "http://zt.zjzs.net/xk2020/"
 response = requests.get(root + "allcollege.html")
@@ -11,7 +11,7 @@ response.encoding = "utf-8"
 bs = BeautifulSoup(response.text, "html5lib")
 tab = list(bs.find("table").find_all("tr"))[2:]
 last = "北京"
-for i in tab:
+for i in tqdm(tab):
     try:
         item = list(i.find_all("td"))
         province = item[0].text
@@ -33,7 +33,8 @@ for i in tab:
             include = "、".join(list(item[3].strings))
             new = pandas.DataFrame(
                 [[province, name, major, include, level, must]],
-                columns=['省份', '院校名称', '专业（类）名称', '类中所含专业', '层次', '选考科目要求'])
+                columns=["省份", "院校名称", "专业（类）名称", "类中所含专业", "层次", "选考科目要求"],
+            )
             df = pandas.concat([df, new])
         if province != last:
             print("%s %d" % (last, len(df)))

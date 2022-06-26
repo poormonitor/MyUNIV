@@ -1,21 +1,26 @@
-from models.Major import Major
-from models.Univ import Univ
 from models.Rank import Rank
 from models.Tag import Tag
 from models.Must import Must
 from models import db
 from flask import Blueprint, render_template, url_for, request, session
-from func import login_required, get_what_i_can_choose, get_must_string, get_what_i_can_choose_most, findResult, freezeDict
+from func import get_must_string, findResult, freezeDict
 from const import majors, provinces
-import json
 
-query_bp = Blueprint('Query', __name__)
+query_bp = Blueprint("Query", __name__)
 
 
-@query_bp.route('/query', methods=['GET'])
+@query_bp.route("/query", methods=["GET"])
 def query():
-    last_year = a.year if (a := db.session.query(
-        Rank.year).distinct().order_by(Rank.year.desc()).first()) else 0
+    last_year = (
+        a.year
+        if (
+            a := db.session.query(Rank.year)
+            .distinct()
+            .order_by(Rank.year.desc())
+            .first()
+        )
+        else 0
+    )
     page = int(request.args.get("page")) if "page" in request.args else 1
     info = {
         "rank": "",
@@ -31,7 +36,7 @@ def query():
         "mymust": [],
         "sort": "",
         "standard": "",
-        "accordation": 0
+        "accordation": 0,
     }
     if "school" in request.args and request.args["school"] != "":
         info["school"] = request.args["school"]
@@ -61,8 +66,9 @@ def query():
     if "standard" in request.args and request.args["standard"] != "":
         info["standard"] = int(request.args["standard"])
     if not info["standard"]:
-        last_year_must = a.year if (a := Must.query.order_by(
-            Must.year.desc()).first()) else 0
+        last_year_must = (
+            a.year if (a := Must.query.order_by(Must.year.desc()).first()) else 0
+        )
         info["standard"] = last_year_must
     if "province" in request.args and request.args["province"] != "":
         info["province"] = list(map(int, request.args.getlist("province")))
@@ -71,31 +77,30 @@ def query():
     count, result = findResult(page, freezeDict(info))
     cnt = count // 50 + 1
     rank_year_available = [
-        i.year for i in Rank.query.group_by(Rank.year).order_by(
-            Rank.year.desc()).all()
+        i.year for i in Rank.query.group_by(Rank.year).order_by(Rank.year.desc()).all()
     ]
     must_year_available = [
-        i.year for i in Must.query.group_by(Must.year).order_by(
-            Must.year.desc()).all()
+        i.year for i in Must.query.group_by(Must.year).order_by(Must.year.desc()).all()
     ]
-    musts = [(get_must_string(i[3].must), i[3].year) if i[3] else ""
-             for i in result]
+    musts = [(get_must_string(i[3].must), i[3].year) if i[3] else "" for i in result]
     urls = [
-        str(url_for('Query.query', page=i, **info))
+        str(url_for("Query.query", page=i, **info))
         for i in (1, page - 2, page - 1, page, page + 1, page + 2, cnt)
     ]
     all_tags = Tag.query.all()
-    return render_template('query.html.j2',
-                           result=enumerate(result),
-                           info=info,
-                           page=page,
-                           cnt=cnt,
-                           string=urls,
-                           provinces=provinces.items(),
-                           must_string=enumerate(majors[1:]),
-                           utags=all_tags,
-                           musts=musts,
-                           rank_years=rank_year_available,
-                           must_standard=must_year_available,
-                           count=count,
-                           mymust=session.get('must', ""))
+    return render_template(
+        "query.html.j2",
+        result=enumerate(result),
+        info=info,
+        page=page,
+        cnt=cnt,
+        string=urls,
+        provinces=provinces.items(),
+        must_string=enumerate(majors[1:]),
+        utags=all_tags,
+        musts=musts,
+        rank_years=rank_year_available,
+        must_standard=must_year_available,
+        count=count,
+        mymust=session.get("must", ""),
+    )

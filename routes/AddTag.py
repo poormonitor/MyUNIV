@@ -5,20 +5,20 @@ from models.Tag import Tag
 from models.Univ import Univ
 import os
 
-add_tag_bp = Blueprint('AddTag', __name__)
+add_tag_bp = Blueprint("AddTag", __name__)
 
 
-@add_tag_bp.route('/addtag', methods=['GET', 'POST'])
+@add_tag_bp.route("/addtag", methods=["GET", "POST"])
 @admin_required
 def addtag():
     if request.method == "GET":
-        session['csrf'] = os.urandom(16).hex()
+        session["csrf"] = os.urandom(16).hex()
         return render_template(
-            'addtag.html.j2',
+            "addtag.html.j2",
             csrf=session["csrf"],
         )
     if not valid_csrf():
-        return redirect(url_for('AddTag.addtag'))
+        return redirect(url_for("AddTag.addtag"))
     schools = request.form["schools"]
     tag = request.form["tag"]
     if (a := Tag.query.filter_by(tname=tag).first()) is None:
@@ -27,7 +27,7 @@ def addtag():
         db.session.flush()
     tag_id = a.tid
     for i in schools.splitlines():
-        i = get_school_name(i)
+        i, _ = get_school_name(i)
         i = unifyBracket(i)
         if (a := Univ.query.filter_by(uname=i).first()) is None:
             a = Univ(uname=i)
@@ -40,4 +40,4 @@ def addtag():
             a.utags = "," + ",".join(utags) + ","
     db.session.commit()
     session["notice"] = "标签添加成功"
-    return redirect(url_for('Index.index'))
+    return redirect(url_for("Index.index"))

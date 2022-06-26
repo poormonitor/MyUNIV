@@ -1,16 +1,18 @@
 from flask import Blueprint, session, request
-from func import get_what_i_can_choose, get_what_i_can_choose_most, login_required_ajax, findResult, freezeDict
-from models.Major import Major
-from models.Univ import Univ
+from func import (
+    login_required_ajax,
+    findResult,
+    freezeDict,
+)
 from models.Rank import Rank
 from models.Must import Must
 from models.User import User
 from models import db
 
-add_my_major_bp = Blueprint('AddMyMajor', __name__)
+add_my_major_bp = Blueprint("AddMyMajor", __name__)
 
 
-@add_my_major_bp.route('/my/add', methods=['GET'])
+@add_my_major_bp.route("/my/add", methods=["GET"])
 @login_required_ajax
 def addmymajor():
     my = session["my"]
@@ -23,10 +25,17 @@ def addmymajor():
     elif request.args.get("action") == "del":
         my = []
     elif request.args.get("action") == "query":
-        page = int(
-            request.args.get("page")) if "page" in request.args else None
-        last_year = a.year if (a := db.session.query(
-            Rank.year).distinct().order_by(Rank.year.desc()).first()) else 0
+        page = int(request.args.get("page")) if "page" in request.args else None
+        last_year = (
+            a.year
+            if (
+                a := db.session.query(Rank.year)
+                .distinct()
+                .order_by(Rank.year.desc())
+                .first()
+            )
+            else 0
+        )
         info = {
             "rank": "",
             "year": last_year,
@@ -41,7 +50,7 @@ def addmymajor():
             "mymust": [],
             "sort": "",
             "standard": "",
-            "accordation": 0
+            "accordation": 0,
         }
         if "school" in request.args and request.args["school"] != "":
             info["school"] = request.args["school"]
@@ -71,8 +80,9 @@ def addmymajor():
         if "standard" in request.args and request.args["standard"] != "":
             info["standard"] = int(request.args["standard"])
         if not info["standard"]:
-            last_year_must = a.year if (a := Must.query.order_by(
-                Must.year.desc()).first()) else 0
+            last_year_must = (
+                a.year if (a := Must.query.order_by(Must.year.desc()).first()) else 0
+            )
             info["standard"] = last_year_must
         if "province" in request.args and request.args["province"] != "":
             info["province"] = list(map(int, request.args.getlist("province")))

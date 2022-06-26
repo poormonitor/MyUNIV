@@ -74,7 +74,7 @@
     function checkValid() {
 
         var pwdRegex = new RegExp('(?=.*[0-9])(?=.*[a-zA-Z]).{8,30}');
-        var userRegex = new RegExp('^[A-Za-z_]{3,30}$');
+        var userRegex = new RegExp('^[0-9A-Za-z_]{3,30}$');
 
         if ($('input.musts:checked').length != 3) {
             swal({
@@ -109,7 +109,7 @@
         if (!userRegex.test($("#uid").val())) {
             swal({
                 title: "请修改用户名",
-                text: "用户名必须由大小写字母、数字和下划线组成",
+                text: "用户名由大小写字母、数字或下划线组成，不少于3位且不多于30位",
                 icon: "error",
                 timer: 2000
             });

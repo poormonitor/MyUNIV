@@ -17,31 +17,33 @@ def isadmin():
 
 
 def valid_csrf():
-    if "csrf" in session and session["csrf"] == request.form["csrf"]:
+    if (
+        "csrf" in session
+        and "csrf" in request.form
+        and session["csrf"] == request.form["csrf"]
+    ):
         return True
     else:
         return False
 
 
 def login_required(f):
-
     @wraps(f)
     def wrap(*args, **kwargs):
         if islogin():
             return f(*args, **kwargs)
         else:
-            session['referer'] = (request.endpoint, request.view_args)
-            return redirect(url_for('Login.login'))
+            session["referer"] = (request.endpoint, request.view_args)
+            return redirect(url_for("Login.login"))
 
     return wrap
 
 
 def not_login_required(f):
-
     @wraps(f)
     def wrap(*args, **kwargs):
         if islogin():
-            return redirect(url_for('Login.logout'))
+            return redirect(url_for("Login.logout"))
         else:
             return f(*args, **kwargs)
 
@@ -49,7 +51,6 @@ def not_login_required(f):
 
 
 def login_required_ajax(f):
-
     @wraps(f)
     def wrap(*args, **kwargs):
         if islogin():
@@ -61,7 +62,6 @@ def login_required_ajax(f):
 
 
 def admin_required_ajax(f):
-
     @wraps(f)
     def wrap(*args, **kwargs):
         if not islogin():
@@ -75,26 +75,34 @@ def admin_required_ajax(f):
 
 
 def admin_required(f):
-
     @wraps(f)
     def wrap(*args, **kwargs):
         if not islogin():
-            return redirect(url_for('Login.login'))
+            return redirect(url_for("Login.login"))
         elif not isadmin():
-            return redirect(url_for('Index.index'))
+            return redirect(url_for("Index.index"))
         else:
             return f(*args, **kwargs)
 
     return wrap
 
 
-def csrf_valid(f):
+def csrf_valid_if_post(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if request.method != "POST" or valid_csrf():
+            return f(*args, **kwargs)
+        return redirect(url_for("Index.index"))
 
+    return wrap
+
+
+def csrf_valid(f):
     @wraps(f)
     def wrap(*args, **kwargs):
         if valid_csrf():
             return f(*args, **kwargs)
-        return redirect(url_for('Index.Index'))
+        return redirect(url_for("Index.index"))
 
     return wrap
 
@@ -102,16 +110,21 @@ def csrf_valid(f):
 def get_school_name(name: str):
     import re
     from const import allow_tags
+
+    tags = []
     univ_name = name.split("(")[0]
-    tag = re.findall(r'(?<=[\(]).*?(?=[\)])', name)
+    tag = re.findall(r"(?<=[\(]).*?(?=[\)])", name)
     for j in tag:
         if j not in allow_tags:
             univ_name += "(" + j + ")"
-    return univ_name
+        else:
+            tags.append(j)
+    return univ_name, tags
 
 
 def get_what_i_can_choose(mymust: str) -> list:
     from itertools import combinations
+
     choices = [i for i in range(1, 8)]
     musts = list(map(int, list(mymust)))
     ans = ["0"]
@@ -127,6 +140,7 @@ def get_what_i_can_choose(mymust: str) -> list:
 
 def get_what_i_can_choose_most(mymust: str) -> list:
     from itertools import combinations
+
     choices = [i for i in range(1, 8)]
     musts = list(map(int, list(mymust)))
     ans = []
@@ -142,6 +156,7 @@ def get_what_i_can_choose_most(mymust: str) -> list:
 
 def get_must_string(now: int) -> str:
     from const import majors
+
     if not now:
         return majors[0]
     now = str(now)
@@ -154,6 +169,7 @@ def get_must_string(now: int) -> str:
 
 def get_mymust_string(now: int) -> str:
     from const import majors
+
     if not now:
         return ""
     now = str(now)
@@ -170,28 +186,20 @@ def hash_dict(func):
     """
 
     class HDict(dict):
-
         def __hash__(self):
             return hash(frozenset(self.items()))
 
     @wraps(func)
     def wrapped(*args, **kwargs):
-        args = tuple(
-            [HDict(arg) if isinstance(arg, dict) else arg for arg in args])
-        kwargs = {
-            k: HDict(v) if isinstance(v, dict) else v
-            for k, v in kwargs.items()
-        }
+        args = tuple([HDict(arg) if isinstance(arg, dict) else arg for arg in args])
+        kwargs = {k: HDict(v) if isinstance(v, dict) else v for k, v in kwargs.items()}
         return func(*args, **kwargs)
 
     return wrapped
 
 
 def freezeDict(dict):
-    return {
-        i[0]: tuple(i[1]) if isinstance(i[1], list) else i[1]
-        for i in dict.items()
-    }
+    return {i[0]: tuple(i[1]) if isinstance(i[1], list) else i[1] for i in dict.items()}
 
 
 def unifyBracket(st):
@@ -207,9 +215,13 @@ def findNearestMust(major, year):
     result = result.outerjoin(Must, Must.sid == Major.sid)
     result = result.filter(Major.mid == int(major.mid))
     result = result.filter(
-        db.or_(Major.mname == Must.mname, Major.mname.contains(Must.mname),
-               Must.mname.contains(Major.mname),
-               Must.include.contains(Major.mname)))
+        db.or_(
+            Major.mname == Must.mname,
+            Major.mname.contains(Must.mname),
+            Must.mname.contains(Major.mname),
+            Must.include.contains(Major.mname),
+        )
+    )
     result = result.order_by(db.func.abs(Must.year - year).asc())
     result = result.order_by(db.func.length(Must.mname).desc())
     result = result.first()
@@ -222,18 +234,18 @@ def findResult(page, info):
     from models.Major import Major
     from models.Univ import Univ
     from models.Rank import Rank
-    from models.Tag import Tag
+    from models.Conne import Conne
     from models.Must import Must
     from models import db
 
-    if not info["mymust"] and not info["sort"]:
-        result = db.session.query(Rank.rmid)
-    else:
-        result = db.session.query(Major, Univ, Rank, Must)
-
+    result = db.session.query(Major, Univ, Rank, Must, Conne)
     result = result.select_from(Rank)
     result = result.outerjoin(Major, Major.mid == Rank.mid)
     result = result.outerjoin(Univ, Univ.sid == Major.sid)
+    result = result.outerjoin(Conne, Conne.mid == Rank.mid)
+    result = result.outerjoin(
+        Must, db.and_(Conne.mmid == Must.mmid, Conne.year == Must.year)
+    )
 
     if info["school"]:
         for i in info["school"].split(" "):
@@ -241,6 +253,7 @@ def findResult(page, info):
 
     if info["major"]:
         result = result.filter(Major.mname.like("%" + info["major"] + "%"))
+
     result = result.filter(Rank.year == info["year"])
 
     if info["rank"]:
@@ -251,7 +264,8 @@ def findResult(page, info):
         else:
             result = result.filter(
                 rank - info["rank_range"] <= Rank.rank,
-                Rank.rank <= rank + info["rank_range"]).filter(Rank.rank != 0)
+                Rank.rank <= rank + info["rank_range"],
+            ).filter(Rank.rank != 0)
             result = result.order_by(db.func.abs(Rank.rank - rank).asc())
     else:
         result = result.order_by(Univ.sid.asc())
@@ -265,15 +279,17 @@ def findResult(page, info):
             what_i_can = get_what_i_can_choose(mymust)
         result = result.filter(Must.must.in_(what_i_can))
 
+    result = result.filter(Must.year == info["standard"])
+    result = result.group_by(Major.mid)
+
     if info["utags"]:
-        condition = db.or_(
-            Univ.utags.like("%," + str(i) + ",%") for i in info["utags"])
+        condition = db.or_(Univ.utags.like("%," + str(i) + ",%") for i in info["utags"])
         result = result.filter(condition)
 
     if info["nutags"]:
         ncondition = db.not_(
-            db.and_(
-                Univ.utags.like("%," + str(i) + ",%") for i in info["nutags"]))
+            db.and_(Univ.utags.like("%," + str(i) + ",%") for i in info["nutags"])
+        )
         result = result.filter(ncondition)
 
     if info["province"]:
@@ -281,52 +297,18 @@ def findResult(page, info):
 
     if info["sort"]:
         result = result.filter(
-            db.or_(Must.include.contains(i) for i in info["sort"].split(" ")))
+            db.or_(Must.include.contains(i) for i in info["sort"].split(" "))
+        )
 
-    if not info["mymust"] and not info["sort"]:
-        count = result.count()
-        if page:
-            res = result.offset((page - 1) * 50).limit(50)
-        else:
-            res = result
-        result = db.session.query(Major, Univ, Rank, Must)
-        result = result.select_from(Rank)
-        result = result.outerjoin(Major, Major.mid == Rank.mid)
-        result = result.outerjoin(Univ, Univ.sid == Major.sid)
-        result = result.filter(Rank.rmid.in_(res.subquery().select()))
+    count = result.count()
 
-        if info["rank"]:
-            if not info["rank_range"]:
-                result = result.order_by(Rank.rank.asc())
-            else:
-                result = result.order_by(db.func.abs(Rank.rank - rank).asc())
-        else:
-            result = result.order_by(Univ.sid.asc())
-        if info["mymust"]:
-            result = result.order_by(Must.must.desc())
-
-    result = result.outerjoin(
-        Must,
-        db.and_(
-            Must.sid == Major.sid,
-            db.or_(Major.mname == Must.mname, Major.mname.contains(Must.mname),
-                   Must.mname.contains(Major.mname),
-                   Must.include.contains(Major.mname)),
-            Must.year == info["standard"]))
-    result = result.group_by(Major.mid)
-
-    if not page:
-        count = result.count()
-        result = result.all()
-    elif not info["mymust"] and not info["sort"]:
-        result = result.all()
-    else:
-        count = result.count()
+    if page:
         result = result.offset((page - 1) * 50).limit(50).all()
+    else:
+        result = result.all()
 
     result = [
-        i if i[3] else
-        (i[0], i[1], i[2], findNearestMust(i[0], info["standard"]))
+        i if i[3] else (i[0], i[1], i[2], findNearestMust(i[0], info["standard"]))
         for i in result
     ]
 
@@ -335,7 +317,7 @@ def findResult(page, info):
     return count, result
 
 
-def process_excel(xlsx, year, bar=False):
+def process_excel(xlsx, year, delete=False):
     from models import db
     from models.Major import Major
     from models.Univ import Univ
@@ -343,25 +325,24 @@ def process_excel(xlsx, year, bar=False):
     from models.Tag import Tag
     from models.Rank import Rank
     from pandas import read_excel
-    from const import allow_tags, provinces, majors
+    from const import provinces, majors
     from func import get_school_name, unifyBracket
     from tqdm import tqdm
+    import os
     import re
+
     data = read_excel(xlsx)
     if "位次" in data.columns.tolist():
-        univs = {i.uname: i.sid for i in Univ.query.all()}
-        pattern = re.compile(r'(?<=[\(])(%s).*?(?=[\)])' %
-                             "|".join(allow_tags))
+        univs = {i.uname: [i.sid, i.utags] for i in Univ.query.all()}
         tags = {i.tname: i.tid for i in Tag.query.all()}
-        for i in tqdm(data.values) if bar else data.values:
-            univ_name = get_school_name(i[1])
-            univ_name = unifyBracket(univ_name)
+        for i in tqdm(data.values):
+            univ_name = unifyBracket(i[1])
+            univ_name, tag = get_school_name(univ_name)
             major = unifyBracket(i[3])
             schedule = i[4]
             score = i[5]
             rank = i[6] if i[6] == i[6] else 0
             if univ_name not in univs:
-                tag = pattern.findall(i[1])
                 tids = []
                 for j in tag:
                     if j not in tags:
@@ -373,74 +354,113 @@ def process_excel(xlsx, year, bar=False):
                     else:
                         tid = tags[j]
                     tids.append(tid)
-                tids = "," + ",".join(str(i) for i in tids) + ","
+                tids = "," + ",".join(str(i) for i in sorted(tids)) + ","
                 univ = Univ(uname=univ_name, utags=tids, province=0)
                 db.session.add(univ)
                 db.session.flush()
-                univs[univ_name] = univ.sid
-            univ_id = univs[univ_name]
-            if (b := Major.query.filter_by(sid=univ_id,
-                                           mname=major).first()) is None:
+                univs[univ_name] = [univ.sid, univ.utags]
+            elif (
+                "," + ",".join(str(tags.get(i, -1)) for i in tag) + ","
+                != univs[univ_name][1]
+            ):
+                tids = []
+                for j in tag:
+                    if j not in tags:
+                        t = Tag(tname=j)
+                        db.session.add(t)
+                        db.session.flush()
+                        tid = t.tid
+                        tags[j] = tid
+                    else:
+                        tid = tags[j]
+                    tids.append(tid)
+                tids = "," + ",".join(str(i) for i in sorted(tids)) + ","
+                univ = Univ.query.filter_by(sid=univs[univ_name][0]).first()
+                univ.utags = tids
+                db.session.flush()
+
+            univ_id = univs[univ_name][0]
+
+            if (b := Major.query.filter_by(sid=univ_id, mname=major).first()) is None:
                 b = Major(sid=univ_id, mname=major)
                 db.session.add(b)
                 db.session.flush()
-            if (a := db.session.query(Rank).filter(Rank.mid == b.mid, Rank.year
-                                                   == year).first()) is None:
+
+            if (
+                a := db.session.query(Rank)
+                .filter(Rank.mid == b.mid, Rank.year == year)
+                .first()
+            ) is None:
                 db.session.add(
-                    Rank(mid=b.mid,
-                         year=year,
-                         rank=rank,
-                         schedule=schedule,
-                         score=score))
+                    Rank(
+                        mid=b.mid, year=year, rank=rank, schedule=schedule, score=score
+                    )
+                )
                 db.session.flush()
             else:
                 a.rank = rank
                 a.schedule = schedule
                 a.score = score
                 db.session.flush()
+
     elif "选考科目要求" in data.columns.tolist():
-        univs = {i.uname: i.sid for i in Univ.query.all()}
-        for i in tqdm(data.values) if bar else data.values:
+        univs = {i.uname: [i.sid, i.province] for i in Univ.query.all()}
+        for i in tqdm(data.values):
             province = i[0]
-            univ_name = get_school_name(i[1])
-            univ = unifyBracket(univ_name)
+            univ_name = unifyBracket(i[1])
+            univ_name, _ = get_school_name(univ_name)
             major = unifyBracket(i[2])
             include = unifyBracket(i[3]) if i[3] == i[3] else ""
-            must = int("".join(
-                [str(majors.index(j)) for j in i[5].split("(")[0].split(",")]))
+            must = int(
+                "".join([str(majors.index(j)) for j in i[5].split("(")[0].split(",")])
+            )
             if must != 0:
                 must = int(re.search(r"\d+", i[5]).group(0) + str(must))
-            province_id = list(provinces.keys())[list(
-                provinces.values()).index(province)]
+            province_id = list(provinces.keys())[
+                list(provinces.values()).index(province)
+            ]
+
             if univ_name not in univs:
                 univ = Univ(uname=univ_name, province=province_id)
                 db.session.add(univ)
                 db.session.flush()
-                univ_id = univ.sid
-                univs[univ_name] = univ_id
-            else:
-                univ = db.session.query(Univ).filter(
-                    Univ.uname == univ_name).first()
+                univs[univ_name] = [univ.sid, univ.province]
+            elif univs[univ_name][1] != province:
+                univ = db.session.query(Univ).filter(Univ.uname == univ_name).first()
                 univ.province = province_id
-                univ_id = univ.sid
                 db.session.flush()
-            if (a := Must.query.filter_by(mname=major, sid=univ_id,
-                                          year=year).first()) is None:
+                univs[univ_name][1] = province_id
+
+            univ_id = univs[univ_name][0]
+
+            if (
+                a := Must.query.filter_by(mname=major, sid=univ_id, year=year).first()
+            ) is None:
                 db.session.add(
-                    Must(mname=major,
-                         year=year,
-                         sid=univ_id,
-                         must=must,
-                         include=include))
+                    Must(
+                        mname=major, year=year, sid=univ_id, must=must, include=include
+                    )
+                )
             else:
                 a.must = must
                 a.include = include
             db.session.flush()
+
+    if delete:
+        os.remove(xlsx)
     db.session.commit()
+
+
+def subString(needle, sequence):
+    for i in sequence:
+        if needle in i or i in needle:
+            return True
+    return False
 
 
 def stringSim(a, b):
     from difflib import SequenceMatcher
+
     return SequenceMatcher(None, a, b).quick_ratio()
 
 
@@ -448,59 +468,56 @@ def findNearestMustInAll(name, sequence):
     m = -1
     res = None
     for i in sequence:
-        temp = max([stringSim(name, i.mname)] +
-                   [stringSim(name, j) for j in i.include.split("、")])
+        temp = max(
+            [stringSim(name, i.mname)]
+            + [stringSim(name, j) for j in i.include.split("、")]
+        )
+        if subString(name, [i.mname] + list(i.include.split("、"))):
+            temp += 1
         if temp > m:
             m = temp
             res = i
     return res
 
 
-@lru_cache(256)
 def findNearestMustInAllSchool(name, sequence):
     for i in sequence:
-        temp = max([stringSim(name, i.mname)] +
-                   [stringSim(name, j) for j in i.include.split("、")])
+        temp = max(
+            [stringSim(name, i.mname)]
+            + [stringSim(name, j) for j in i.include.split("、")]
+        )
         if temp > 0.9:
             return i
     return None
 
 
-def connectMust(bar=False):
-    from models.Conn import Conn
+def connectMust():
+    from models.Conne import Conne
     from models.Major import Major
-    from models.Rank import Rank
     from models.Must import Must
     from models import db
     from tqdm import tqdm
     from itertools import groupby
+
     allMajor = Major.query.all()
     allMust = Must.query.all()
+    allMustByYear = {i: [k for k in j] for i, j in groupby(allMust, lambda x: x.year)}
     allMustByYearSchool = {
-        i: {k: [l for l in m]
-            for k, m in groupby(j, lambda x: x.sid)}
-        for i, j in groupby(allMust, lambda x: x.year)
+        i: {k: [l for l in m] for k, m in groupby(j, lambda x: x.sid)}
+        for i, j in allMustByYear.items()
     }
-    allMustByYear = {
-        i: [k for k in j]
-        for i, j in groupby(allMust, lambda x: x.year)
-    }
-    must_years = [
-        i.year for i in Must.query.group_by(Must.year).order_by(
-            Must.year.desc()).all()
-    ]
-    for i in tqdm(allMajor) if bar else allMajor:
+    must_years = list(allMustByYear.keys())
+    for i in tqdm(allMajor):
         for j in must_years:
             res = findNearestMustInAll(
-                i.mname,
-                allMustByYearSchool.get(j, []).get(i.sid, []))
+                i.mname, allMustByYearSchool.get(j, {}).get(i.sid, [])
+            )
             if not res:
-                res = findNearestMustInAllSchool(i.mname,
-                                                 allMustByYear.get(j, []))
+                res = findNearestMustInAllSchool(i.mname, allMustByYear.get(j, []))
             if not res:
                 continue
-            if (a := Conn.query.filter_by(mid=i.mid, year=j).first()) is None:
-                conn = Conn(i.mid, res.mmid, j)
+            if (a := Conne.query.filter_by(mid=i.mid, year=j).first()) is None:
+                conn = Conne(i.mid, res.mmid, j)
                 db.session.add(conn)
             elif a.mmid != res.mmid:
                 a.mmid = res.mmid
