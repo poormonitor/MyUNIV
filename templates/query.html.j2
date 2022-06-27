@@ -284,6 +284,7 @@
 <script src="{{ url_for('static', filename='bootstrap-select.min.js') }}"></script>
 <script src="{{ url_for('static', filename='defaults-zh_CN.js') }}"></script>
 <script src="{{ url_for('static', filename='sweetalert.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js.cookie.min.js') }}"></script>
 <script>
     function loggedInOnly() {
         var logged = JSON.parse("{{ 'true' if 'uid' in session else 'false' }}");
@@ -479,5 +480,18 @@
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     })
+
+    if (Cookies.get("agreement") != "true") {
+        swal({
+            title: "用前须知",
+            text: "本页面提供数据来自政府教育考试机构。\
+                    系统已经采取最佳可行算法自动处理相关数据，但仍可能存在必选科目匹配错误等信息有误情况。\
+                    本系统仅供辅助查询，请您以相关学校以及教育考试机构官方数据为准。\
+                    网站运营者不承担有关数据正确性的个别及连带责任。",
+            icon: "info",
+        }).then((onConfirm)=>{
+            Cookies.set("agreement", "true", {expires: 3650})
+        })
+    }
 </script>
 {% endblock %}
