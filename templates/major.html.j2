@@ -24,7 +24,11 @@
             </button>
             {% endif %}
         </h2>
-        <h4>{{ univ.uname }}</h4>
+        <span class="h4">
+            <a class="text-decoration-none text-white" href="{{ url_for('Univ.univ', sid=univ.sid) }}">
+                {{ univ.uname }}
+            </a>
+        </span>
     </div>
 </div>
 <div id="tags">

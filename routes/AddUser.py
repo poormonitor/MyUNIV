@@ -28,7 +28,7 @@ def adduser():
                 )
             )
         count = result.count()
-        cnt = count // 50 + 1
+        cnt = (count - 1) // 50 + 1 if count > 0 else 1
         users = result.offset((page - 1) * 50).limit(50).all()
         urls = [
             str(url_for("AddUser.adduser", page=i, **info))

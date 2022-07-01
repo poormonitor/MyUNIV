@@ -75,7 +75,7 @@ def query():
     if "sort" in request.args and request.args["sort"] != "":
         info["sort"] = request.args["sort"]
     count, result = findResult(page, freezeDict(info))
-    cnt = count // 50 + 1
+    cnt = (count - 1) // 50 + 1 if count > 0 else 1
     rank_year_available = [
         i.year for i in Rank.query.group_by(Rank.year).order_by(Rank.year.desc()).all()
     ]

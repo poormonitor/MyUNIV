@@ -438,17 +438,10 @@ def process_excel(xlsx, year, delete=False):
     db.session.commit()
 
 
-def subString(needle, sequence):
-    for i in sequence:
-        if needle in i or i in needle:
-            return True
-    return False
-
-
 def stringSim(a, b):
-    from difflib import SequenceMatcher
+    from Levenshtein import jaro_winkler as ratio
 
-    return SequenceMatcher(None, a, b).quick_ratio()
+    return ratio(a, b)
 
 
 def findNearestMustInAll(name, sequence):
@@ -459,8 +452,6 @@ def findNearestMustInAll(name, sequence):
             [stringSim(name, i.mname)]
             + [stringSim(name, j) for j in i.include.split("、")]
         )
-        if subString(name, [i.mname] + list(i.include.split("、"))):
-            temp += 1
         if temp > m:
             m = temp
             res = i
@@ -468,14 +459,19 @@ def findNearestMustInAll(name, sequence):
 
 
 def findNearestMustInAllSchool(name, sequence):
+    res = None
+    temp = -1
     for i in sequence:
-        temp = max(
+        tmp = max(
             [stringSim(name, i.mname)]
             + [stringSim(name, j) for j in i.include.split("、")]
         )
-        if temp > 0.9:
+        if tmp > 0.9:
             return i
-    return None
+        elif tmp > temp:
+            temp = tmp
+            res = i
+    return res
 
 
 def connectMust():
