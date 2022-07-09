@@ -490,7 +490,9 @@
                     网站运营者不承担有关数据正确性的个别及连带责任。",
             icon: "info",
         }).then((onConfirm)=>{
-            Cookies.set("agreement", "true", {expires: 3650})
+            if (onConfirm){
+                Cookies.set("agreement", "true", {expires: 3650})
+            }
         })
     }
 </script>

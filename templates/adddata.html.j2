@@ -33,7 +33,15 @@
     <form method="POST">
         <div class="mt-2 center">
             <input name="csrf" type="hidden" value="{{ csrf }}">
+            <input name="conn" type="hidden" value="true">
             <button type="submit" class="btn btn-info">数据预处理</button>
+        </div>
+    </form>
+    <form method="POST">
+        <div class="mt-2 center">
+            <input name="csrf" type="hidden" value="{{ csrf }}">
+            <input name="clean" type="hidden" value="true">
+            <button type="submit" class="btn btn-danger">清除数据</button>
         </div>
     </form>
 </div>

@@ -20,7 +20,7 @@
 </div>
 <div id="tags">
     {% for tag in tags %}
-    <span class="badge bg-primary">{{ tag }}</span> {% endfor %}
+    <span class="badge bg-primary mt-1">{{ tag }}</span> {% endfor %}
 </div>
 <div id="info">
     <div class="row">
@@ -45,7 +45,7 @@
             </h2>
             <div id="mustscollapse{{ i[0] }}" class="accordion-collapse collapse" aria-labelledby="mustsheading{{ i[0] }}" data-bs-parent="#musts">
                 <div class="accordion-body">
-                    <div class="table-responsive">
+                    <div class="table-responsive text-nowrap">
                         <table class="table table-striped">
                             <thead>
                                 <tr>
@@ -87,7 +87,7 @@
             </h2>
             <div id="rankscollapse{{ i[0] }}" class="accordion-collapse collapse" aria-labelledby="ranksheading{{ i[0] }}" data-bs-parent="#ranks">
                 <div class="accordion-body">
-                    <div class="table-responsive">
+                    <div class="table-responsive text-nowrap">
                         <table class="table table-striped">
                             <thead>
                                 <tr>

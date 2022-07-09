@@ -107,6 +107,20 @@ def csrf_valid(f):
     return wrap
 
 
+def isPatString(needle, haystack):
+    for i in needle:
+        if i in haystack:
+            return i
+    return None
+
+
+def isSuborPatString(needle, haystack):
+    for i in haystack:
+        if needle in i or i in needle:
+            return True
+    return False
+
+
 def get_school_name(name: str):
     import re
     from const import allow_tags
@@ -115,7 +129,7 @@ def get_school_name(name: str):
     univ_name = name.split("(")[0]
     tag = re.findall(r"(?<=[\(]).*?(?=[\)])", name)
     for j in tag:
-        if j not in allow_tags:
+        if j not in allow_tags and not isSuborPatString(j, allow_tags):
             univ_name += "(" + j + ")"
         else:
             tags.append(j)
@@ -312,8 +326,7 @@ def process_excel(xlsx, year, delete=False):
     from models.Tag import Tag
     from models.Rank import Rank
     from pandas import read_excel
-    from const import provinces, majors
-    from func import get_school_name, unifyBracket
+    from const import provinces, majors, rqs
     from tqdm import tqdm
     import os
     import re
@@ -401,8 +414,13 @@ def process_excel(xlsx, year, delete=False):
             must = int(
                 "".join([str(majors.index(j)) for j in i[5].split("(")[0].split(",")])
             )
+
             if must != 0:
-                must = int(re.search(r"\d+", i[5]).group(0) + str(must))
+                if rs := isPatString(i[5], rqs.keys()):
+                    must = int(rqs[rs] + str(must))
+                else:
+                    must = int(str(len(str(must))) + str(must))
+
             province_id = list(provinces.keys())[
                 list(provinces.values()).index(province)
             ]
@@ -439,6 +457,9 @@ def process_excel(xlsx, year, delete=False):
 
 
 def stringSim(a, b):
+    if not a or not b:
+        return 0
+
     from Levenshtein import jaro_winkler as ratio
 
     return ratio(a, b)
@@ -455,7 +476,7 @@ def findNearestMustInAll(name, sequence):
         if temp > m:
             m = temp
             res = i
-    return res
+    return res, m
 
 
 def findNearestMustInAllSchool(name, sequence):
@@ -478,25 +499,48 @@ def connectMust():
     from models.Conne import Conne
     from models.Major import Major
     from models.Must import Must
+    from models.Rank import Rank
     from models import db
     from tqdm import tqdm
     from itertools import groupby
 
     allMajor = Major.query.all()
     allMust = Must.query.all()
+    schoolRank = (
+        db.session.query(Major.sid, db.func.avg(Rank.score))
+        .outerjoin(Major, Major.mid == Rank.mid)
+        .group_by(Major.sid)
+        .order_by(db.func.avg(Rank.score))
+        .all()
+    )
+    schoolRank = {i[0]: i[1] for i in schoolRank}
+
     allMustByYear = {i: [k for k in j] for i, j in groupby(allMust, lambda x: x.year)}
     allMustByYearSchool = {
         i: {k: [l for l in m] for k, m in groupby(j, lambda x: x.sid)}
         for i, j in allMustByYear.items()
     }
+
+    scoreAvgBySchool = {
+        i[0]: [(j[1], i[1].get(j[0])) for j in schoolRank.items()]
+        for i in allMustByYearSchool.items()
+    }
+
     must_years = list(allMustByYear.keys())
+
     for i in tqdm(allMajor):
         for j in must_years:
-            res = findNearestMustInAll(
+            res, tmp = findNearestMustInAll(
                 i.mname, allMustByYearSchool.get(j, {}).get(i.sid, [])
             )
-            if not res:
-                res = findNearestMustInAllSchool(i.mname, allMustByYear.get(j, []))
+            if not res or tmp < 0.4:
+                ordered = sorted(
+                    scoreAvgBySchool.get(j, []),
+                    key=lambda x: abs(x[0] - schoolRank[i.sid]),
+                )
+                res = findNearestMustInAllSchool(
+                    i.mname, [j for k in ordered if k[1] for j in k[1]]
+                )
             if not res:
                 continue
             if (a := Conne.query.filter_by(mid=i.mid, year=j).first()) is None:
@@ -505,3 +549,19 @@ def connectMust():
             elif a.mmid != res.mmid:
                 a.mmid = res.mmid
     db.session.commit()
+
+
+def cleanAll():
+    from models.Univ import Univ
+    from models.Major import Major
+    from models.Must import Must
+    from models.Conne import Conne
+    from models import db
+
+    Univ.query.delete()
+    Major.query.delete()
+    Must.query.delete()
+    Conne.query.delete()
+    db.session.commit()
+
+    return True

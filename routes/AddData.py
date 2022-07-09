@@ -28,6 +28,10 @@ def adddata():
         )
     elif "conn" in request.form:
         subprocess.Popen([sys.executable, os.path.join(path, "conn.py")])
+    elif "clean" in request.form:
+        from func import cleanAll
+
+        cleanAll()
 
     session["notice"] = "数据导入成功"
     return redirect(url_for("Index.index"))
