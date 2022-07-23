@@ -276,6 +276,7 @@ def findResult(page, info):
         result = result.order_by(Must.must.desc())
         if info["accordation"]:
             what_i_can = get_what_i_can_choose_most(mymust)
+            result = result.order_by(Must.must)
         else:
             what_i_can = get_what_i_can_choose(mymust)
         result = result.filter(Must.must.in_(what_i_can))
