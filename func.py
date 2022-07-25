@@ -142,14 +142,20 @@ def get_what_i_can_choose(mymust: str) -> list:
     choices = [i for i in range(1, 8)]
     musts = list(map(int, list(mymust)))
     ans = ["0"]
+    # Perfectly matched
     for i in range(1, len(musts) + 1):
         for j in combinations(musts, i):
-            new_choice = choices[:]
-            for p in j:
-                new_choice.remove(p)
-            for p in combinations(new_choice, i - len(j)):
-                ans.append(str(i) + "".join(map(str, j + p)))
-    return ans
+            ans.append(str(i) + "".join(map(str, j)))
+    # With redundancy
+    for i in range(1, 4):
+        for j in range(1, 4 - i):
+            for k in combinations(musts, i):
+                new_choice = choices[:]
+                for p in k:
+                    new_choice.remove(p)
+                for l in combinations(new_choice, j):
+                    ans.append(str(i) + "".join(map(str, sorted(k + l))))
+    return sorted(list(set(ans)))
 
 
 def get_what_i_can_choose_most(mymust: str) -> list:
@@ -158,13 +164,19 @@ def get_what_i_can_choose_most(mymust: str) -> list:
     choices = [i for i in range(1, 8)]
     musts = list(map(int, list(mymust)))
     ans = []
+    # Perfectly matched
     for i in range((len(musts) + 1) // 2, len(musts) + 1):
         for j in combinations(musts, i):
-            new_choice = choices[:]
-            for p in j:
-                new_choice.remove(p)
-            for p in combinations(new_choice, i - len(j)):
-                ans.append(str(i) + "".join(map(str, j + p)))
+            ans.append(str(i) + "".join(map(str, j)))
+    # With redundancy
+    for i in range((len(musts) + 1) // 2, len(musts) + 1):
+        for j in range(1, 4 - i):
+            for k in combinations(musts, i):
+                new_choice = choices[:]
+                for p in k:
+                    new_choice.remove(p)
+                for l in combinations(new_choice, j):
+                    ans.append(str(i) + "".join(map(str, sorted(k + l))))
     return ans
 
 
@@ -413,7 +425,11 @@ def process_excel(xlsx, year, delete=False):
             major = unifyBracket(i[2])
             include = unifyBracket(i[3]) if i[3] == i[3] else ""
             must = int(
-                "".join([str(majors.index(j)) for j in i[5].split("(")[0].split(",")])
+                "".join(
+                    sorted(
+                        [str(majors.index(j)) for j in i[5].split("(")[0].split(",")]
+                    )
+                )
             )
 
             if must != 0:
@@ -557,11 +573,13 @@ def cleanAll():
     from models.Major import Major
     from models.Must import Must
     from models.Conne import Conne
+    from models.Rank import Rank
     from models import db
 
     Univ.query.delete()
     Major.query.delete()
     Must.query.delete()
+    Rank.query.delete()
     Conne.query.delete()
     db.session.commit()
 
