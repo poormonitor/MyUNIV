@@ -1,0 +1,46 @@
+{% extends "base.html.j2" %} {% block title %}首页{% endblock %} {% block content %}
+<div class="content">
+    <div class="mb-5">
+        <h2>查询样例</h2>
+    </div>
+    <div class="mb-5">
+        <h4 class="mb-2">样例一</h4>
+        <h6>需求</h6>
+        <p>
+            2020年考生，位于江浙沪皖的所有双一流高校，考生预估位全省3000名，希望筛选正负1000名学校
+        </p>
+        <h6>选择</h6>
+        <p>
+            在选考科目标准选择2020，在省份中选择江苏、浙江、上海、安徽，在学校标签（包含）中选择一流大学建设高校、一流学科建设高校，在位次号输入3000，在区间输入1000。
+        </p>
+        <a href="{{ url_for('Query.query',province=[31,32,33,34],utags=[1,2],rank_range=1000,rank=3000,standard=2020) }}"
+            class="btn btn-outline-primary">前往</a>
+    </div>
+    <div class="mb-5">
+        <h4 class="mb-2">样例二</h4>
+        <h6>需求</h6>
+        <p>
+            2023年考生，所有985高校，考生预估位全省1000名，选考物理、化学、生物，要求优先展示一致性高的专业，希望筛选所有在1000以后的学校
+        </p>
+        <h6>选择</h6>
+        <p>
+            在选考科目标准选择2020，在学校标签（包含）中选择985工程，在选考科目中选择物理、化学、生物，勾选一致优先，在位次号输入1000
+        </p>
+        <a href="{{ url_for('Query.query',utags=[9],rank=1000,mymust=[1,2,3],standard=2020,accordation=1) }}"
+            class="btn btn-outline-primary">前往</a>
+    </div>
+    <div class="mb-5">
+        <h4 class="mb-2">样例三</h4>
+        <h6>需求</h6>
+        <p>
+            2024年考生，排除所有独立学院、民办和中外合作办学，考生选考历史、地理、政治，筛选位次号50000正负10000的专业。
+        </p>
+        <h6>选择</h6>
+        <p>
+            在选考科目标准选择2024，在学校标签（不包含）中选择独立学院、民办和中外合作办学，在选考科目中选择历史、地理、政治，在位次号输入50000，在区间输入10000。
+        </p>
+        <a href="{{ url_for('Query.query',nutags=[6,7,8],mymust=[4,5,6],rank=50000,rank_range=10000,standard=2024) }}"
+            class="btn btn-outline-primary">前往</a>
+    </div>
+</div>
+{% endblock %}

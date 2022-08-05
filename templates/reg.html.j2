@@ -1,0 +1,127 @@
+{% extends "base.html.j2" %}
+{% block title %}注册{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-6 col-xl-5 offset-md-1 box-shadow order-lg-2">
+        <br />
+        <h2 class="center ud-margin">注册</h2>
+        {% if error %}
+        <div class="alert alert-danger m-3 center" role="alert">
+            <strong>{{ error }}</strong>
+        </div>
+        {% endif %}
+        <div id="form">
+            <form method="POST" role="form" onsubmit="return checkValid()">
+                <div class="mb-3">
+                    <label for="uid" class="form-label">用户名</label>
+                    <input type="text" class="form-control" id="uid" name="uid" autocomplete="userid" placeholder="用户名"
+                        required>
+                </div>
+                <div class="mb-3">
+                    <label for="name" class="form-label">姓名</label>
+                    <input type="text" class="form-control" id="name" name="name" autocomplete="username" placeholder="姓名"
+                        required>
+                </div>
+                <div class="mb-3">
+                    <label for="passwd" class="form-label">密码</label>
+                    <input type="password" class="form-control" id="passwd-fake" autocomplete="new-password"
+                        placeholder="密码" required>
+                    <input type="hidden" id="passwd" name="passwd">
+                </div>
+                <div class="mb-3">
+                    <label for="passwd" class="form-label">重复密码</label>
+                    <input type="password" class="form-control" id="rp-passwd" autocomplete="new-password"
+                        placeholder="重复密码" required>
+                </div>
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <div class="mb-3">
+                    <div>
+                        <label for="must" class="form-label">选考科目</label>
+                    </div>
+                    {% for i,e in must_string %}
+                    <div class="form-check form-check-inline">
+                        <label class="form-check-label" for="must{{ i + 1 }}">{{ e }}</label>
+                        <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}"
+                            value="{{ i + 1 }}">
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="center">
+                    <button type="submit" class="btn btn-primary">注册</button>
+                </div>
+                <div class='mt-3 text-center'>
+                    <span>已有账号？去<a href="{{ url_for('Login.login') }}">登录</a>！</span>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-5 col-xl-6 order-lg-1">
+        <img title="Path" class="img-round mb-4 mt-4 img-fluid align-middle" src="{{ url_for('static', filename='path.jpg') }}">
+        <img title="Statue" class="img-round mb-4 mt-4 img-fluid align-middle" src="{{ url_for('static', filename='statue.jpg') }}">
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{{ url_for('static', filename='md5.min.js') }}"></script>
+<script src="{{ url_for('static', filename='sweetalert.min.js') }}"></script>
+<script>
+    $('input.musts').on('change', function (e) {
+        if ($('input.musts:checked').length > 3) {
+            $(this).prop('checked', false);
+        }
+    });
+
+    function checkValid() {
+
+        var pwdRegex = new RegExp('(?=.*[0-9])(?=.*[a-zA-Z]).{8,30}');
+        var userRegex = new RegExp('^[0-9A-Za-z_]{3,30}$');
+
+        if ($('input.musts:checked').length != 3) {
+            swal({
+                title: "选考科目错误",
+                text: "选择的选考科目少于三门",
+                icon: "error",
+                timer: 2000
+            });
+            return false
+        }
+
+        if ($('#passwd-fake').val() != $("#rp-passwd").val()) {
+            swal({
+                title: "密码不一致",
+                text: "两次输入的密码不一致",
+                icon: "error",
+                timer: 2000
+            });
+            return false
+        }
+
+        if (!pwdRegex.test($("#rp-passwd").val())) {
+            swal({
+                title: "密码复杂度太低",
+                text: "密码中必须包含字母、数字，不少于8位且不多于30位",
+                icon: "error",
+                timer: 2000
+            });
+            return false
+        }
+
+        if (!userRegex.test($("#uid").val())) {
+            swal({
+                title: "请修改用户名",
+                text: "用户名由大小写字母、数字或下划线组成，不少于3位且不多于30位",
+                icon: "error",
+                timer: 2000
+            });
+            return false
+        }
+
+        SubmitCheck()
+        return true
+    }
+
+    function SubmitCheck() {
+        $('#passwd').val(md5($('#passwd-fake').val()));
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "base.html.j2" %}
+{% block title %}修改用户信息{% endblock %}
+{% block content %}
+<div class="center mb-4">
+    <h2>修改用户信息</h2>
+</div>
+<div class="col-lg-6 offset-lg-3">
+    <div class="card mb-4">
+        <h5 class="card-header">修改我的选课</h5>
+        <div class="card-body">
+            <div class="center">
+                <form method="POST" onsubmit='return mustValid()'>
+                    <div class="m-3">
+                        {% for i,e in must_string %}
+                        <div class="form-check form-check-inline">
+                            <label class="form-check-label" for="must{{ i + 1 }}">{{ e }}</label>
+                            {% if i + 1 in mymust %}
+                            <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}"
+                                value="{{ i + 1 }}" checked>
+                            {% else %}
+                            <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}"
+                                value="{{ i + 1 }}">
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="csrf" value="{{ csrf }}">
+                    <input type="hidden" name="action" value="must">
+                    <div class="center mt-2">
+                        <button type="submit" class="btn btn-primary">提交</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card mb-3">
+        <h5 class="card-header">
+            修改密码
+        </h5>
+        <div class="card-body">
+            {% if error %}
+            <div class="center m-3">
+                <span class="alert alert-danger" role="alert">
+                    <strong>{{ error }}</strong>
+                </span>
+            </div>
+            {% endif %}
+            <div class="mt-2 col-sm-6 offset-sm-3">
+                <form method="POST" onsubmit="return passwordValid()">
+                    <div class="mb-3">
+                        <label for="fake_old_password" class="control-label">原密码</label>
+                        <input id="fake_old_password" type="password" class="form-control"
+                            autocomplete='current-password' required>
+                        <input id="old_password" type="hidden" name="old_password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="fake_new_password" class="control-label">新密码</label>
+                        <input id="fake_new_password" type="password" class="form-control" autocomplete='new-password'
+                            required>
+                        <input id="new_password" type="hidden" name="new_password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password_confirm" class="control-label">确认新密码</label>
+                        <input id="new_password_confirm" type="password" class="form-control"
+                            autocomplete='new-password' required>
+                    </div>
+                    <input name="csrf" type="hidden" value="{{ csrf }}">
+                    <input name="action" type="hidden" value="password">
+                    <div class="center">
+                        <input type="submit" class="btn btn-primary" val="提交">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{{ url_for('static', filename='md5.min.js') }}"></script>
+<script src="{{ url_for('static', filename='sweetalert.min.js') }}"></script>
+<script>
+    function mustValid() {
+        if ($('input.musts:checked').length != 3) {
+            swal({
+                title: "选考科目错误",
+                text: "选择的选考科目少于三门",
+                icon: "error",
+                timer: 2000
+            });
+            return false
+        }
+    }
+
+    function passwordValid() {
+        var oldPassword = $('#fake_old_password').val();
+        var newPassword = $('#fake_new_password').val();
+        var newPasswordConfirm = $('#new_password_confirm').val();
+        if (newPassword != newPasswordConfirm) {
+            swal({
+                title: "密码不一致",
+                text: "两次输入的密码不一致",
+                icon: "error",
+                timer: 2000
+            });
+            return false;
+        }
+        if (newPassword == oldPassword) {
+            swal({
+                title: "密码一致",
+                text: "新旧密码一致",
+                icon: "error",
+                timer: 2000
+            });
+            return false;
+        }
+        $('#old_password').val(md5(oldPassword));
+        $('#new_password').val(md5(newPassword));
+        return true
+    }
+
+    $('input.musts').on('change', function (e) {
+        if ($('input.musts:checked').length > 3) {
+            $(this).prop('checked', false);
+        }
+    });
+</script>
+{% endblock %}

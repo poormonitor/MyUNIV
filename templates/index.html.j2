@@ -1,0 +1,98 @@
+{% extends "base.html.j2" %} {% block title %}首页{% endblock %} {% block content %}
+<style>
+    .img-wall {
+        border-radius: 10px;
+        background: radial-gradient(closest-side, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 1)),
+        url("{{ url_for('static', filename='wall.jpg') }}") no-repeat 100% 20%/ cover;
+    }
+</style>
+<div class="p-3">
+    <div class="content">
+        <h1 class="center">MyUNIV</h1>
+        <h2 class="center ud-margin">高考志愿填报决策分析系统</h2>
+        <p class="center">
+            本项目为二十三届全省学生信息素养提升实践活动参赛项目。
+        </p>
+        <p class="center">
+            孙奕凡，浙江省杭州高级中学
+        </p>
+        <div id="total" class="img-wall center mb-3" style="width:auto;height:300px;"></div>
+        <h6 class="center mb-5">历年计划数</h6>
+        <div class="row">
+            <div class="col-sm-6">
+                <h4>快速</h4>
+                <p>MyUNIV基于Python Flask，一个轻量级微服务框架，使用SQLite3存储数据。在统计近几年高考数据有良好的性能。</p>
+            </div>
+            <div class="col-sm-6">
+                <h4>美观</h4>
+                <p>前端基于Bootstrap 5，使用JQuery，Apache ECharts等库。这使得MyUNIV看上去是一个现代化的数据查询系统。</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <h4>易用</h4>
+                <p>前端逻辑清晰，操作提示直观，无需教学也可使用，极大的降低了学校专业查询成本。</p>
+            </div>
+            <div class="col-sm-6">
+                <h4>智能</h4>
+                <p>多种条件筛选符合要求的学校和专业，并可以根据相关要求自动筛选备选志愿供参考。</p>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='echarts.min.js') }}"></script>
+<script>
+    var myChart = echarts.init(document.getElementById('total'));
+    var data = JSON.parse('{{ total|safe }}');
+    option = {
+        grid: {
+            left: '1%',
+            right: '1%',
+            bottom: '1%',
+            containLabel: true
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                var text = '--'
+                if (params && params.length) {
+                    text = params[0].data[0]
+                    params.forEach(item => {
+                        var dotHtml = item.marker
+                        text += `<div style='text-align:left'>${dotHtml}${item.seriesName} : ${item.data[1] ? item.data[1] : '-'}</div>`
+                    })
+                }
+                return text
+            }
+        },
+        xAxis: {
+            type: 'category',
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [{
+            data: data,
+            name: "计划数",
+            type: 'line',
+            smooth: true,
+            color: "#383838"
+        }]
+    };
+    myChart.setOption(option);
+    window.onresize = function () {
+        myChart.resize();
+    };
+</script>
+{% if notice %}
+<script src="{{ url_for('static', filename='sweetalert.min.js') }}"></script>
+<script>
+    swal({
+        title: "成功",
+        text: "{{ notice }}",
+        icon: "success",
+        timer: 2000
+    });
+</script>
+{% endif %}
+{% endblock %}

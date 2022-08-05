@@ -1,0 +1,123 @@
+{% extends "base.html.j2" %} {% block title %}备选专业{% endblock %} {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-select.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-icons.css') }}">
+<div class="row">
+    <div class="col-md-4 my-auto">
+        <span class="my-auto">共计有<b id="cnt">{{ cnt }}</b>个结果。</span>
+        <a href="javascript:downloadExcel()" class="btn btn-sm btn-outline-secondary">
+            导出为Excel
+        </a>
+        {% if cnt > 0 %}
+        <a href="javascript:deleteAllMyMajor()" class="btn btn-sm btn-outline-secondary">
+            删除所有
+        </a>
+        {% endif %}
+    </div>
+    <form class="col-md-8 row form-inline">
+        <div class="col-md-5 form-inline">
+            <label for="standard" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="浙江省教育考试院公布的选考科目标准的年份。2024及以后参加高考学生适用2024标准，2020-2023参加高考学生适用2020标准。">选考科目标准</label>
+            <select class="selectpicker form-control" id="standard" name="standard">
+                {% for i in must_standard %}
+                {% if i == standard %}
+                <option value="{{ i }}" selected>{{ i }}</option>
+                {% else %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-5 form-inline">
+            <label for="year" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="投档位次号的年份。">投档数据年份</label>
+            <select class="selectpicker form-control" id="year" name="year">
+                {% for i in rank_years %}
+                {% if i == year %}
+                <option value="{{ i }}" selected>{{ i }}</option>
+                {% else %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="submit" class="btn btn-primary" val="Go">
+        </div>
+    </form>
+</div>
+<div class="table-responsive">
+    <table class="table table-striped text-nowrap" id="resultTable">
+        <thead>
+            <tr>
+                <th>学校名称</th>
+                <th>专业名称</th>
+                <th>计划数</th>
+                <th>年份</th>
+                <th>位次号</th>
+                <th>分数</th>
+                <th>选考科目</th>
+                <th>选科标准</th>
+                <th>删除</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i, item in result %}
+            <tr id="resultRow">
+                <td>
+                    <a href="{{ url_for('Univ.univ', sid=item[1].sid) }}" target="_blank">{{ item[1].uname }}</a>
+                </td>
+                <td>
+                    <a href="{{ url_for('Major.major', mid=item[0].mid) }}" target="_blank">{{ item[0].mname }}</a>
+                </td>
+                <td>{{ item[2].schedule }}</td>
+                <td>{{ item[2].year }}</td>
+                <td>{{ item[2].rank }}</td>
+                <td>{{ item[2].score }}</td>
+                <td>{{ musts[i][0] }}</td>
+                <td>{{ musts[i][1] }}</td>
+                <td>
+                    <button onclick='deleteMyMajor("{{ item[0].mid }}", this)' type="button"
+                        class="btn btn-sm btn-danger my-major">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>
+    function deleteMyMajor(id, self) {
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", {
+            mid: id,
+            action: "delete"
+        }, function (data, status) {
+            if (data == "success") {
+                $(self).parent().parent().remove();
+            }
+        });
+    }
+
+    function deleteAllMyMajor() {
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", {
+            action: "del"
+        }, function (data, status) {
+            if (data == "success") {
+                $("b#cnt").text("0");
+                $("tr#resultRow").remove();
+            }
+        });
+    }
+
+    function downloadExcel() {
+        var standard = $("#standard").val()
+        var year = $("#year").val()
+        window.location.href = "{{ url_for('Excel.excel', my='1') }}&standard=" + standard + "&year=" + year
+    }
+</script>
+<script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+{% endblock %}
+{% block script %}
+<script src="{{ url_for('static', filename='bootstrap-select.min.js') }}"></script>
+<script src="{{ url_for('static', filename='defaults-zh_CN.js') }}"></script>
+{% endblock %}

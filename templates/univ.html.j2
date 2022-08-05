@@ -1,0 +1,213 @@
+{% extends "base.html.j2" %} {% block title %}学校信息{% endblock %} {% block content %}
+<style>
+    .img-luxun {
+        border-radius: 30px;
+        background: url("{{ url_for('static', filename='luxun.jpg') }}") no-repeat 100% 48%/ cover;
+        color: #fff;
+        word-break: break-all;
+        line-break: strict;
+    }
+</style>
+<div class="img-luxun pt-3 pb-3 ps-4 mb-3">
+    <div class="w-75">
+        <h2>
+            <span class="me-2">
+                {{ univ.uname }}
+            </span>
+        </h2>
+        <h5>{{ province }}</h5>
+    </div>
+</div>
+<div id="tags">
+    {% for tag in tags %}
+    <span class="badge bg-primary mt-1">{{ tag }}</span> {% endfor %}
+</div>
+<div id="info">
+    <div class="row">
+        <div class="col-md-6">
+            <div id="total" class="center" style="width:auto;height:300px;"></div>
+        </div>
+        <div class="col-md-6">
+            <div id="rank" class="center" style="width:auto;height:300px;"></div>
+        </div>
+    </div>
+    <hr />
+    <h4>必选科目信息</h4>
+    <div class="accordion" id="musts">
+        {% for i in musts.items() %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="mustsheading{{ i[0] }}">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#mustscollapse{{ i[0] }}" aria-expanded="false"
+                    aria-controls="mustscollapse{{ i[0] }}">
+                    {{ i[0] }}
+                </button>
+            </h2>
+            <div id="mustscollapse{{ i[0] }}" class="accordion-collapse collapse" aria-labelledby="mustsheading{{ i[0] }}" data-bs-parent="#musts">
+                <div class="accordion-body">
+                    <div class="table-responsive text-nowrap">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>年份</th>
+                                    <th>专业</th>
+                                    <th>必选科目</th>
+                                    <th>包含专业</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for j in i[1] %}
+                                <tr>
+                                    <td>{{ i[0] }}</td>
+                                    <td>{{ j["mname"] }}</td>
+                                    <td>{{ j["must"] }}</td>
+                                    <td>{{ j["include"] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <hr />
+    <h4>历年投档信息</h4>
+    <div class="accordion" id="ranks">
+        {% for i in ranks.items() %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="ranksheading{{ i[0] }}">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#rankscollapse{{ i[0] }}" aria-expanded="false"
+                    aria-controls="rankscollapse{{ i[0] }}">
+                    {{ i[0] }}
+                </button>
+            </h2>
+            <div id="rankscollapse{{ i[0] }}" class="accordion-collapse collapse" aria-labelledby="ranksheading{{ i[0] }}" data-bs-parent="#ranks">
+                <div class="accordion-body">
+                    <div class="table-responsive text-nowrap">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>年份</th>
+                                    <th>专业</th>
+                                    <th>位次号</th>
+                                    <th>分数线</th>
+                                    <th>计划人数</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for j in i[1] %}
+                                <tr>
+                                    <td>{{ j[1].year }}</td>
+                                    <td><a href="{{ url_for('Major.major', mid=j[0].mid) }}">{{ j[0].mname }}</a></td>
+                                    <td>{{ j[1].rank }}</td>
+                                    <td>{{ j[1].score }}</td>
+                                    <td>{{ j[1].schedule }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<hr />
+<br />
+<script src="{{ url_for('static', filename='echarts.min.js') }}"></script>
+<script>
+    var totalChart = echarts.init(document.getElementById('total'));
+    var totalChartdata = JSON.parse('{{ total|safe }}');
+    totalChartoption = {
+        title: {
+            left: "center",
+            text: '历年计划数',
+        },
+        grid: {
+            left: '1%',
+            right: '1%',
+            bottom: '1%',
+            containLabel: true
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function(params) {
+                var text = '--'
+                if (params && params.length) {
+                    text = params[0].data[0]
+                    params.forEach(item => {
+                        var dotHtml = item.marker
+                        text += `<div style='text-align:left'>${dotHtml}${item.seriesName} : ${item.data[1] ? item.data[1] : '-'}</div>`
+                    })
+                }
+                return text
+            }
+        },
+        xAxis: {
+            type: 'category',
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [{
+            data: totalChartdata,
+            name: "计划数",
+            type: 'line',
+            smooth: true,
+            color: "#78c2ad"
+        }]
+    };
+    totalChart.setOption(totalChartoption);
+    var rankChart = echarts.init(document.getElementById('rank'));
+    var rankChartdata = JSON.parse('{{ rank|safe }}');
+    rankChartoption = {
+        title: {
+            left: "center",
+            text: '历年(最高)位次号',
+        },
+        grid: {
+            left: '1%',
+            right: '1%',
+            bottom: '1%',
+            containLabel: true
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function(params) {
+                var text = '--'
+                if (params && params.length) {
+                    text = params[0].data[0]
+                    params.forEach(item => {
+                        var dotHtml = item.marker
+                        text += `<div style='text-align:left'>${dotHtml}${item.seriesName} : ${item.data[1] ? item.data[1] : '-'}</div>`
+                    })
+                }
+                return text
+            }
+        },
+        xAxis: {
+            type: 'category',
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [{
+            data: rankChartdata,
+            name: "位次号",
+            type: 'line',
+            smooth: true,
+            color: "#78c2ad"
+        }]
+    };
+    rankChart.setOption(rankChartoption);
+    window.onresize = function() {
+        totalChart.resize();
+        rankChart.resize();
+    };
+</script>
+{% endblock %}

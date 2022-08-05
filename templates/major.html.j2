@@ -1,0 +1,214 @@
+{% extends "base.html.j2" %} {% block title %}专业信息{% endblock %} {% block content %}
+<style>
+    .img-building {
+        border-radius: 30px;
+        background: url("{{ url_for('static', filename='building.jpg') }}") no-repeat 100% 20%/ cover;
+        color: #fff;
+        word-break: break-all;
+        line-break: strict;
+    }
+</style>
+<div class="img-building pt-3 pb-3 ps-4 mb-3">
+    <div class="w-75">
+        <h2>
+            <span class="me-2">
+                {{ major.mname }}
+            </span>
+            {% if major.mid not in session['my'] %}
+            <button onclick='addMyMajor("{{ major.mid }}", this)' type="button" class="btn btn-sm btn-primary">
+                添加备选
+            </button>
+            {% else %}
+            <button onclick='deleteMyMajor("{{ major.mid }}", this)' type="button" class="btn btn-sm btn-danger">
+                删除备选
+            </button>
+            {% endif %}
+        </h2>
+        <span class="h4">
+            <a class="text-decoration-none text-white" href="{{ url_for('Univ.univ', sid=univ.sid) }}">
+                {{ univ.uname }}
+            </a>
+        </span>
+    </div>
+</div>
+<div id="tags">
+    {% for tag in include %}
+    <span class="badge bg-primary mt-1 mb-1">{{ tag }}</span> {% endfor %}
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div id="total" class="center" style="width:auto;height:300px;"></div>
+    </div>
+    <div class="col-md-6">
+        <div id="rank" class="center" style="width:auto;height:300px;"></div>
+    </div>
+</div>
+<div>
+    <hr />
+    <h4>必选科目信息</h4>
+    <div class="table-responsive text-nowrap">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>年份</th>
+                    <th>登记名称</th>
+                    <th>必选科目</th>
+                    <th>包含专业</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in must %}
+                <tr>
+                    <td>{{ i["year"] }}</td>
+                    <td>{{ i["mname"] }}</td>
+                    <td>{{ i["must"] }}</td>
+                    <td>{{ i["include"] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <hr />
+    <h4>历年投档信息</h4>
+    <div class="table-responsive text-nowrap">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>年份</th>
+                    <th>位次号</th>
+                    <th>分数线</th>
+                    <th>计划人数</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in ranks %}
+                <tr>
+                    <td>{{ i.year }}</td>
+                    <td>{{ i.rank }}</td>
+                    <td>{{ i.score }}</td>
+                    <td>{{ i.schedule }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='echarts.min.js') }}"></script>
+<script>
+    var totalChart = echarts.init(document.getElementById('total'));
+    var totalChartdata = JSON.parse('{{ total|safe }}');
+    totalChartoption = {
+        title: {
+            left: "center",
+            text: '历年计划数',
+        },
+        grid: {
+            left: '1%',
+            right: '1%',
+            bottom: '1%',
+            containLabel: true
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                var text = '--'
+                if (params && params.length) {
+                    text = params[0].data[0]
+                    params.forEach(item => {
+                        var dotHtml = item.marker
+                        text += `<div style='text-align:left'>${dotHtml}${item.seriesName} : ${item.data[1] ? item.data[1] : '-'}</div>`
+                    })
+                }
+                return text
+            }
+        },
+        xAxis: {
+            type: 'category',
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [{
+            data: totalChartdata,
+            name: "计划数",
+            type: 'line',
+            smooth: true,
+            color: "#78c2ad"
+        }]
+    };
+    totalChart.setOption(totalChartoption);
+
+    var rankChart = echarts.init(document.getElementById('rank'));
+    var rankChartdata = JSON.parse('{{ rank|safe }}');
+    rankChartoption = {
+        title: {
+            left: "center",
+            text: '历年位次号',
+        },
+        grid: {
+            left: '1%',
+            right: '1%',
+            bottom: '1%',
+            containLabel: true
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                var text = '--'
+                if (params && params.length) {
+                    text = params[0].data[0]
+                    params.forEach(item => {
+                        var dotHtml = item.marker
+                        text += `<div style='text-align:left'>${dotHtml}${item.seriesName} : ${item.data[1] ? item.data[1] : '-'}</div>`
+                    })
+                }
+                return text
+            }
+        },
+        xAxis: {
+            type: 'category',
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [{
+            data: rankChartdata,
+            name: "位次号",
+            type: 'line',
+            smooth: true,
+            color: "#78c2ad"
+        }]
+    };
+    rankChart.setOption(rankChartoption);
+    window.onresize = function () {
+        totalChart.resize();
+        rankChart.resize();
+    };
+
+    function addMyMajor(id, self) {
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", {
+            mid: id,
+            action: "id"
+        }, function (data, status) {
+            if (data == "success") {
+                $(self).removeClass("btn-primary").addClass("btn-danger");
+                $(self).attr("onclick", "deleteMyMajor(" + id + ", this)");
+                $(self).text("删除备选")
+            }
+        });
+    }
+
+    function deleteMyMajor(id, self) {
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", {
+            mid: id,
+            action: "delete"
+        }, function (data, status) {
+            if (data == "success") {
+                $(self).removeClass("btn-danger").addClass("btn-primary");
+                $(self).attr("onclick", "addMyMajor(" + id + ", this)");
+                $(self).text("添加备选")
+            }
+        });
+    }
+</script>
+{% endblock %}

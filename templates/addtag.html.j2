@@ -1,0 +1,29 @@
+{% extends "base.html.j2" %}
+{% block title %}添加标签{% endblock %}
+{% block content %}
+<div class="center">
+    <h2>添加标签</h2>
+</div>
+<div class="center">
+    <p>
+        在学校框中输入学校名称，换行分割，每行一个学校。
+        在标签栏中输入需要加入的标签。
+    </p>
+</div>
+<div class="col-sm-6 offset-sm-3">
+    <form method="POST">
+        <div class="mb-3">
+            <label for="schools" class="control-label">学校</label>
+            <textarea id="schools" type="text" name="schools" class="form-control mt-2" rows="10" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="tag" class="control-label">标签</label>
+            <input class="form-control mt-2" type="text" name="tag" required>
+        </div>
+        <input name="csrf" type="hidden" value="{{ csrf }}">
+        <div class="center">
+            <button type="submit" class="btn btn-primary">提交</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

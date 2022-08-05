@@ -1,0 +1,254 @@
+{% extends "base.html.j2" %} {% block title %}用户管理{% endblock %} {% block content %}
+<div class="center">
+    <h2>用户管理</h2>
+</div>
+<form method="GET" class="row mt-3 mb-3 align-items-center">
+    <div class="col-sm-4 text-sm-end">
+        <label for="checkString" class="col-form-label d-flex justify-content-center justify-content-sm-end">用户搜索</label>
+    </div>
+    <div class="col-sm-4">
+        <input type="text" class="form-control" id="checkString" name="checkString" value="{{ info['checkString'] }}">
+    </div>
+    <div class="col-sm-4">
+        <button type="submit" class="btn btn-secondary mt-1 mx-auto mt-sm-0 mx-sm-0 d-grid">Go</button>
+    </div>
+</form>
+<div class="center mb-3 mt-3">
+    <a class="btn btn-outline-primary" data-bs-toggle="offcanvas" href="#AddUser" role="button" aria-controls="AddUser">
+        添加用户
+    </a>
+    <a class="btn btn-outline-primary" data-bs-toggle="offcanvas" href="#Change" role="button" aria-controls="Change">
+        修改选课
+    </a>
+    <a class="btn btn-outline-primary" data-bs-toggle="offcanvas" href="#DelUser" role="button" aria-controls="DelUser">
+        删除用户
+    </a>
+</div>
+<div class="content">
+    <div class="table-responsive">
+        <table class="table table-striped text-nowrap">
+            <thead>
+                <tr>
+                    <th>用户名</th>
+                    <th>最近登录</th>
+                    <th>姓名</th>
+                    <th>选考科目</th>
+                    <th>管理员</th>
+                    <th>密码</th>
+                    <th>删除</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in users %}
+                <tr id="uid-{{ i.uid }}">
+                    <td>{{ i.uid }}</td>
+                    <td>{{ i.last_login }}</td>
+                    <td>{{ i.name }}</td>
+                    <td>{{ get_func(i.must) }}</td>
+                    <td>
+                        {% if i.admin %}
+                        <a class="text-danger" id="admin-{{ i.uid }}" href='javascript:setAdmin("{{ i.uid }}")'>
+                            是
+                        </a>
+                        {% else %}
+                        <a class="text-success" id="admin-{{ i.uid }}" href='javascript:setAdmin("{{ i.uid }}")'>
+                            否
+                        </a>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a data-bs-toggle="offcanvas" onclick="editItem('{{ i.uid }}')" href="#EditPasswd" role="button"
+                            aria-controls="EditPasswd">
+                            修改密码
+                        </a>
+                    </td>
+                    <td>
+                        <a href='javascript:deleteUser("{{ i.uid }}")'>
+                            删除
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+            {% if page != 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ string[0] }}">First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="{{ string[1] }}">{{ page - 1 }}</a>
+            </li>
+            {% endif %}
+            <li class="page-item active" aria-current="page">
+                <span class="page-link" href="{{ string[2] }}">{{ page }}</span>
+            </li>
+            {% if page != cnt %}
+            <li class="page-item">
+                <a class="page-link" href="{{ string[3] }}">{{ page + 1 }}</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="{{ string[4] }}">Last</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+<div class="offcanvas offcanvas-start" tabindex="-1" id="EditPasswd" aria-labelledby="EditPasswdLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="EditPasswdLabel">设置密码</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form method="POST" class="mb-3" onsubmit="return SubmitCheck()">
+            <div class="mb-3">
+                <label for="uid">用户名</label>
+                <input type="text" class="form-control mt-2" id="user" name="user" readonly>
+            </div>
+            <div class="mb-3">
+                <label for="passwd">密码</label>
+                <input id="passwd-fake" class="form-control mt-2">
+                <input id="passwd" type="hidden" name="passwd">
+                <input type="hidden" name="action" value="passwd">
+                <input name="csrf" type="hidden" value="{{ csrf }}">
+            </div>
+            <button type="submit" class="btn btn-primary">
+                设置
+            </button>
+        </form>
+
+    </div>
+</div>
+<div class="offcanvas offcanvas-start" tabindex="-1" id="AddUser" aria-labelledby="AddUserLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="AddUserLabel">添加用户</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="center">
+            <p>
+                逗号或空格分隔，每行一个用户，格式为：用户名、姓名、密码。
+            </p>
+        </div>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="users" class="control-label">用户</label>
+                <textarea id="users" type="text" name="users" class="form-control mt-2" rows="10" required></textarea>
+            </div>
+            <br />
+            <input name="csrf" type="hidden" value="{{ csrf }}">
+            <div class="mb-3">
+                <label for="type" class="control-label">管理员</label>
+            </div>
+            <div class="mb-3">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="type" id="check1" value="1">
+                    <label class="form-check-label" for="check1">是</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="type" id="check2" value="0" checked>
+                    <label class="form-check-label" for="check2">否</label>
+                </div>
+            </div>
+            <input type="hidden" name="action" value="add">
+            <div class="center">
+                <button type="submit" class="btn btn-primary">提交</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="offcanvas offcanvas-start" tabindex="-1" id="Change" aria-labelledby="ChangeLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="ChangeLabel">修改选课</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="center">
+            <p>
+                逗号或空格分隔，每行一个用户，格式为：用户名、选考科目。
+            </p>
+            <p>
+                选考科目为一个整数，1-7分别对应物理、化学、生物、政治、历史、地理、技术。
+                例如，123对应选考物理、化学、生物。
+            </p>
+        </div>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="users" class="control-label">用户</label>
+                <textarea id="users" type="text" name="users" class="form-control mt-2" rows="10" required></textarea>
+            </div>
+            <input name="csrf" type="hidden" value="{{ csrf }}">
+            <input type="hidden" name="action" value="change">
+            <div class="center">
+                <button type="submit" class="btn btn-primary">提交</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="offcanvas offcanvas-start" tabindex="-1" id="DelUser" aria-labelledby="DelUserLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="DelUserLabel">删除用户</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="center">
+            <p>
+                逗号或空格分隔，每行一个用户，格式为：用户名。
+            </p>
+        </div>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="users" class="control-label">用户</label>
+                <textarea id="users" type="text" name="users" class="form-control mt-2" rows="10" required></textarea>
+            </div>
+            <br />
+            <input name="csrf" type="hidden" value="{{ csrf }}">
+            <input type="hidden" name="action" value="delete">
+            <div class="center">
+                <button type="submit" class="btn btn-primary">提交</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='md5.min.js') }}"></script>
+<script>
+    function editItem(uid) {
+        var uid_now = uid;
+        $("input#user").val(uid_now);
+    }
+
+    function SubmitCheck() {
+        $('#passwd').val(md5($('#passwd-fake').val()));
+        return true;
+    }
+
+    function deleteUser(uid) {
+        $.post("{{ url_for('AddUser.adduser') }}", {
+            action: "del",
+            user: uid,
+            csrf: "{{ csrf }}"
+        }, function (data, status) {
+            if (status == "success") {
+                $("tr#uid-" + uid).remove()
+            }
+        });
+    }
+
+    function setAdmin(uid) {
+        var Classes = ["text-success", "text-danger"]
+        var current = Classes.indexOf($("a#admin-" + uid).attr("class"))
+        $.post("{{ url_for('AddUser.adduser') }}", {
+            action: "set",
+            user: uid,
+            csrf: "{{ csrf }}"
+        }, function (data, status) {
+            if (status == "success") {
+                $("a#admin-" + uid).text(data);
+                $("a#admin-" + uid).attr("class", Classes[1 - current])
+            }
+        });
+    }
+</script>
+{% endblock %}
