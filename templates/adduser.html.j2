@@ -30,6 +30,7 @@
             <thead>
                 <tr>
                     <th>用户名</th>
+                    <th>最近登录</th>
                     <th>姓名</th>
                     <th>选考科目</th>
                     <th>管理员</th>
@@ -41,6 +42,7 @@
                 {% for i in users %}
                 <tr id="uid-{{ i.uid }}">
                     <td>{{ i.uid }}</td>
+                    <td>{{ i.last_login }}</td>
                     <td>{{ i.name }}</td>
                     <td>{{ get_func(i.must) }}</td>
                     <td>
