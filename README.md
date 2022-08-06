@@ -1,4 +1,6 @@
 # MyUNIV
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fpoormonitor%2FMyUNIV.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fpoormonitor%2FMyUNIV?ref=badge_shield)
+
 **高考志愿填报决策分析系统**
 
 *浙江省第二十三届全省学生信息素养提升实践活动程序设计项目一等奖作品*
@@ -22,6 +24,9 @@
 发布该程序是希望它能有用，但是并无保障；甚至连可销售和符合某个特定的目的都不保证。请参看 GNU 通用公共许可证。
 
 你应该随程序获得一份 GNU 通用公共许可证的副本。如果没有，请看 [GPLv3](https://www.gnu.org/licenses/gpl-3.0.txt)。
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fpoormonitor%2FMyUNIV.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fpoormonitor%2FMyUNIV?ref=badge_large)
 
 ## Copyright
 
