@@ -14,7 +14,8 @@ import os
 def create_app():
     app = Flask(__name__)
     database = os.path.join(os.path.dirname(__file__), "data.sqlite")
-    app.config["SECRET_KEY"] = os.urandom(24)
+    app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 2592000
+    app.config["SECRET_KEY"] = os.getenv("MyUNIVSecretKey", default=os.urandom(24))
     app.config["SESSION_COOKIE_PATH"] = "/"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + database
     app.config["SQLALCHEMY_COMMIT_ON_TEARDOWN"] = True

@@ -16,7 +16,7 @@
         </div>
         {% endif %}
         <div id="form">
-            <form method="POST" role="form" onsubmit="SubmitCheck()">
+            <form method="POST" action="{{ url_for('Login.login') }}" role="form" onsubmit="SubmitCheck()">
                 <div class="mb-3">
                     <label for="uid" class="form-label">用户名</label>
                     <input type="text" class="form-control" id="uid" name="uid" autocomplete="username" placeholder="用户名"

@@ -31,4 +31,11 @@ def init_app(app):
     app.register_blueprint(add_data_bp, url_prefix='/admin')
     app.register_blueprint(add_user_bp, url_prefix='/admin')
     app.register_blueprint(add_tag_bp, url_prefix='/admin')
+
+    @app.after_request
+    def add_header(response):
+        if 'Cache-Control' not in response.headers:
+            response.headers['Cache-Control'] = 'no-store'
+        return response
+        
     return app
