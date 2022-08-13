@@ -34,10 +34,8 @@ def init_app(app):
 
     @app.after_request
     def add_header(response):
-        if response.headers['Content-Type'] in ["text/html", "application/json"]:
+        if 'Cache-Control' not in response.headers:
             response.headers['Cache-Control'] = 'no-store'
-        else:
-            response.headers['Cache-Control'] = 'public, max-age=2592000'
         return response
         
     return app
