@@ -33,9 +33,14 @@ def init_app(app):
     app.register_blueprint(add_tag_bp, url_prefix='/admin')
 
     @app.after_request
-    def add_header(response):
+    def _(response):
         if 'Cache-Control' not in response.headers:
-            response.headers['Cache-Control'] = 'no-store'
+            for tp in ["image", "font", "css", "javascript"]:
+                if tp in response.headers["Content-Type"]:
+                    response.headers['Cache-Control'] = "public, max-age=2592000"
+                    break
+            else:
+                response.headers['Cache-Control'] = 'no-store'
         return response
         
     return app
