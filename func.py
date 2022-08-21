@@ -237,7 +237,7 @@ def findNearestMust(major, year):
     from models.Must import Must
 
     allMust = Must.query.filter(Must.year == year).all()
-    result = findNearestMustInAll(major, year)
+    result = findNearestMustInAll(major, allMust)
     return result
 
 
@@ -342,7 +342,6 @@ def process_excel(xlsx, year, delete=False):
     from const import provinces, majors, rqs
     from tqdm import tqdm
     import os
-    import re
 
     data = read_excel(xlsx)
     if "位次" in data.columns.tolist():
