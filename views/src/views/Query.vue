@@ -6,10 +6,14 @@ import { useMyStore } from "../stores/my";
 import { message } from "../discrete";
 import { useUserStore } from "../stores/user";
 import { Close, Add } from "@vicons/ionicons5";
+import { useDialog } from "naive-ui";
+import { onMounted } from "vue";
+import Cookies from "js-cookie";
 
 const route = useRoute();
 const router = useRouter();
 const axios = inject("axios");
+const dialog = useDialog();
 const myStore = useMyStore();
 const userStore = useUserStore();
 
@@ -205,6 +209,26 @@ const fetchRank = () => {
             }
         });
 };
+
+onMounted(() => {
+    if (Cookies.get("agreement") !== "true")
+        dialog.info({
+            title: "免责声明",
+            content: () => (
+                <div class="my-6 mx-4">
+                    本页面提供数据来自政府教育考试机构。
+                    系统已经采取最佳可行算法自动处理相关数据，但仍可能存在必选科目匹配错误等信息有误情况。
+                    本系统仅供辅助查询，请您以相关学校以及教育考试机构官方数据为准。
+                    网站运营者不承担有关数据正确性的个别及连带责任。
+                </div>
+            ),
+            positiveText: "确定",
+            maskClosable: false,
+            onPositiveClick: () => {
+                Cookies.set("agreement", "true", { expires: 3650 });
+            },
+        });
+});
 </script>
 
 <template>
