@@ -3,9 +3,11 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from misc.auth import create_access_token, get_current_user, hash_passwd, verify_passwd
+from misc.auth import (create_access_token, get_current_user, hash_passwd,
+                       verify_passwd)
 from models import get_db
 from models.user import User
 
@@ -37,6 +39,7 @@ def login(form: LoginForm, db: Session = Depends(get_db)):
     token = create_access_token(
         user.uid, timedelta(hours=2), admin=user.admin, name=user.name, must=must
     )
+    user.last_login = func.now()
 
     return UserToken(access_token=token)
 
