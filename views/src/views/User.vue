@@ -133,24 +133,22 @@ fetchData();
     <PasswordModify :uid="CurrentUID" v-model:show="ShowModify" />
     <p class="text-xl md:text-3xl font-bold pb-4 pt-2">用户管理</p>
     <div>
-        <div class="flex gap-x-4 mx-8 md:mx-auto md:w-1/2 lg:w-1/3 mb-6">
-            <n-input
-                @keyup.enter="fetchData"
-                v-model:value="UserKeyword"
-            ></n-input>
-            <n-button @click="fetchData">过滤</n-button>
+        <div class="flex justify-between gap-x-4 mx-8 mb-6 mt-3">
+            <div class="flex gap-x-4 items-center">
+                <n-input @keyup.enter="fetchData" v-model:value="UserKeyword" />
+                <n-button @click="fetchData">过滤</n-button>
+            </div>
+            <n-pagination
+                v-model:page="pagination.page"
+                :page-count="pagination.pageCount"
+                @update:page="fetchData"
+            />
         </div>
         <n-data-table
             :data="data"
             :columns="tableColumns"
             :loading="loading"
             class="whitespace-nowrap"
-        />
-        <n-pagination
-            class="justify-end mt-3"
-            v-model:page="pagination.page"
-            :page-count="pagination.pageCount"
-            @update:page="fetchData"
         />
     </div>
 </template>

@@ -40,6 +40,7 @@ def login(form: LoginForm, db: Session = Depends(get_db)):
         user.uid, timedelta(hours=2), admin=user.admin, name=user.name, must=must
     )
     user.last_login = func.now()
+    db.commit()
 
     return UserToken(access_token=token)
 
