@@ -1,4 +1,4 @@
-from functools import wraps, lru_cache
+from functools import lru_cache, wraps
 
 
 def isPatString(needle, haystack):
@@ -17,7 +17,8 @@ def isSuborPatString(needle, haystack):
 
 def get_school_name(name: str):
     import re
-    from const import allow_tags
+
+    from misc.const import allow_tags
 
     tags = []
     univ_name = name.split("(")[0]
@@ -31,7 +32,7 @@ def get_school_name(name: str):
 
 
 def get_must_string(now: int) -> str:
-    from const import majors
+    from misc.const import majors
 
     if not now:
         return majors[0]
@@ -44,7 +45,7 @@ def get_must_string(now: int) -> str:
 
 
 def get_mymust_string(now: int) -> str:
-    from const import majors
+    from misc.const import majors
 
     if not now:
         return ""
@@ -121,21 +122,24 @@ def findNearestMust(major, year):
 
 
 def process_excel(xlsx, year, delete=False):
-    from models import db
-    from models.major import Major
-    from models.univ import Univ
-    from models.must import Must
-    from models.tag import Tag
-    from models.rank import Rank
-    from pandas import read_excel
-    from const import provinces, majors, rqs
-    from tqdm import tqdm
     import os
 
+    from pandas import read_excel
+    from tqdm import tqdm
+
+    from misc.const import majors, provinces, rqs
+    from models import get_db
+    from models.major import Major
+    from models.must import Must
+    from models.rank import Rank
+    from models.tag import Tag
+    from models.univ import Univ
+
+    db = list(get_db())[0]
     data = read_excel(xlsx)
     if "位次" in data.columns.tolist():
-        univs = {i.uname: [i.sid, i.utags] for i in Univ.query.all()}
-        tags = {i.tname: i.tid for i in Tag.query.all()}
+        univs = {i.uname: [i.sid, i.utags] for i in db.query(Univ).all()}
+        tags = {i.tname: i.tid for i in db.query(Tag).all()}
         for i in tqdm(data.values):
             univ_name = unifyBracket(i[1])
             univ_name, tag = get_school_name(univ_name)
@@ -148,8 +152,8 @@ def process_excel(xlsx, year, delete=False):
                 for j in tag:
                     if j not in tags:
                         t = Tag(tname=j)
-                        db.session.add(t)
-                        db.session.flush()
+                        db.add(t)
+                        db.flush()
                         tid = t.tid
                         tags[j] = tid
                     else:
@@ -157,8 +161,8 @@ def process_excel(xlsx, year, delete=False):
                     tids.append(tid)
                 tids = "," + ",".join(str(i) for i in sorted(tids)) + ","
                 univ = Univ(uname=univ_name, utags=tids, province=0)
-                db.session.add(univ)
-                db.session.flush()
+                db.add(univ)
+                db.flush()
                 univs[univ_name] = [univ.sid, univ.utags]
             elif (
                 "," + ",".join(str(tags.get(i, -1)) for i in tag) + ","
@@ -168,44 +172,43 @@ def process_excel(xlsx, year, delete=False):
                 for j in tag:
                     if j not in tags:
                         t = Tag(tname=j)
-                        db.session.add(t)
-                        db.session.flush()
+                        db.add(t)
+                        db.flush()
                         tid = t.tid
                         tags[j] = tid
                     else:
                         tid = tags[j]
                     tids.append(tid)
                 tids = "," + ",".join(str(i) for i in sorted(tids)) + ","
-                univ = Univ.query.filter_by(sid=univs[univ_name][0]).first()
+                univ = db.query(Univ).filter_by(sid=univs[univ_name][0]).first()
                 univ.utags = tids
-                db.session.flush()
+                db.flush()
 
             univ_id = univs[univ_name][0]
 
-            if (b := Major.query.filter_by(sid=univ_id, mname=major).first()) is None:
+            if (
+                b := db.query(Major).filter_by(sid=univ_id, mname=major).first()
+            ) is None:
                 b = Major(sid=univ_id, mname=major)
-                db.session.add(b)
-                db.session.flush()
+                db.add(b)
+                db.flush()
 
             if (
-                a := db.session.query(Rank)
-                .filter(Rank.mid == b.mid, Rank.year == year)
-                .first()
+                a := db.query(Rank).filter(Rank.mid == b.mid, Rank.year == year).first()
             ) is None:
-                db.session.add(
-                    Rank(
-                        mid=b.mid, year=year, rank=rank, schedule=schedule, score=score
-                    )
+                rank = Rank(
+                    mid=b.mid, year=year, rank=rank, schedule=schedule, score=score
                 )
-                db.session.flush()
+                db.add(rank)
+                db.flush()
             else:
                 a.rank = rank
                 a.schedule = schedule
                 a.score = score
-                db.session.flush()
+                db.flush()
 
     elif "选考科目要求" in data.columns.tolist():
-        univs = {i.uname: [i.sid, i.province] for i in Univ.query.all()}
+        univs = {i.uname: [i.sid, i.province] for i in db.query(Univ).all()}
         for i in tqdm(data.values):
             province = i[0]
             univ_name = unifyBracket(i[1])
@@ -232,33 +235,34 @@ def process_excel(xlsx, year, delete=False):
 
             if univ_name not in univs:
                 univ = Univ(uname=univ_name, province=province_id)
-                db.session.add(univ)
-                db.session.flush()
+                db.add(univ)
+                db.flush()
                 univs[univ_name] = [univ.sid, univ.province]
             elif univs[univ_name][1] != province:
-                univ = db.session.query(Univ).filter(Univ.uname == univ_name).first()
+                univ = db.query(Univ).filter(Univ.uname == univ_name).first()
                 univ.province = province_id
-                db.session.flush()
+                db.flush()
                 univs[univ_name][1] = province_id
 
             univ_id = univs[univ_name][0]
 
             if (
-                a := Must.query.filter_by(mname=major, sid=univ_id, year=year).first()
+                a := db.query(Must)
+                .filter_by(mname=major, sid=univ_id, year=year)
+                .first()
             ) is None:
-                db.session.add(
-                    Must(
-                        mname=major, year=year, sid=univ_id, must=must, include=include
-                    )
+                must = Must(
+                    mname=major, year=year, sid=univ_id, must=must, include=include
                 )
+                db.add(must)
             else:
                 a.must = must
                 a.include = include
-            db.session.flush()
+            db.flush()
 
     if delete:
         os.remove(xlsx)
-    db.session.commit()
+    db.commit()
 
 
 def stringSim(a, b):
@@ -301,16 +305,19 @@ def findNearestMustInAllSchool(name, sequence):
 
 
 def connectMust():
+    from itertools import groupby
+
+    from tqdm import tqdm
+
+    from models import get_db
     from models.conne import Conne
     from models.major import Major
     from models.must import Must
     from models.rank import Rank
-    from models import db
-    from tqdm import tqdm
-    from itertools import groupby
 
-    allMajor = Major.query.all()
-    allMust = Must.query.all()
+    db = list(get_db())[0]
+    allMajor = db.query(Major).all()
+    allMust = db.query(Must).all()
     schoolRank = (
         db.session.query(Major.sid, db.func.avg(Rank.score))
         .outerjoin(Major, Major.mid == Rank.mid)
@@ -348,28 +355,30 @@ def connectMust():
                 )
             if not res:
                 continue
-            if (a := Conne.query.filter_by(mid=i.mid, year=j).first()) is None:
+            if (a := db.query(Conne).filter_by(mid=i.mid, year=j).first()) is None:
                 conn = Conne(i.mid, res.mmid, j)
-                db.session.add(conn)
+                db.add(conn)
             elif a.mmid != res.mmid:
                 a.mmid = res.mmid
-    db.session.commit()
+    db.commit()
 
 
 def cleanAll():
-    from models.univ import Univ
+    from models import get_db
+    from models.conne import Conne
     from models.major import Major
     from models.must import Must
-    from models.conne import Conne
     from models.rank import Rank
-    from models import db
+    from models.univ import Univ
 
-    Univ.query.delete()
-    Major.query.delete()
-    Must.query.delete()
-    Rank.query.delete()
-    Conne.query.delete()
-    db.session.commit()
+    db = list(get_db())[0]
+
+    db.query(Univ).delete()
+    db.query(Major).delete()
+    db.query(Must).delete()
+    db.query(Rank).delete()
+    db.query(Conne).delete()
+    db.commit()
 
     return True
 

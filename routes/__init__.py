@@ -15,6 +15,7 @@ def init_app_routes(app: FastAPI):
     from .query import router as query_router
     from .user import router as user_router
     from .users import router as users_router
+    from .manage import router as manage_router
 
     app.include_router(list_router, prefix="/api/list", tags=["list"])
     app.include_router(get_router, prefix="/api/get", tags=["get"])
@@ -24,6 +25,12 @@ def init_app_routes(app: FastAPI):
         users_router,
         prefix="/api/users",
         tags=["users"],
+        dependencies=[Depends(admin_required)],
+    )
+    app.include_router(
+        manage_router,
+        prefix="/api/manage",
+        tags=["manage"],
         dependencies=[Depends(admin_required)],
     )
 

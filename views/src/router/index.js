@@ -109,6 +109,14 @@ const router = createRouter({
                         title: "数据上传",
                     },
                 },
+                {
+                    path: "tag",
+                    name: "tag",
+                    component: () => import("../views/Tag.vue"),
+                    meta: {
+                        title: "添加标签",
+                    },
+                },
             ],
         },
         {

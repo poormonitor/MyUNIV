@@ -1,14 +1,22 @@
 <script setup>
 import { ArchiveOutline as ArchiveIcon } from "@vicons/ionicons5";
+import { message } from "../discrete";
+
+const axios = inject("axios");
 const fileList = ref([]);
 const time = ref(new Date().getTime());
 
-const disableLaterDate = (ts) => {
-    return ts > Date.now();
-};
-
 const upload = () => {
-    console.log(fileList.value);
+    if (!fileList.value) return message.error("请先选择文件");
+    const formData = new FormData();
+    formData.append("file", fileList.value[0].file);
+    formData.append("year", new Date(time.value).getFullYear());
+    axios.post("/manage/data", formData).then((response) => {
+        if (response.data.result == "success") {
+            fileList.value = [];
+            message.success("开始处理");
+        }
+    });
 };
 </script>
 <template>
@@ -27,11 +35,7 @@ const upload = () => {
 
     <n-form>
         <n-form-item label="数据年份">
-            <n-date-picker
-                v-model:value="time"
-                :is-date-disabled="disableLaterDate"
-                type="year"
-            />
+            <n-date-picker v-model:value="time" type="year" />
         </n-form-item>
         <n-form-item label="上传文件">
             <n-upload

@@ -1,7 +1,7 @@
 <script setup lang="jsx">
 import { useRoute, useRouter } from "vue-router";
 import { NIcon } from "naive-ui";
-import { Cog, Documents, People } from "@vicons/ionicons5";
+import { FileTrayFull, Documents, People } from "@vicons/ionicons5";
 
 const collapsed = inject("collapsed");
 const route = useRoute();
@@ -22,6 +22,11 @@ const menuOptions = [
         label: renderLabel("数据上传", "upload"),
         icon: renderIcon(Documents),
         key: "upload",
+    },
+    {
+        label: renderLabel("添加标签", "tag"),
+        icon: renderIcon(FileTrayFull),
+        key: "tag",
     },
 ];
 </script>

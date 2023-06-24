@@ -201,7 +201,7 @@ const must_options = majors.slice(1).map((item, index) => ({
 
 <template>
     <div class="mx-8 w-auto lg:mx-auto lg:w-[70vw] my-8">
-        <n-form class="grid grid-cols-4 gap-x-8">
+        <n-form class="grid grid-cols-2 gap-x-4 md:grid-cols-4 md:gap-x-8">
             <n-form-item label="省份">
                 <n-select
                     v-model:value="info.province"

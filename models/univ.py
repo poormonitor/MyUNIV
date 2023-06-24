@@ -7,5 +7,5 @@ class Univ(Base):
 
     sid = Column(Integer, primary_key=True, autoincrement=True)
     uname = Column(String(64), nullable=False, index=True)
-    utags = Column(String(64), nullable=False)
-    province = Column(Integer, nullable=False, index=True)
+    utags = Column(String(64), nullable=False, default="")
+    province = Column(Integer, nullable=False, index=True, default=0)
