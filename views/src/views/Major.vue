@@ -188,16 +188,16 @@ const delMajor = (mid) => {
                 </div>
             </div>
             <n-button
-                :type="myStore.has(route.params.mid) ? 'error' : 'info'"
+                :type="myStore.has(data.mid) ? 'error' : 'info'"
                 secondary
                 @click="
                     () =>
-                        myStore.has(route.params.mid)
-                            ? delMajor(route.params.mid)
-                            : addMajor(route.params.mid)
+                        myStore.has(data.mid)
+                            ? delMajor(data.mid)
+                            : addMajor(data.mid)
                 "
             >
-                {{ myStore.has(route.params.mid) ? "删除备选" : "加入备选" }}
+                {{ myStore.has(data.mid) ? "删除备选" : "加入备选" }}
             </n-button>
         </div>
         <div class="mb-4 flex flex-wrap gap-2" v-if="tags">

@@ -18,6 +18,22 @@ const upload = () => {
         }
     });
 };
+
+const conn = () => {
+    axios.post("/manage/conn").then((response) => {
+        if (response.data.result == "success") {
+            message.success("开始处理");
+        }
+    });
+};
+
+const clean = () => {
+    axios.post("/manage/clean").then((response) => {
+        if (response.data.result == "success") {
+            message.success("清空成功");
+        }
+    });
+};
 </script>
 <template>
     <p class="text-xl md:text-3xl font-bold pb-4 pt-2">上传数据</p>
@@ -60,10 +76,29 @@ const upload = () => {
         </n-form-item>
     </n-form>
     <div class="flex justify-center">
-        <div class="w-32">
-            <n-button type="success" :block="true" @click="upload"
-                >上传</n-button
-            >
+        <div class="w-64 flex flex-col gap-y-4">
+            <div class="flex flex-col">
+                <n-button type="success" :block="true" @click="upload">
+                    上传
+                </n-button>
+            </div>
+            <div class="flex gap-x-4">
+                <div class="basis-1/2">
+                    <n-button type="info" :block="true" @click="conn">
+                        链接数据
+                    </n-button>
+                </div>
+                <div class="basis-1/2">
+                    <n-popconfirm @positive-click="clean">
+                        <template #trigger>
+                            <n-button type="error" :block="true">
+                                清空数据
+                            </n-button>
+                        </template>
+                        确认删除？
+                    </n-popconfirm>
+                </div>
+            </div>
         </div>
     </div>
 </template>

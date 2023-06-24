@@ -1,7 +1,7 @@
 <script setup lang="jsx">
 import { NIcon } from "naive-ui";
 import { useRoute, RouterLink } from "vue-router";
-import { School, AppsOutline } from "@vicons/ionicons5";
+import { School, AppsOutline,Archive } from "@vicons/ionicons5";
 import UserPanel from "./UserPanel.vue";
 
 const route = useRoute();
@@ -26,7 +26,7 @@ const menuOptions = [
         key: "query",
     },
     {
-        label: renderLabel(School, "my", "备选专业"),
+        label: renderLabel(Archive, "my", "备选专业"),
         key: "my",
     },
 ];
@@ -59,7 +59,7 @@ const menuOptions = [
         <div class="pl-3 select-none flex items-baseline">
             <router-link
                 :to="{ name: 'home' }"
-                class="font-sans text-2xl font-bold gradient-title from-indigo-600 via-violet-500 to-purple-400"
+                class="font-sans text-2xl font-bold gradient-title from-cyan-500 via-sky-600 to-blue-800"
             >
                 MyUNIV
             </router-link>

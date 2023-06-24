@@ -1,13 +1,9 @@
 <script setup lang="jsx">
 import { useRoute, useRouter } from "vue-router";
 import { provinces, majors } from "../const";
-import {
-    getMustString,
-    fixInteger,
-    filterEmptyObject,
-    compareObjects,
-} from "../func";
+import { getMustString, fixInteger, filterEmptyObject } from "../func";
 import { useMyStore } from "../stores/my";
+import { message } from "../discrete";
 import { useUserStore } from "../stores/user";
 import { Close, Add } from "@vicons/ionicons5";
 
@@ -48,6 +44,8 @@ fixInteger(info, "utags");
 fixInteger(info, "nutags");
 fixInteger(info, "mymust");
 
+const score = reactive({ show: false, year: info.year, score: 600 });
+
 axios.get("/list/tags").then((response) => {
     tags.value = response.data.map((item) => ({
         label: item.tname,
@@ -61,7 +59,8 @@ Promise.all([
             label: item,
             value: item,
         }));
-        if (!info.year) info.year = Math.max(...response.data);
+
+        if (!info.year) score.year = info.year = Math.max(...response.data);
     }),
     axios.get("/list/musts").then((response) => {
         must_years.value = response.data.map((item) => ({
@@ -108,7 +107,6 @@ const tableColumns = [
         key: "univ",
         render: (row) => (
             <router-link
-                target="_blank"
                 class="text-sky-800 hover:text-sky-900 transition"
                 to={{ name: "univ", params: { sid: row[1].sid } }}
             >
@@ -121,7 +119,6 @@ const tableColumns = [
         key: "major",
         render: (row) => (
             <router-link
-                target="_blank"
                 class="text-sky-800 hover:text-sky-900 transition"
                 to={{ name: "major", params: { mid: row[0].mid } }}
             >
@@ -197,9 +194,44 @@ const must_options = majors.slice(1).map((item, index) => ({
     label: item,
     value: index + 1,
 }));
+
+const fetchRank = () => {
+    axios
+        .get("/get/score", { params: { score: score.score, year: score.year } })
+        .then((response) => {
+            if (response.data) {
+                info.rank = response.data.rank;
+                score.show = false;
+            }
+        });
+};
 </script>
 
 <template>
+    <n-modal
+        v-model:show="score.show"
+        title="分数转换"
+        preset="dialog"
+        positive-text="确认"
+        negative-text="取消"
+        class="w-4/5 md:3/5 lg:w-2/5"
+        @positive-click="fetchRank"
+    >
+        <n-form class="px-8 pt-8">
+            <n-form-item label="年份">
+                <n-select
+                    v-model:value="score.year"
+                    :options="rank_years"
+                ></n-select>
+            </n-form-item>
+            <n-form-item label="分数">
+                <n-input-number
+                    class="w-full"
+                    v-model:value="score.score"
+                ></n-input-number>
+            </n-form-item>
+        </n-form>
+    </n-modal>
     <div class="mx-8 w-auto lg:mx-auto lg:w-[70vw] my-8">
         <n-form class="grid grid-cols-2 gap-x-4 md:grid-cols-4 md:gap-x-8">
             <n-form-item label="省份">
@@ -233,7 +265,10 @@ const must_options = majors.slice(1).map((item, index) => ({
                 <n-input v-model:value="info.major"></n-input>
             </n-form-item>
             <n-form-item label="位次号">
-                <n-input v-model:value="info.rank"></n-input>
+                <div class="flex gap-x-2">
+                    <n-input v-model:value="info.rank"></n-input>
+                    <n-button @click="score.show = true"> 转换 </n-button>
+                </div>
             </n-form-item>
             <n-form-item label="区间">
                 <n-input v-model:value="info.rank_range"></n-input>
@@ -241,7 +276,6 @@ const must_options = majors.slice(1).map((item, index) => ({
             <n-form-item label="投档数据">
                 <n-select
                     v-model:value="info.year"
-                    max-tag-count="responsive"
                     :options="rank_years"
                 ></n-select>
             </n-form-item>
@@ -259,7 +293,6 @@ const must_options = majors.slice(1).map((item, index) => ({
             <n-form-item label="选考标准">
                 <n-select
                     v-model:value="info.standard"
-                    max-tag-count="responsive"
                     :options="must_years"
                 ></n-select>
             </n-form-item>

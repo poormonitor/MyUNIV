@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from fastapi import APIRouter, UploadFile, Form, Depends
 from sqlalchemy.orm import Session
-from misc.func import get_school_name, unifyBracket
+from misc.func import get_school_name, unifyBracket, cleanAll
 from models import get_db
 from models.tag import Tag
 from models.univ import Univ
@@ -56,7 +56,22 @@ def set_tag(data: SetTag, db: Session = Depends(get_db)):
             utags.append(str(tag_id))
             utags = list(set(utags))
             a.utags = "," + ",".join(utags) + ","
-            
+
     db.commit()
+
+    return {"result": "success"}
+
+
+@router.post("/conn")
+def go_conn():
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+    subprocess.Popen([sys.executable, os.path.join(path, "conn.py")])
+
+    return {"result": "success"}
+
+
+@router.post("/clean")
+def go_clean():
+    cleanAll()
 
     return {"result": "success"}

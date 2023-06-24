@@ -29,6 +29,7 @@ const submit = () => {
         <n-form-item label="上传文件">
             <n-input
                 v-model:value="data.school"
+                class="h-48"
                 type="textarea"
                 placeholder="学校列表，换行分割"
             />

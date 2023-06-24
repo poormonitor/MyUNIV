@@ -9,7 +9,11 @@ const router = useRouter();
             <Header></Header>
         </n-layout-header>
         <n-layout-content>
-            <router-view></router-view>
+            <router-view v-slot="{ Component }">
+                <keep-alive>
+                    <component :is="Component" />
+                </keep-alive>
+            </router-view>
         </n-layout-content>
         <n-layout-footer bordered position="absolute">
             <Footer></Footer>

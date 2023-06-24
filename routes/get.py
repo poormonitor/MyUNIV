@@ -56,6 +56,7 @@ def get_univ(sid: int, db: Session = Depends(get_db)) -> UnivResult:
 
 
 class MajorResult(BaseModel):
+    mid: int
     mname: str
     univ: OneUniv
     musts: List[OneMust]
@@ -83,28 +84,25 @@ def get_major(mid: int, db: Session = Depends(get_db)) -> MajorResult:
     return MajorResult.parse_obj(data)
 
 
-class ScoreForm(BaseModel):
-    year: int
-    score: int
-
-
 @router.get("/score")
-def get_score(form: ScoreForm, db: Session = Depends(get_db)):
+def get_score(year: int, score: int, db: Session = Depends(get_db)):
     rank = (
-        Rank.query.filter_by(year=form.year)
+        db.query(Rank)
+        .filter_by(year=year)
         .filter(Rank.rank != 0)
-        .order_by(func.abs(Rank.score - form.score).asc())
+        .order_by(func.abs(Rank.score - score).asc())
         .order_by(Rank.rank.desc())
         .first()
     )
 
     if not rank:
         rank = 0
-    elif rank.score != form.score:
+    elif rank.score != score:
         s_rank = (
-            Rank.query.filter_by(year=form.year)
+            db.query(Rank)
+            .filter_by(year=year)
             .filter(Rank.rank != 0)
-            .order_by(Rank.rank.asc(), func.abs(Rank.score - form.score).desc())
+            .order_by(Rank.rank.asc(), func.abs(Rank.score - score).desc())
             .first()
         )
         rank = (rank.rank + s_rank.rank) // 2 if s_rank else rank.rank

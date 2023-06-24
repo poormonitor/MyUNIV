@@ -307,6 +307,7 @@ def findNearestMustInAllSchool(name, sequence):
 def connectMust():
     from itertools import groupby
 
+    from sqlalchemy import func
     from tqdm import tqdm
 
     from models import get_db
@@ -319,10 +320,10 @@ def connectMust():
     allMajor = db.query(Major).all()
     allMust = db.query(Must).all()
     schoolRank = (
-        db.session.query(Major.sid, db.func.avg(Rank.score))
+        db.query(Major.sid, func.avg(Rank.score))
         .outerjoin(Major, Major.mid == Rank.mid)
         .group_by(Major.sid)
-        .order_by(db.func.avg(Rank.score))
+        .order_by(func.avg(Rank.score))
         .all()
     )
     schoolRank = {i[0]: i[1] for i in schoolRank}
@@ -370,6 +371,7 @@ def cleanAll():
     from models.must import Must
     from models.rank import Rank
     from models.univ import Univ
+    from models.tag import Tag
 
     db = list(get_db())[0]
 
@@ -378,6 +380,7 @@ def cleanAll():
     db.query(Must).delete()
     db.query(Rank).delete()
     db.query(Conne).delete()
+    db.query(Tag).delete()
     db.commit()
 
     return True
