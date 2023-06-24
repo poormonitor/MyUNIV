@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, func
 from . import Base
 
 
@@ -9,6 +9,6 @@ class User(Base):
     name = Column(String(64), nullable=False)
     admin = Column(Boolean, nullable=False, default=False)
     passwd = Column(String(64), nullable=False)
-    last_login = Column(DateTime, nullable=True)
+    last_login = Column(DateTime, nullable=False, default=func.now())
     must = Column(Integer, nullable=True, default=0)
     mymajor = Column(Text, nullable=True, default=None)

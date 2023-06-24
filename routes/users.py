@@ -22,6 +22,7 @@ class Users(BaseModel):
 @router.get("/list")
 def list_users(s: str = "", page: int = 0, db: Session = Depends(get_db)):
     query = db.query(User).filter(or_(User.name.contains(s), User.uid.contains(s)))
+    query = query.order_by(User.last_login.desc())
 
     cnt = query.count()
     users = query.offset((page - 1) * 10).limit(10).all()

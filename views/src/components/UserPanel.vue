@@ -16,6 +16,7 @@ const userStore = useUserStore();
 const myStore = useMyStore();
 
 const router = useRouter();
+const route = useRoute();
 
 const showPasswd = ref(false);
 const showMust = ref(false);
@@ -46,7 +47,7 @@ const optionsLogged = [
         target: () => {
             userStore.logout();
             myStore.reset();
-            router.push({ name: "home" });
+            if (route.meta.requiresAuth) router.push({ name: "home" });
         },
     },
 ];

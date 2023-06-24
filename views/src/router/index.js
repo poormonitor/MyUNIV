@@ -131,13 +131,13 @@ router.beforeEach((to, from) => {
         userStore.uid &&
         userStore.expires <= new Date().getTime()
     ) {
-        message.error("登录过期，请重新登录");
+        message.info("登录过期，请重新登录");
         userStore.logout();
         myStore.reset();
         return { name: "login" };
     }
     if (to.meta.requiresAuth && !userStore.uid) {
-        message.error("请先登录");
+        message.info("请先登录");
         return { name: "login" };
     }
     if (to.meta.requiresAdmin && !userStore.admin) {

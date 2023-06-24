@@ -43,7 +43,7 @@ instance.interceptors.response.use(
 
             userStore.logout();
             myStore.reset();
-            message.error("登录失效，请重新登录。");
+            message.info("登录失效，请重新登录。");
             router.push({ name: "login" });
         } else if (typeof error.response?.data?.detail === "string") {
             message.error(error.response.data.detail);

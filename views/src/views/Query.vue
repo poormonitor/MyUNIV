@@ -283,7 +283,7 @@ const must_options = majors.slice(1).map((item, index) => ({
                     <template #suffix> 个专业 </template>
                 </n-statistic>
             </div>
-            <div v-if="data.total">
+            <div v-if="loading || data.total">
                 <n-data-table
                     :columns="tableColumns"
                     :data="data.list"
