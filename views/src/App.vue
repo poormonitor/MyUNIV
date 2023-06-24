@@ -17,9 +17,9 @@ const themeOverrides = {
 };
 
 const collapsed = ref(window.innerWidth <= 768);
-window.onresize = () => {
+window.addEventListener("resize", () => {
     collapsed.value = window.innerWidth <= 768;
-};
+});
 provide("collapsed", collapsed);
 </script>
 

@@ -1,5 +1,6 @@
 from functools import wraps, lru_cache
 
+
 def isPatString(needle, haystack):
     for i in needle:
         if i in haystack:
@@ -29,50 +30,6 @@ def get_school_name(name: str):
     return univ_name, tags
 
 
-def get_what_i_can_choose(mymust: str) -> list:
-    from itertools import combinations
-
-    choices = [i for i in range(1, 8)]
-    musts = list(map(int, list(mymust)))
-    ans = ["0"]
-    # Perfectly matched
-    for i in range(1, len(musts) + 1):
-        for j in combinations(musts, i):
-            ans.append(str(i) + "".join(map(str, j)))
-    # With redundancy
-    for i in range(1, 4):
-        for j in range(1, 4 - i):
-            for k in combinations(musts, i):
-                new_choice = choices[:]
-                for p in k:
-                    new_choice.remove(p)
-                for l in combinations(new_choice, j):
-                    ans.append(str(i) + "".join(map(str, sorted(k + l))))
-    return sorted(list(set(ans)))
-
-
-def get_what_i_can_choose_most(mymust: str) -> list:
-    from itertools import combinations
-
-    choices = [i for i in range(1, 8)]
-    musts = list(map(int, list(mymust)))
-    ans = []
-    # Perfectly matched
-    for i in range((len(musts) + 1) // 2, len(musts) + 1):
-        for j in combinations(musts, i):
-            ans.append(str(i) + "".join(map(str, j)))
-    # With redundancy
-    for i in range((len(musts) + 1) // 2, len(musts) + 1):
-        for j in range(1, 4 - i):
-            for k in combinations(musts, i):
-                new_choice = choices[:]
-                for p in k:
-                    new_choice.remove(p)
-                for l in combinations(new_choice, j):
-                    ans.append(str(i) + "".join(map(str, sorted(k + l))))
-    return ans
-
-
 def get_must_string(now: int) -> str:
     from const import majors
 
@@ -96,6 +53,35 @@ def get_mymust_string(now: int) -> str:
     for i in now:
         ans.append(majors[int(i)])
     return ", ".join(ans)
+
+
+def lru_cache_ignored(*args, **kwargs):
+    lru_decorator = lru_cache(*args, **kwargs)
+
+    class _Equals(object):
+        def __init__(self, o):
+            self.obj = o
+
+        def __eq__(self, other):
+            return True
+
+        def __hash__(self):
+            return 0
+
+    def decorator(f):
+        @lru_decorator
+        def helper(arg1, *args, **kwargs):
+            args = map(lambda x: x.obj, args)
+            return f(arg1, *args, **kwargs)
+
+        @wraps(f)
+        def function(arg1, *args, **kwargs):
+            args = map(_Equals, args)
+            return helper(arg1, *args, **kwargs)
+
+        return function
+
+    return decorator
 
 
 def hash_dict(func):
@@ -132,96 +118,6 @@ def findNearestMust(major, year):
     allMust = Must.query.filter(Must.year == year).all()
     result = findNearestMustInAll(major, allMust)
     return result
-
-
-@hash_dict
-@lru_cache(512)
-def findResult(page, info):
-    from models.major import Major
-    from models.univ import Univ
-    from models.rank import Rank
-    from models.conne import Conne
-    from models.must import Must
-    from models import db
-
-    result = db.session.query(Major, Univ, Rank, Must, Conne)
-    result = result.select_from(Rank)
-    result = result.outerjoin(Major, Major.mid == Rank.mid)
-    result = result.outerjoin(Univ, Univ.sid == Major.sid)
-    result = result.outerjoin(Conne, Conne.mid == Rank.mid)
-    result = result.outerjoin(
-        Must, db.and_(Conne.mmid == Must.mmid, Conne.year == Must.year)
-    )
-
-    if info["school"]:
-        for i in info["school"].split(" "):
-            result = result.filter(Univ.uname.like("%" + i + "%"))
-
-    if info["major"]:
-        result = result.filter(Major.mname.like("%" + info["major"] + "%"))
-
-    result = result.filter(Rank.year == info["year"])
-
-    if info["rank"]:
-        rank = info["rank"]
-        if not info["rank_range"]:
-            result = result.filter(Rank.rank >= rank).filter(Rank.rank != 0)
-            result = result.order_by(Rank.rank.asc())
-        else:
-            result = result.filter(
-                rank - info["rank_range"] <= Rank.rank,
-                Rank.rank <= rank + info["rank_range"],
-            ).filter(Rank.rank != 0)
-            result = result.order_by(db.func.abs(Rank.rank - rank).asc())
-    else:
-        result = result.order_by(Univ.sid.asc())
-
-    if info["mymust"]:
-        mymust = "".join(map(str, info["mymust"]))
-        result = result.order_by(Must.must.desc())
-        if info["accordation"]:
-            what_i_can = get_what_i_can_choose_most(mymust)
-            result = result.order_by(Must.must)
-        else:
-            what_i_can = get_what_i_can_choose(mymust)
-        result = result.filter(Must.must.in_(what_i_can))
-
-    result = result.filter(Must.year == info["standard"])
-    result = result.group_by(Major.mid)
-
-    if info["utags"]:
-        condition = db.or_(Univ.utags.like("%," + str(i) + ",%") for i in info["utags"])
-        result = result.filter(condition)
-
-    if info["nutags"]:
-        ncondition = db.not_(
-            db.and_(Univ.utags.like("%," + str(i) + ",%") for i in info["nutags"])
-        )
-        result = result.filter(ncondition)
-
-    if info["province"]:
-        result = result.filter(Univ.province.in_(info["province"]))
-
-    if info["sort"]:
-        result = result.filter(
-            db.or_(Must.include.contains(i) for i in info["sort"].split(" "))
-        )
-
-    count = result.count()
-
-    if page:
-        result = result.offset((page - 1) * 50).limit(50).all()
-    else:
-        result = result.all()
-
-    result = [
-        i if i[3] else (i[0], i[1], i[2], findNearestMust(i[0].mname, info["standard"]))
-        for i in result
-    ]
-
-    db.session.expunge_all()
-
-    return count, result
 
 
 def process_excel(xlsx, year, delete=False):
@@ -481,7 +377,7 @@ def cleanAll():
 def datetime_to_str(date_time):
     if not date_time:
         return ""
-        
+
     from pytz import timezone
 
     tz = timezone("Asia/Shanghai")

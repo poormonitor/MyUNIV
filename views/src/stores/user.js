@@ -5,34 +5,37 @@ export const useUserStore = defineStore(
     "user",
     () => {
         const uid = ref(null);
-        const nick = ref(null);
+        const name = ref(null);
         const access_token = ref(null);
         const admin = ref(false);
+        const must = ref([]);
         const expires = ref(new Date().getTime());
 
         function login(
             user_access_token,
             user_uid,
-            user_nick,
+            user_name,
             user_admin,
-            user_expires
+            user_expires,
+            user_must
         ) {
             access_token.value = user_access_token;
             uid.value = user_uid;
-            nick.value = user_nick;
+            name.value = user_name;
             admin.value = user_admin;
             expires.value = user_expires;
+            must.value = user_must;
         }
 
         function logout() {
             uid.value = null;
-            nick.value = null;
+            name.value = null;
             admin.value = false;
             access_token.value = null;
             expires.value = new Date().getTime();
         }
 
-        return { uid, access_token, admin, nick, expires, login, logout };
+        return { uid, access_token, admin, name, expires, must, login, logout };
     },
     {
         persist: {

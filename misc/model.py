@@ -1,37 +1,66 @@
-from itertools import groupby
-from typing import Dict, List
+from typing import List, Tuple
 
-from sqlalchemy.orm import Session
-
-from models.exam import Exam
-from models.examgroup import ExamGroup
-from models.file import File
-from models.jump import Jump
-from models.paper import Paper
-from models.task import Task
-from models.union import Union
-from models.user import User
+from pydantic import BaseModel
 
 
-def get_courses(lst: List[Exam]) -> Dict[int, List[int]]:
-    courses = {}
-    for k, g in groupby(lst, lambda x: x.grade):
-        courses[k] = list({(c.course, c.eid) for c in g})
-    return courses
+class OneTag(BaseModel):
+    tid: str
+    tname: str
 
 
-def get_owner(uid: str, db: Session):
-    owner = db.query(User).filter_by(uid=uid).filter_by(admin=True).first()
-    return owner.nick if owner else None
+class OneUniv(BaseModel):
+    sid: str
+    uname: str
+    utags: List[int]
+    province: int
 
 
-model_map = {
-    "exam": [Exam, "eid"],
-    "examgroup": [ExamGroup, "egid"],
-    "file": [File, "fid"],
-    "paper": [Paper, "pid"],
-    "union": [Union, "nid"],
-    "user": [User, "uid"],
-    "task": [Task, "tid"],
-    "jump": [Jump, "jid"],
-}
+class OneRank(BaseModel):
+    rmid: int
+    year: int
+    rank: int
+    score: int
+    schedule: int
+    mid: int
+
+
+class OneMajor(BaseModel):
+    mid: int
+    mname: str
+    sid: int
+
+
+class OneMust(BaseModel):
+    mmid: int
+    mname: str
+    year: int
+    sid: int
+    must: int
+    include: str
+
+
+def trans_utags(univ):
+    data = vars(univ)
+    if not isinstance(data["utags"], list):
+        if data["utags"] == ",,":
+            data["utags"] = []
+        else:
+            data["utags"] = list(map(int, data["utags"].strip(",").split(",")))
+    return data
+
+
+def parse_result(rs):
+    return [
+        (
+            OneMajor.parse_obj(vars(i[0])),
+            OneUniv.parse_obj(trans_utags(i[1])),
+            OneRank.parse_obj(vars(i[2])),
+            OneMust.parse_obj(vars(i[3])),
+        )
+        for i in rs
+    ]
+
+
+class QueryResult(BaseModel):
+    total: int
+    result: List[Tuple[OneMajor, OneUniv, OneRank, OneMust]]

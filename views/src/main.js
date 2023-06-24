@@ -9,13 +9,13 @@ import "./assets/index.css";
 import router from "./router";
 
 const app = createApp(App);
+app.use(AxiosPlugin);
+app.use(router);
+
 const pinia = createPinia();
 
 pinia.use(piniaPluginPersistedstate);
-
 app.use(pinia);
-app.use(AxiosPlugin);
-app.use(router);
 
 const meta = document.createElement("meta");
 meta.name = "naive-ui-style";

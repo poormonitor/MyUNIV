@@ -11,5 +11,4 @@ else:
     year = int(sys.argv[2])
     delete = True
 
-with app.app_context():
-    process_excel(filename, year, delete)
+process_excel(filename, year, delete)

@@ -11,8 +11,21 @@ from config import get_version
 
 def init_app_routes(app: FastAPI):
     from .list import router as list_router
+    from .get import router as get_router
+    from .query import router as query_router
+    from .user import router as user_router
+    from .users import router as users_router
 
     app.include_router(list_router, prefix="/api/list", tags=["list"])
+    app.include_router(get_router, prefix="/api/get", tags=["get"])
+    app.include_router(query_router, prefix="/api/query", tags=["query"])
+    app.include_router(user_router, prefix="/api/user", tags=["user"])
+    app.include_router(
+        users_router,
+        prefix="/api/users",
+        tags=["users"],
+        dependencies=[Depends(admin_required)],
+    )
 
     @app.get("/")
     def index():
@@ -35,7 +48,7 @@ def init_app_routes(app: FastAPI):
         response = await call_next(request)
         process_time = time.time() - start_time
         response.headers["X-Process-Time"] = str(round(process_time * 1000, 4))
-        response.headers["X-MyExam-Version"] = get_version()
+        response.headers["X-MyUniv-Version"] = get_version()
         return response
 
     @app.middleware("http")

@@ -10,7 +10,7 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
-    MYEXAM_SECRET_KEY: str = codecs.encode(os.urandom(32), "hex").decode()
+    SECRET_KEY: str = codecs.encode(os.urandom(32), "hex").decode()
     DB_PATH: str = "sqlite:///data.sqlite"
     MINIAPP_APP_ID: str = ""
     MINIAPP_APP_SECRET: str = ""
@@ -23,7 +23,7 @@ class Settings(BaseSettings):
 
 
 def get_secret_key() -> str:
-    return get_config("MYEXAM_SECRET_KEY")
+    return get_config("SECRET_KEY")
 
 
 @lru_cache()

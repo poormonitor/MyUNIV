@@ -1,26 +1,56 @@
-import md5 from "crypto-js/md5";
+import { majors } from "./const";
 
-const GetYearMonth = (timestamp) => {
-    let date = new Date(timestamp);
-    let year = date.getFullYear();
-    let month = date.getMonth() + 1;
-    return `${year}年${month}月`;
+const getMustString = (must) => {
+    if (!must) {
+        return majors[0];
+    }
+
+    let now = String(must);
+    let cnt = now[0];
+    let ans = [];
+    for (let i = 1; i < now.length; i++) {
+        ans.push(majors[Number(now[i])]);
+    }
+    return ans.join(", ") + " " + `(必选${Number(cnt)}门)`;
 };
 
-const GetFullTime = (timestamp) => {
-    let date = new Date(timestamp);
-    return date.toISOString().substring(0, 19).replace("T", " ");
+const fixInteger = (obj, name) => {
+    obj[name] = obj[name].map((item) => Number(item));
 };
 
-const blobToHash = async (blob) => {
-    return new Promise((resolve) => {
-        let reader = new FileReader();
-        reader.readAsBinaryString(blob);
-        reader.onloadend = () => {
-            let hash = md5(reader.result).toString();
-            resolve(hash);
-        };
-    });
+const filterEmptyObject = (obj) => {
+    let filteredObj = {};
+    for (let key in obj) {
+        if (obj[key] !== "") {
+            filteredObj[key] = obj[key];
+        }
+    }
+    return filteredObj;
 };
 
-export { GetYearMonth, GetFullTime, blobToHash };
+function compareObjects(obj1, obj2) {
+    if (typeof obj1 !== "object" || typeof obj2 !== "object") {
+        return obj1 == obj2;
+    }
+
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+
+    if (keys1.length !== keys2.length) {
+        return false;
+    }
+
+    for (let key of keys1) {
+        if (!obj2.hasOwnProperty(key)) {
+            return false;
+        }
+
+        if (!compareObjects(obj1[key], obj2[key])) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+export { getMustString, fixInteger, filterEmptyObject, compareObjects };

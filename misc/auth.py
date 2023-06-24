@@ -83,24 +83,6 @@ async def get_user_token(identity: Tuple[bool, str] = Depends(get_current_user))
     return token
 
 
-async def get_user_identity(
-    request: Request, db: Session = Depends(get_db)
-) -> Tuple[bool, str]:
-    idn = False
-    try:
-        token: str = await oauth2_scheme(request)
-        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-        uid: str = payload.get("uid")
-        assert uid is not None
-        idn = True
-    except:
-        uid: str = request.headers.get("X-MyExam-Token", "")
-        user_cnt = db.query(User).filter_by(uid=uid).count()
-        if user_cnt:
-            raise HTTPException(status_code=401, detail="签名无效。")
-
-    return idn, uid
-
 
 def hash_passwd(passwd: str) -> str:
     return pwd_context.hash(passwd)
