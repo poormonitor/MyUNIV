@@ -1,5 +1,5 @@
 <script setup lang="jsx">
-import { getMustString } from "../func";
+import { getMustString, findMaxValue } from "../func";
 import { useMyStore } from "../stores/my";
 import { Add, Close } from "@vicons/ionicons5";
 
@@ -36,7 +36,8 @@ Promise.all([
             label: item,
             value: item,
         }));
-        info.standard = Math.max(...response.data);
+        let current = new Date().getFullYear();
+        info.standard = findMaxValue(response.data, current);
     }),
 ]).then(() => {
     watch(info, goQuery, { immediate: true });
@@ -50,6 +51,27 @@ const removeItem = (id) => {
             data.list = data.list.filter((item) => item[0].mid != id);
         }
     });
+};
+
+const downloadExcel = () => {
+    axios({
+        url: "/get/excel",
+        method: "POST",
+        responseType: "blob",
+        data: info,
+    })
+        .then((response) => {
+            const downloadLink = document.createElement("a");
+            downloadLink.href = URL.createObjectURL(new Blob([response.data]));
+            downloadLink.setAttribute("download", "MyUNIV_Export.xlsx");
+
+            downloadLink.click();
+
+            URL.revokeObjectURL(downloadLink.href);
+        })
+        .catch((error) => {
+            console.error("Error downloading the file:", error);
+        });
 };
 
 const tableColumns = [
@@ -140,20 +162,34 @@ const cleanMajor = () => {
 <template>
     <div class="mx-8 w-auto lg:mx-auto lg:w-[70vw] my-8">
         <div class="w-full mx-auto">
-            <div class="mb-4 flex flex-col md:flex-row justify-between">
+            <div class="mb-4 flex flex-col sm:flex-row justify-between">
                 <n-statistic label="共计收藏了" tabular-nums>
                     {{ data.total }}
                     <template #suffix> 个专业 </template>
                 </n-statistic>
-                <div class="flex gap-x-8 items-center">
-                    <n-button
-                        strong
-                        secondary
-                        type="error"
-                        @click="cleanMajor"
-                        v-if="data.total"
-                        >删除所有</n-button
-                    >
+                <div
+                    class="flex gap-x-4 justify-between sm:justify-end items-center mt-4"
+                >
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <n-button
+                            strong
+                            secondary
+                            size="small"
+                            type="error"
+                            @click="cleanMajor"
+                            v-if="data.total"
+                            >删除所有</n-button
+                        >
+                        <n-button
+                            strong
+                            secondary
+                            size="small"
+                            type="primary"
+                            @click="downloadExcel"
+                            v-if="data.total"
+                            >下载表格</n-button
+                        >
+                    </div>
                     <n-form-item class="w-32" label="投档数据">
                         <n-select
                             v-model:value="info.year"
