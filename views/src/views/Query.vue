@@ -1,7 +1,12 @@
 <script setup lang="jsx">
 import { useRoute, useRouter } from "vue-router";
 import { provinces, majors } from "../const";
-import { getMustString, fixInteger, filterEmptyObject } from "../func";
+import {
+    getMustString,
+    fixInteger,
+    filterEmptyObject,
+    findMaxValue,
+} from "../func";
 import { useMyStore } from "../stores/my";
 import { message } from "../discrete";
 import { useUserStore } from "../stores/user";
@@ -71,7 +76,8 @@ Promise.all([
             label: item,
             value: item,
         }));
-        if (!info.standard) info.standard = Math.max(...response.data);
+        let current = new Date().getFullYear();
+        info.standard = findMaxValue(response.data, current);
     }),
 ]).then(() => {
     goQuery();
@@ -295,7 +301,9 @@ onMounted(() => {
                 </div>
             </n-form-item>
             <n-form-item label="区间">
-                <n-input-number v-model:value="info.rank_range"></n-input-number>
+                <n-input-number
+                    v-model:value="info.rank_range"
+                ></n-input-number>
             </n-form-item>
             <n-form-item label="投档数据">
                 <n-select

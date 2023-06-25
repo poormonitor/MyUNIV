@@ -53,4 +53,22 @@ function compareObjects(obj1, obj2) {
     return true;
 }
 
-export { getMustString, fixInteger, filterEmptyObject, compareObjects };
+function findMaxValue(array, n) {
+    let max = 0;
+
+    for (let i = 0; i < array.length; i++) {
+        if (array[i] <= n && array[i] > max) {
+            max = array[i];
+        }
+    }
+
+    return max;
+}
+
+export {
+    getMustString,
+    fixInteger,
+    filterEmptyObject,
+    compareObjects,
+    findMaxValue,
+};
