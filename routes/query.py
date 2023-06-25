@@ -13,12 +13,12 @@ router = APIRouter()
 
 
 class QueryForm(BaseModel):
-    rank: Optional[str] = ""
+    rank: Optional[int] = None
     year: int
-    school: Optional[str] = ""
-    major: Optional[str] = ""
-    rank_range: Optional[str] = ""
-    utags: Optional[str] = ""
+    school: Optional[str] = None
+    major: Optional[str] = None
+    rank_range: Optional[int] = None
+    utags: Optional[str] = None
     province: Optional[List[int]] = []
     utags: Optional[List[int]] = []
     nutags: Optional[List[int]] = []

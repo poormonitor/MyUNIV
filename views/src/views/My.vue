@@ -140,12 +140,12 @@ const cleanMajor = () => {
 <template>
     <div class="mx-8 w-auto lg:mx-auto lg:w-[70vw] my-8">
         <div class="w-full mx-auto">
-            <div class="mb-4 flex justify-between">
+            <div class="mb-4 flex flex-col md:flex-row justify-between">
                 <n-statistic label="共计收藏了" tabular-nums>
                     {{ data.total }}
                     <template #suffix> 个专业 </template>
                 </n-statistic>
-                <div class="flex gap-x-10 items-center">
+                <div class="flex gap-x-8 items-center">
                     <n-button
                         strong
                         secondary

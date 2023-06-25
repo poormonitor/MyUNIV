@@ -101,7 +101,7 @@ const goQuery = () => {
             </n-button>
         </div>
     </div>
-    <div class="mx-10 mt-10">
+    <div class="md:mx-10 mt-10">
         <div class="mx-10 md:mx-auto md:w-[90vw] xl:w-[60vw]">
             <div id="main-chart" style="width: auto; height: 300px"></div>
         </div>

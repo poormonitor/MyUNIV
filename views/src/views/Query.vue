@@ -29,11 +29,11 @@ const pagination = reactive({
 });
 
 const info = reactive({
-    rank: "",
+    rank: null,
     year: 0,
     school: "",
     major: "",
-    rank_range: "",
+    rank_range: null,
     utags: "",
     province: [],
     utags: [],
@@ -290,12 +290,12 @@ onMounted(() => {
             </n-form-item>
             <n-form-item label="位次号">
                 <div class="flex gap-x-2">
-                    <n-input v-model:value="info.rank"></n-input>
+                    <n-input-number v-model:value="info.rank"></n-input-number>
                     <n-button @click="score.show = true"> 转换 </n-button>
                 </div>
             </n-form-item>
             <n-form-item label="区间">
-                <n-input v-model:value="info.rank_range"></n-input>
+                <n-input-number v-model:value="info.rank_range"></n-input-number>
             </n-form-item>
             <n-form-item label="投档数据">
                 <n-select
