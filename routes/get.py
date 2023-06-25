@@ -117,14 +117,14 @@ def get_score(year: int, score: int, db: Session = Depends(get_db)):
     return {"rank": rank}
 
 
-class MajorsQuery(BaseModel):
+class MyQuery(BaseModel):
     year: int
     standard: int
 
 
 @router.post("/my")
 def get_my_major(
-    form: MajorsQuery, db: Session = Depends(get_db), uid=Depends(get_current_user)
+    form: MyQuery, db: Session = Depends(get_db), uid=Depends(get_current_user)
 ) -> QueryResult:
     user = db.query(User.mymajor).filter_by(uid=uid).first()
     majors = list(map(int, user.mymajor.split(","))) if user.mymajor else []
@@ -138,6 +138,36 @@ def get_my_major(
         Must, and_(Conne.mmid == Must.mmid, Conne.year == Must.year)
     )
     result = result.filter(Major.mid.in_(majors))
+    result = result.filter(Rank.year == form.year)
+    result = result.filter(Must.year == form.standard)
+    result = result.order_by(Rank.rank.asc())
+
+    count = result.count()
+    result = result.all()
+
+    return QueryResult(total=count, result=parse_result(result))
+
+
+class MajorsQuery(BaseModel):
+    majors: List[int]
+    year: int
+    standard: int
+
+
+@router.post("/majors")
+def get_majors(form: MajorsQuery, db: Session = Depends(get_db)) -> QueryResult:
+    if len(form.majors) > 200:
+        raise HTTPException(status_code="403", detail="项目过多")
+
+    result = db.query(Major, Univ, Rank, Must)
+    result = result.select_from(Rank)
+    result = result.outerjoin(Major, Major.mid == Rank.mid)
+    result = result.outerjoin(Univ, Univ.sid == Major.sid)
+    result = result.outerjoin(Conne, Conne.mid == Rank.mid)
+    result = result.outerjoin(
+        Must, and_(Conne.mmid == Must.mmid, Conne.year == Must.year)
+    )
+    result = result.filter(Major.mid.in_(form.majors))
     result = result.filter(Rank.year == form.year)
     result = result.filter(Must.year == form.standard)
     result = result.order_by(Rank.rank.asc())
