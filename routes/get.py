@@ -181,7 +181,7 @@ def get_majors(form: MajorsQuery, db: Session = Depends(get_db)) -> QueryResult:
 
 @router.post("/excel")
 def get_my_excel(
-    form: MajorsQuery, db: Session = Depends(get_db), uid=Depends(get_current_user)
+    form: MyQuery, db: Session = Depends(get_db), uid=Depends(get_current_user)
 ) -> QueryResult:
     user = db.query(User.mymajor).filter_by(uid=uid).first()
     majors = list(map(int, user.mymajor.split(","))) if user.mymajor else []
@@ -195,6 +195,60 @@ def get_my_excel(
         Must, and_(Conne.mmid == Must.mmid, Conne.year == Must.year)
     )
     result = result.filter(Major.mid.in_(majors))
+    result = result.filter(Rank.year == form.year)
+    result = result.filter(Must.year == form.standard)
+    result = result.order_by(Rank.rank.asc())
+
+    result = result.all()
+
+    result = [
+        i if i[3] else (i[0], i[1], i[2], findNearestMust(i[0], form.year))
+        for i in result
+    ]
+
+    data = [
+        (
+            item[1].uname,
+            provinces.get(item[1].province),
+            item[0].mname,
+            item[2].schedule,
+            item[2].year,
+            item[2].rank,
+            item[2].score,
+            get_must_string(item[3].must) if item[3] else "",
+            item[3].year if item[3] else "",
+        )
+        for item in result
+    ]
+
+    df = pd.DataFrame(
+        data,
+        columns=["学校名称", "省份", "专业名称", "招生计划", "年份", "位次号", "录取分数", "选考科目", "选考科目标准"],
+    )
+
+    with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp_file:
+        file_path = tmp_file.name
+        df.to_excel(file_path, index=False, sheet_name="志愿信息")
+
+    return FileResponse(file_path, filename="MyUNIV_Export.xlsx")
+
+
+@router.post("/table")
+def get_excel(
+    form: MajorsQuery, db: Session = Depends(get_db), uid=Depends(get_current_user)
+) -> QueryResult:
+    if len(form.majors) > 200:
+        raise HTTPException(status_code="403", detail="项目过多")
+
+    result = db.query(Major, Univ, Rank, Must)
+    result = result.select_from(Rank)
+    result = result.outerjoin(Major, Major.mid == Rank.mid)
+    result = result.outerjoin(Univ, Univ.sid == Major.sid)
+    result = result.outerjoin(Conne, Conne.mid == Rank.mid)
+    result = result.outerjoin(
+        Must, and_(Conne.mmid == Must.mmid, Conne.year == Must.year)
+    )
+    result = result.filter(Major.mid.in_(form.majors))
     result = result.filter(Rank.year == form.year)
     result = result.filter(Must.year == form.standard)
     result = result.order_by(Rank.rank.asc())
