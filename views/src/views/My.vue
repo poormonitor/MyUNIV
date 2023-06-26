@@ -1,4 +1,5 @@
 <script setup lang="jsx">
+import { onActivated } from "vue";
 import { getMustString, findMaxValue } from "../func";
 import { useMyStore } from "../stores/my";
 import { Add, Close } from "@vicons/ionicons5";
@@ -42,6 +43,8 @@ Promise.all([
 ]).then(() => {
     watch(info, goQuery, { immediate: true });
 });
+
+onActivated(goQuery);
 
 const removeItem = (id) => {
     axios.post("/user/major", { my: myStore.t_remove(id) }).then((response) => {
