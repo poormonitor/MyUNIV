@@ -12,6 +12,7 @@ import tempfile
 
 from misc.auth import get_current_user
 from misc.func import findNearestMust, get_must_string
+from misc.const import provinces
 from misc.model import (
     OneMajor,
     OneMust,
@@ -208,6 +209,7 @@ def get_my_excel(
     data = [
         (
             item[1].uname,
+            provinces.get(item[1].province),
             item[0].mname,
             item[2].schedule,
             item[2].year,
@@ -220,7 +222,8 @@ def get_my_excel(
     ]
 
     df = pd.DataFrame(
-        data, columns=["学校名称", "专业名称", "招生计划", "年份", "位次号", "录取分数", "选考科目", "选考科目标准"]
+        data,
+        columns=["学校名称", "省份", "专业名称", "招生计划", "年份", "位次号", "录取分数", "选考科目", "选考科目标准"],
     )
 
     with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp_file:
