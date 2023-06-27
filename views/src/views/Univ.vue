@@ -4,8 +4,13 @@ import { provinces } from "../const";
 import { getMustString } from "../func";
 import { onMounted } from "vue";
 import * as echarts from "echarts";
+import { Close, Add } from "@vicons/ionicons5";
+import { useMyStore } from "../stores/my";
+import { useUserStore } from "../stores/user";
 
 const axios = inject("axios");
+const userStore = useUserStore();
+const myStore = useMyStore();
 const route = useRoute();
 
 const tags = await axios.get("/list/tags").then((response) => response.data);
@@ -161,7 +166,49 @@ const rankColumns = [
         key: "schedule",
         render: (row) => row[0].schedule,
     },
+    {
+        title: "备选",
+        key: "major",
+        render: (row) => (
+            <n-button
+                circle
+                secondary
+                class="!w-7 !h-7"
+                type={myStore.has(row[0].mid) ? "error" : "info"}
+                onClick={
+                    myStore.has(row[0].mid)
+                        ? () => delMajor(row[0].mid)
+                        : () => addMajor(row[0].mid)
+                }
+            >
+                {{
+                    icon: () => (
+                        <n-icon
+                            component={myStore.has(row[0].mid) ? Close : Add}
+                        ></n-icon>
+                    ),
+                }}
+            </n-button>
+        ),
+    },
 ];
+
+const addMajor = (mid) => {
+    if (!userStore.uid) return message.info("请先登录");
+    axios.post("/user/major", { my: myStore.t_add(mid) }).then((response) => {
+        if (response.data.result === "success") myStore.add(mid);
+    });
+};
+
+const delMajor = (mid) => {
+    if (!userStore.uid) return message.info("请先登录");
+    axios
+        .post("/user/major", { my: myStore.t_remove(mid) })
+        .then((response) => {
+            if (response.data.result === "success") myStore.remove(mid);
+        });
+};
+
 watch(
     rankByYear,
     (val) => {
