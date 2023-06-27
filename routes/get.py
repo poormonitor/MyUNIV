@@ -239,7 +239,7 @@ def get_my_excel(
 
 
 @router.post("/table")
-def get_excel(form: MajorsQuery, db: Session = Depends(get_db)) -> QueryResult:
+def get_excel(form: MajorsQuery, db: Session = Depends(get_db)) -> downloadTable:
     if len(form.majors) > 200:
         raise HTTPException(status_code="403", detail="项目过多")
 
