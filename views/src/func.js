@@ -65,10 +65,21 @@ function findMaxValue(array, n) {
     return max;
 }
 
+const base64toBlob = (base64) => {
+    let bstr = atob(base64);
+    let n = bstr.length;
+    let u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: "application/octet-stream" });
+};
+
 export {
     getMustString,
     fixInteger,
     filterEmptyObject,
     compareObjects,
     findMaxValue,
+    base64toBlob,
 };

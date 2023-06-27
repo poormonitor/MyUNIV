@@ -5,7 +5,26 @@ import { useUserStore } from "../stores/user";
 import { getMustString } from "../func";
 import { onMounted } from "vue";
 import { message } from "../discrete";
-import * as echarts from "echarts";
+
+import * as echarts from "echarts/core";
+import { LineChart } from "echarts/charts";
+import {
+    TitleComponent,
+    TooltipComponent,
+    GridComponent,
+} from "echarts/components";
+import { LabelLayout, UniversalTransition } from "echarts/features";
+import { CanvasRenderer } from "echarts/renderers";
+
+echarts.use([
+    TitleComponent,
+    TooltipComponent,
+    GridComponent,
+    LineChart,
+    LabelLayout,
+    UniversalTransition,
+    CanvasRenderer,
+]);
 
 const axios = inject("axios");
 const route = useRoute();

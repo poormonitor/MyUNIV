@@ -1,18 +1,16 @@
-import hashlib
-from itertools import groupby
+import base64
+from io import BytesIO
 from typing import Dict, List, Tuple
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy import and_, func, not_, or_
 from sqlalchemy.orm import Session
-import tempfile
 
 from misc.auth import get_current_user
-from misc.func import findNearestMust, get_must_string
 from misc.const import provinces
+from misc.func import findNearestMust, get_must_string
 from misc.model import (
     OneMajor,
     OneMust,
@@ -179,10 +177,14 @@ def get_majors(form: MajorsQuery, db: Session = Depends(get_db)) -> QueryResult:
     return QueryResult(total=count, result=parse_result(result))
 
 
+class downloadTable(BaseModel):
+    file: str
+
+
 @router.post("/excel")
 def get_my_excel(
     form: MyQuery, db: Session = Depends(get_db), uid=Depends(get_current_user)
-) -> QueryResult:
+) -> downloadTable:
     user = db.query(User.mymajor).filter_by(uid=uid).first()
     majors = list(map(int, user.mymajor.split(","))) if user.mymajor else []
 
@@ -226,17 +228,18 @@ def get_my_excel(
         columns=["学校名称", "省份", "专业名称", "招生计划", "年份", "位次号", "录取分数", "选考科目", "选考科目标准"],
     )
 
-    with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp_file:
-        file_path = tmp_file.name
-        df.to_excel(file_path, index=False, sheet_name="志愿信息")
+    buffer = BytesIO()
+    writer = pd.ExcelWriter(buffer, engine="openpyxl")
+    df.to_excel(excel_writer=writer, index=False, sheet_name="志愿信息")
+    writer.close()
+    excel_content = buffer.getvalue()
+    base64_content = base64.b64encode(excel_content).decode("utf-8")
 
-    return FileResponse(file_path, filename="MyUNIV_Export.xlsx")
+    return downloadTable(file=base64_content)
 
 
 @router.post("/table")
-def get_excel(
-    form: MajorsQuery, db: Session = Depends(get_db), uid=Depends(get_current_user)
-) -> QueryResult:
+def get_excel(form: MajorsQuery, db: Session = Depends(get_db)) -> QueryResult:
     if len(form.majors) > 200:
         raise HTTPException(status_code="403", detail="项目过多")
 
@@ -280,8 +283,11 @@ def get_excel(
         columns=["学校名称", "省份", "专业名称", "招生计划", "年份", "位次号", "录取分数", "选考科目", "选考科目标准"],
     )
 
-    with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp_file:
-        file_path = tmp_file.name
-        df.to_excel(file_path, index=False, sheet_name="志愿信息")
+    buffer = BytesIO()
+    writer = pd.ExcelWriter(buffer, engine="openpyxl")
+    df.to_excel(excel_writer=writer, index=False, sheet_name="志愿信息")
+    writer.close()
+    excel_content = buffer.getvalue()
+    base64_content = base64.b64encode(excel_content).decode("utf-8")
 
-    return FileResponse(file_path, filename="MyUNIV_Export.xlsx")
+    return downloadTable(file=base64_content)

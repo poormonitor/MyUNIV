@@ -3,10 +3,29 @@ import { useRoute } from "vue-router";
 import { provinces } from "../const";
 import { getMustString } from "../func";
 import { onMounted } from "vue";
-import * as echarts from "echarts";
 import { Close, Add } from "@vicons/ionicons5";
 import { useMyStore } from "../stores/my";
 import { useUserStore } from "../stores/user";
+
+import * as echarts from "echarts/core";
+import { LineChart } from "echarts/charts";
+import {
+    TitleComponent,
+    TooltipComponent,
+    GridComponent,
+} from "echarts/components";
+import { LabelLayout, UniversalTransition } from "echarts/features";
+import { CanvasRenderer } from "echarts/renderers";
+
+echarts.use([
+    TitleComponent,
+    TooltipComponent,
+    GridComponent,
+    LineChart,
+    LabelLayout,
+    UniversalTransition,
+    CanvasRenderer,
+]);
 
 const axios = inject("axios");
 const userStore = useUserStore();

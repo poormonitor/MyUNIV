@@ -1,6 +1,6 @@
 <script setup lang="jsx">
 import { onActivated } from "vue";
-import { getMustString, findMaxValue } from "../func";
+import { getMustString, findMaxValue, base64toBlob } from "../func";
 import { useMyStore } from "../stores/my";
 import { Add, Close } from "@vicons/ionicons5";
 
@@ -57,16 +57,17 @@ const removeItem = (id) => {
 };
 
 const downloadExcel = () => {
-    axios({
-        url: "/get/excel",
-        method: "POST",
-        responseType: "blob",
-        data: info,
-    })
+    axios
+        .post("/get/excel", info)
         .then((response) => {
+            const blob = base64toBlob(response.data.file);
             const downloadLink = document.createElement("a");
-            downloadLink.href = URL.createObjectURL(new Blob([response.data]));
-            downloadLink.setAttribute("download", "MyUNIV_Export.xlsx");
+
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.setAttribute(
+                "download",
+                `MyUNIV_Export_${new Date().getTime()}.xlsx`
+            );
 
             downloadLink.click();
 
