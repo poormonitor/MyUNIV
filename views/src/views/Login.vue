@@ -2,10 +2,8 @@
 import md5 from "crypto-js/md5";
 import { useRouter } from "vue-router";
 import { useUserStore } from "../stores/user";
-import { useMyStore } from "../stores/my";
 
 const userStore = useUserStore();
-const myStore = useMyStore();
 const router = useRouter();
 const axios = inject("axios");
 
@@ -32,9 +30,6 @@ const submitLogin = () => {
                     payload.exp * 1000,
                     payload.must
                 );
-                axios.get("/user/major").then((response) => {
-                    if (response.data) myStore.my = response.data;
-                });
                 router.push({ name: "home" });
             }
         });
