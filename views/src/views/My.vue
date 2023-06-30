@@ -1,9 +1,24 @@
 <script setup lang="jsx">
-import { onActivated } from "vue";
+import { onActivated, onMounted } from "vue";
 import { getMustString, findMaxValue, base64toBlob } from "../func";
 import { useMyStore } from "../stores/my";
 import { Add, Close } from "@vicons/ionicons5";
 
+import * as echarts from "echarts/core";
+import { TitleComponent, SingleAxisComponent } from "echarts/components";
+import { ScatterChart } from "echarts/charts";
+import { UniversalTransition } from "echarts/features";
+import { CanvasRenderer } from "echarts/renderers";
+
+echarts.use([
+    TitleComponent,
+    SingleAxisComponent,
+    ScatterChart,
+    CanvasRenderer,
+    UniversalTransition,
+]);
+
+var table = null;
 const data = reactive({ total: 0, list: [] });
 const axios = inject("axios");
 const loading = ref(true);
@@ -16,13 +31,47 @@ const info = reactive({
 });
 
 const goQuery = () => {
-    axios.post("/get/my", info).then((response) => {
-        data.total = response.data.total;
-        data.list = response.data.result;
-        myStore.my = data.list.map((item) => item[0].mid);
-        loading.value = false;
-    });
+    axios
+        .post("/get/majors", { ...info, majors: myStore.get() })
+        .then((response) => {
+            data.total = response.data.total;
+
+            let result = [];
+            response.data.result.forEach((elem, index) => {
+                elem[4] = index + 1;
+                result[index] = elem;
+            });
+            data.list = result;
+
+            loading.value = false;
+        });
 };
+
+const renderTable = (val) => {
+    let options = {
+        singleAxis: {
+            top: "middle",
+            left: "2%",
+            left: "2%",
+            height: "0",
+            type: "value",
+            boundaryGap: false,
+        },
+        textStyle: {
+            fontFamily: ["Inter", "Noto Sans SC"],
+            fontWeight: "bold",
+        },
+        series: {
+            coordinateSystem: "singleAxis",
+            type: "scatter",
+            data: val.map((item) => [item[2].rank]),
+        },
+    };
+
+    table.setOption(options);
+};
+
+watch(() => data.list, renderTable);
 
 Promise.all([
     axios.get("/list/ranks").then((response) => {
@@ -42,23 +91,32 @@ Promise.all([
     }),
 ]).then(() => {
     watch(info, goQuery, { immediate: true });
+    watch(() => myStore.order, goQuery);
 });
 
 onActivated(goQuery);
+onMounted(() => {
+    table = echarts.init(document.getElementById("table"));
+    window.addEventListener("resize", () => {
+        table.resize();
+    });
+});
 
 const removeItem = (id) => {
-    axios.post("/user/major", { my: myStore.t_remove(id) }).then((response) => {
-        if (response.data.result == "success") {
-            myStore.remove(id);
-            data.total -= 1;
-            data.list = data.list.filter((item) => item[0].mid != id);
-        }
-    });
+    myStore.remove(id);
+    data.total -= 1;
+    data.list = data.list.filter((item) => item[0].mid != id);
+};
+
+const resetItem = () => {
+    myStore.reset();
+    data.total = 0;
+    data.list = [];
 };
 
 const downloadExcel = () => {
     axios
-        .post("/get/excel", info)
+        .post("/get/table", { ...info, majors: myStore.get() })
         .then((response) => {
             const blob = base64toBlob(response.data.file);
             const downloadLink = document.createElement("a");
@@ -79,9 +137,11 @@ const downloadExcel = () => {
 };
 
 const tableColumns = [
+    { title: "排序", key: "index", render: (row) => row[4] },
     {
         title: "学校名称",
         key: "univ",
+        sorter: (row1, row2) => row1[1].sid - row2[1].sid,
         render: (row) => (
             <router-link
                 class="text-sky-800 hover:text-sky-900 transition"
@@ -116,6 +176,7 @@ const tableColumns = [
     {
         title: "位次号",
         key: "major",
+        sorter: (row1, row2) => row1[2].rank - row2[2].rank,
         render: (row) => <span>{row[2].rank}</span>,
     },
     {
@@ -151,39 +212,46 @@ const tableColumns = [
         ),
     },
 ];
-
-const cleanMajor = () => {
-    axios.post("/user/major", { my: [] }).then((response) => {
-        if (response.data.result == "success") {
-            data.total = 0;
-            data.list = [];
-            myStore.reset();
-        }
-    });
-};
 </script>
 
 <template>
     <div class="mx-8 w-auto lg:mx-auto lg:w-[70vw] my-8">
         <div class="w-full mx-auto">
-            <div class="mb-4 flex flex-col sm:flex-row justify-between">
+            <div class="flex flex-col sm:flex-row justify-between">
                 <n-statistic label="共计收藏了" tabular-nums>
-                    {{ data.total }}
+                    {{ myStore.count }}
                     <template #suffix> 个专业 </template>
                 </n-statistic>
                 <div
                     class="flex gap-x-4 justify-between sm:justify-end items-center mt-4"
                 >
                     <div class="flex flex-col sm:flex-row gap-2">
+                        <n-popconfirm
+                            v-if="data.total"
+                            @positive-click="resetItem"
+                        >
+                            <template #trigger>
+                                <n-button
+                                    strong
+                                    secondary
+                                    size="small"
+                                    type="error"
+                                >
+                                    删除所有
+                                </n-button>
+                            </template>
+                            确认删除？
+                        </n-popconfirm>
                         <n-button
                             strong
                             secondary
                             size="small"
                             type="error"
-                            @click="cleanMajor"
-                            v-if="data.total"
-                            >删除所有</n-button
+                            @click="() => myStore.removeList()"
+                            v-else-if="myStore.order !== 0"
                         >
+                            删除列表
+                        </n-button>
                         <n-button
                             strong
                             secondary
@@ -210,6 +278,7 @@ const cleanMajor = () => {
                     </n-form-item>
                 </div>
             </div>
+            <div id="table" class="h-12 mb-5"></div>
             <n-data-table
                 :columns="tableColumns"
                 :data="data.list"

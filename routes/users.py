@@ -46,6 +46,25 @@ def delete_user(data: DelUser, db: Session = Depends(get_db)):
     return {"result": "success"}
 
 
+class NewUser(BaseModel):
+    uid: str
+    name: str
+    passwd: str
+
+
+@router.post("/new")
+def new_user(data: NewUser, db: Session = Depends(get_db)):
+    user = db.query(User).filter_by(uid=data.uid).first()
+    if user:
+        raise HTTPException(status_code=404, detail="用户已存在")
+
+    user = User(uid=data.uid, name=data.name, passwd=hash_passwd(data.passwd))
+    db.add(user)
+    db.commit()
+
+    return {"result": "success"}
+
+
 class PasswdModify(BaseModel):
     uid: str
     passwd: str

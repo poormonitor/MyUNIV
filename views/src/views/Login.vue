@@ -60,17 +60,6 @@ const submitLogin = () => {
                         v-model:value="loginForm.passwd"
                     ></n-input>
                 </n-form-item>
-                <div class="flex justify-center">
-                    <span>
-                        没有账号？去
-                        <router-link
-                            class="text-blue-500 hover:text-blue-700"
-                            :to="{ name: 'reg' }"
-                        >
-                            注册
-                        </router-link>
-                    </span>
-                </div>
                 <div class="flex gap-x-4 justify-center mt-4">
                     <n-button
                         class="basis-1/2"

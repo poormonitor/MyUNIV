@@ -172,22 +172,6 @@ const mustColumns = [
     },
     { title: "包含专业", key: "include" },
 ];
-
-const addMajor = (mid) => {
-    if (!userStore.uid) return message.info("请先登录");
-    axios.post("/user/major", { my: myStore.t_add(mid) }).then((response) => {
-        if (response.data.result === "success") myStore.add(mid);
-    });
-};
-
-const delMajor = (mid) => {
-    if (!userStore.uid) return message.info("请先登录");
-    axios
-        .post("/user/major", { my: myStore.t_remove(mid) })
-        .then((response) => {
-            if (response.data.result === "success") myStore.remove(mid);
-        });
-};
 </script>
 
 <template>
@@ -212,8 +196,8 @@ const delMajor = (mid) => {
                 @click="
                     () =>
                         myStore.has(data.mid)
-                            ? delMajor(data.mid)
-                            : addMajor(data.mid)
+                            ? myStore.remove(data.mid)
+                            : myStore.add(data.mid)
                 "
             >
                 {{ myStore.has(data.mid) ? "删除备选" : "加入备选" }}

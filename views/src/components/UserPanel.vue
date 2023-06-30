@@ -1,16 +1,14 @@
 <script setup lang="jsx">
-import { useUserStore } from "../stores/user";
-import { useMyStore } from "../stores/my";
-import { useRouter, useRoute } from "vue-router";
 import {
     CaretDown,
-    LockClosedOutline,
     ExitOutline,
+    LockClosedOutline,
     SettingsOutline,
-    EaselOutline,
 } from "@vicons/ionicons5";
+import { useRoute, useRouter } from "vue-router";
+import { useMyStore } from "../stores/my";
+import { useUserStore } from "../stores/user";
 import PasswordSetter from "./PasswordSetter.vue";
-import MustSetter from "./MustSetter.vue";
 
 const userStore = useUserStore();
 const myStore = useMyStore();
@@ -19,11 +17,10 @@ const router = useRouter();
 const route = useRoute();
 
 const showPasswd = ref(false);
-const showMust = ref(false);
 
 const renderIcon = (icon) => <n-icon component={icon}></n-icon>;
 
-const optionsLogged = [
+const options = [
     {
         label: "修改密码",
         key: "pw",
@@ -33,11 +30,11 @@ const optionsLogged = [
         },
     },
     {
-        label: "修改选考",
-        key: "must",
-        icon: () => renderIcon(EaselOutline),
+        label: "后台管理",
+        key: "admin",
+        icon: () => renderIcon(SettingsOutline),
         target: () => {
-            showMust.value = true;
+            router.push({ name: "admin" });
         },
     },
     {
@@ -46,49 +43,41 @@ const optionsLogged = [
         icon: () => renderIcon(ExitOutline),
         target: () => {
             userStore.logout();
-            myStore.reset();
             if (route.meta.requiresAuth) router.push({ name: "home" });
         },
     },
 ];
 
-const optionsAdmin = [
-    { type: "divider", key: "d1" },
-    {
-        label: "后台管理",
-        key: "admin",
-        icon: () => renderIcon(SettingsOutline),
-        target: () => {
-            router.push({ name: "admin" });
-        },
-    },
-];
-
-const option = computed(() =>
-    userStore.admin ? optionsLogged.concat(optionsAdmin) : optionsLogged
-);
-
-const user = computed(() => (userStore.uid ? userStore.name : "登录"));
-
 const handleSelect = (key) => {
-    option.value.find((item) => item.key == key).target();
+    options.find((item) => item.key == key).target();
 };
+
+const selectOptions = computed(() => {
+    let options = [];
+    for (var i = 0; i < myStore.newList; i++) {
+        options.push({ label: `备选列表 ${i + 1}`, value: i });
+    }
+    options.push({ label: "新列表", value: "new" });
+    return options;
+});
 </script>
 
 <template>
-    <MustSetter v-model:show="showMust" />
-    <PasswordSetter v-model:show="showPasswd" />
-    <n-button
-        v-if="!userStore.uid"
-        @click="router.push({ name: 'login' })"
-        quaternary
-    >
-        登录
-    </n-button>
-    <n-dropdown trigger="hover" :options="option" @select="handleSelect" v-else>
-        <div class="flex items-center gap-x-1 hover:text-green-600 transition">
-            <span>{{ user }}</span>
-            <n-icon size="0.7rem" :component="CaretDown"></n-icon>
-        </div>
-    </n-dropdown>
+    <div class="w-32 flex items-center">
+        <n-select
+            :options="selectOptions"
+            v-model:value="myStore.order"
+        ></n-select>
+    </div>
+    <div class="flex items-center ml-4" v-if="userStore.uid">
+        <PasswordSetter v-model:show="showPasswd" />
+        <n-dropdown trigger="hover" :options="options" @select="handleSelect">
+            <div
+                class="flex items-center gap-x-1 hover:text-green-600 transition"
+            >
+                <span>{{ userStore.name }}</span>
+                <n-icon size="0.7rem" :component="CaretDown"></n-icon>
+            </div>
+        </n-dropdown>
+    </div>
 </template>

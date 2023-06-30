@@ -2,8 +2,10 @@
 import { useRoute, useRouter } from "vue-router";
 import { NIcon } from "naive-ui";
 import { FileTrayFull, Documents, People } from "@vicons/ionicons5";
+import { useUserStore } from "../stores/user";
 
 const collapsed = inject("collapsed");
+const userStore = useUserStore();
 const route = useRoute();
 const router = useRouter();
 
@@ -29,6 +31,8 @@ const menuOptions = [
         key: "tag",
     },
 ];
+
+if (!userStore.admin) menuOptions.shift()
 </script>
 
 <template>

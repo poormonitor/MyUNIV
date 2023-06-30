@@ -1,11 +1,13 @@
 <script setup lang="jsx">
 import { NIcon } from "naive-ui";
 import { useRoute, RouterLink } from "vue-router";
-import { School, AppsOutline,Archive } from "@vicons/ionicons5";
+import { School, AppsOutline, Archive } from "@vicons/ionicons5";
+import { useUserStore } from "../stores/user";
 import UserPanel from "./UserPanel.vue";
 
 const route = useRoute();
 
+const userStore = useUserStore();
 const collapsed = inject("collapsed");
 const showSideBar = ref(false);
 
@@ -72,7 +74,7 @@ const menuOptions = [
             :options="menuOptions"
         />
         <div class="flex grow justify-end pr-6 md:pr-10">
-            <UserPanel v-if="route.name !== 'login'" />
+            <UserPanel />
         </div>
     </div>
 </template>

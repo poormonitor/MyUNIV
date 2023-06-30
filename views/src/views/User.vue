@@ -1,5 +1,6 @@
 <script setup lang="jsx">
 import { useUserStore } from "../stores/user";
+import AddUser from "../components/AddUser.vue";
 
 const axios = inject("axios");
 const userStore = useUserStore();
@@ -10,6 +11,7 @@ const loading = ref(true);
 const UserKeyword = ref(null);
 const CurrentUID = ref(null);
 const ShowModify = ref(false);
+const showNewUser = ref(false);
 
 const pagination = reactive({
     page: 1,
@@ -73,6 +75,7 @@ const tableColumns = [
                             删除用户
                         </n-button>
                     ),
+                    default: () => "确定删除吗？",
                 }}
             </n-popconfirm>
         ),
@@ -100,7 +103,7 @@ const DeleteUser = (uid) => {
         })
         .then((response) => {
             if (response.data.result === "success") {
-                data.value = data.value.filter((item) => item.uid !== uid);
+                fetchData();
             }
         });
 };
@@ -130,13 +133,17 @@ fetchData();
 </script>
 
 <template>
+    <AddUser v-model:show="showNewUser" @finish="fetchData" />
     <PasswordModify :uid="CurrentUID" v-model:show="ShowModify" />
     <p class="text-xl md:text-3xl font-bold pb-4 pt-2">用户管理</p>
     <div>
         <div class="flex justify-between gap-x-4 mx-8 mb-6 mt-3">
             <div class="flex gap-x-4 items-center">
                 <n-input @keyup.enter="fetchData" v-model:value="UserKeyword" />
-                <n-button @click="fetchData">过滤</n-button>
+                <n-button type="primary" @click="fetchData">过滤</n-button>
+                <n-button type="info" @click="showNewUser = true">
+                    添加用户
+                </n-button>
             </div>
             <n-pagination
                 v-model:page="pagination.page"

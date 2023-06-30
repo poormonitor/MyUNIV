@@ -8,25 +8,16 @@ from pydantic import BaseModel
 from sqlalchemy import and_, func, not_, or_
 from sqlalchemy.orm import Session
 
-from misc.auth import get_current_user
 from misc.const import provinces
 from misc.func import findNearestMust, get_must_string
-from misc.model import (
-    OneMajor,
-    OneMust,
-    OneRank,
-    OneUniv,
-    QueryResult,
-    parse_result,
-    trans_utags,
-)
+from misc.model import (OneMajor, OneMust, OneRank, OneUniv, QueryResult,
+                        parse_result, trans_utags)
 from models import get_db
 from models.conne import Conne
 from models.major import Major
 from models.must import Must
 from models.rank import Rank
 from models.univ import Univ
-from models.user import User
 
 router = APIRouter()
 
@@ -116,37 +107,6 @@ def get_score(year: int, score: int, db: Session = Depends(get_db)):
     return {"rank": rank}
 
 
-class MyQuery(BaseModel):
-    year: int
-    standard: int
-
-
-@router.post("/my")
-def get_my_major(
-    form: MyQuery, db: Session = Depends(get_db), uid=Depends(get_current_user)
-) -> QueryResult:
-    user = db.query(User.mymajor).filter_by(uid=uid).first()
-    majors = list(map(int, user.mymajor.split(","))) if user.mymajor else []
-
-    result = db.query(Major, Univ, Rank, Must)
-    result = result.select_from(Rank)
-    result = result.outerjoin(Major, Major.mid == Rank.mid)
-    result = result.outerjoin(Univ, Univ.sid == Major.sid)
-    result = result.outerjoin(Conne, Conne.mid == Rank.mid)
-    result = result.outerjoin(
-        Must, and_(Conne.mmid == Must.mmid, Conne.year == Must.year)
-    )
-    result = result.filter(Major.mid.in_(majors))
-    result = result.filter(Rank.year == form.year)
-    result = result.filter(Must.year == form.standard)
-    result = result.order_by(Rank.rank.asc())
-
-    count = result.count()
-    result = result.all()
-
-    return QueryResult(total=count, result=parse_result(result))
-
-
 class MajorsQuery(BaseModel):
     majors: List[int]
     year: int
@@ -179,63 +139,6 @@ def get_majors(form: MajorsQuery, db: Session = Depends(get_db)) -> QueryResult:
 
 class downloadTable(BaseModel):
     file: str
-
-
-@router.post("/excel")
-def get_my_excel(
-    form: MyQuery, db: Session = Depends(get_db), uid=Depends(get_current_user)
-) -> downloadTable:
-    user = db.query(User.mymajor).filter_by(uid=uid).first()
-    majors = list(map(int, user.mymajor.split(","))) if user.mymajor else []
-
-    result = db.query(Major, Univ, Rank, Must)
-    result = result.select_from(Rank)
-    result = result.outerjoin(Major, Major.mid == Rank.mid)
-    result = result.outerjoin(Univ, Univ.sid == Major.sid)
-    result = result.outerjoin(Conne, Conne.mid == Rank.mid)
-    result = result.outerjoin(
-        Must, and_(Conne.mmid == Must.mmid, Conne.year == Must.year)
-    )
-    result = result.filter(Major.mid.in_(majors))
-    result = result.filter(Rank.year == form.year)
-    result = result.filter(Must.year == form.standard)
-    result = result.order_by(Rank.rank.asc())
-
-    result = result.all()
-
-    result = [
-        i if i[3] else (i[0], i[1], i[2], findNearestMust(i[0], form.year))
-        for i in result
-    ]
-
-    data = [
-        (
-            item[1].uname,
-            provinces.get(item[1].province),
-            item[0].mname,
-            item[2].schedule,
-            item[2].year,
-            item[2].rank,
-            item[2].score,
-            get_must_string(item[3].must) if item[3] else "",
-            item[3].year if item[3] else "",
-        )
-        for item in result
-    ]
-
-    df = pd.DataFrame(
-        data,
-        columns=["学校名称", "省份", "专业名称", "招生计划", "年份", "位次号", "录取分数", "选考科目", "选考科目标准"],
-    )
-
-    buffer = BytesIO()
-    writer = pd.ExcelWriter(buffer, engine="openpyxl")
-    df.to_excel(excel_writer=writer, index=False, sheet_name="志愿信息")
-    writer.close()
-    excel_content = buffer.getvalue()
-    base64_content = base64.b64encode(excel_content).decode("utf-8")
-
-    return downloadTable(file=base64_content)
 
 
 @router.post("/table")

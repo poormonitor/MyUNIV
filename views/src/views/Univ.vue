@@ -196,8 +196,8 @@ const rankColumns = [
                 type={myStore.has(row[0].mid) ? "error" : "info"}
                 onClick={
                     myStore.has(row[0].mid)
-                        ? () => delMajor(row[0].mid)
-                        : () => addMajor(row[0].mid)
+                        ? () => myStore.remove(row[0].mid)
+                        : () => myStore.add(row[0].mid)
                 }
             >
                 {{
@@ -211,22 +211,6 @@ const rankColumns = [
         ),
     },
 ];
-
-const addMajor = (mid) => {
-    if (!userStore.uid) return message.info("请先登录");
-    axios.post("/user/major", { my: myStore.t_add(mid) }).then((response) => {
-        if (response.data.result === "success") myStore.add(mid);
-    });
-};
-
-const delMajor = (mid) => {
-    if (!userStore.uid) return message.info("请先登录");
-    axios
-        .post("/user/major", { my: myStore.t_remove(mid) })
-        .then((response) => {
-            if (response.data.result === "success") myStore.remove(mid);
-        });
-};
 
 watch(
     rankByYear,

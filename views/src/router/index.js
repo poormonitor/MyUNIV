@@ -37,7 +37,6 @@ const router = createRouter({
                     name: "my",
                     component: () => import("../views/My.vue"),
                     meta: {
-                        requiresAuth: true,
                         title: "备选",
                     },
                 },
@@ -47,14 +46,6 @@ const router = createRouter({
                     component: () => import("../views/Login.vue"),
                     meta: {
                         title: "用户登录",
-                    },
-                },
-                {
-                    path: "reg",
-                    name: "reg",
-                    component: () => import("../views/Reg.vue"),
-                    meta: {
-                        title: "用户注册",
                     },
                 },
                 {
@@ -90,7 +81,7 @@ const router = createRouter({
             component: () => import("../views/Admin.vue"),
             meta: {
                 requiresAuth: true,
-                requiresAdmin: true,
+                requiresAdmin: false,
             },
             children: [
                 {
@@ -99,6 +90,7 @@ const router = createRouter({
                     component: () => import("../views/User.vue"),
                     meta: {
                         title: "用户管理",
+                        requiresAdmin: true,
                     },
                 },
                 {

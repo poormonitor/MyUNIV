@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from misc.auth import admin_required
+from misc.auth import admin_required, get_current_user
 from config import get_version
 
 
@@ -31,7 +31,7 @@ def init_app_routes(app: FastAPI):
         manage_router,
         prefix="/api/manage",
         tags=["manage"],
-        dependencies=[Depends(admin_required)],
+        dependencies=[Depends(get_current_user)],
     )
 
     @app.get("/")
