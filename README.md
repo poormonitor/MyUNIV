@@ -1,4 +1,5 @@
 # MyUNIV
+
 **高考志愿填报决策分析系统**
 
 *浙江省第二十三届全省学生信息素养提升实践活动程序设计项目一等奖作品*
@@ -13,7 +14,55 @@
 
 ## Usage
 
-详见 [说明书](https://cloud.oldmonitor.cn/#s/8YSEC5dw)。
+### Installtion
+
+安装前，请先准备 Python 3 与 NodeJS 环境。
+
+```shell
+git clone https://git.techo.cool/poormonitor/MyIMG.git myimg
+cd myimg
+pip install -r requirements.txt
+cd view
+npm install
+npm run build
+```
+
+### Config
+
+复制模板配置文件，初始化数据库。若要使用不同的数据库，修改 .env 及 alembic.ini 中的数据库路径。
+
+```shell
+cp .env.example .env
+cp alembic.ini.example alembic.ini
+alembic upgrade head
+```
+
+### Run
+
+```shell
+uvicorn --port {Port} main:app  
+```
+
+若需启动为系统服务，可创建以下service文件。
+
+```
+[Unit]
+Description=MyIMG
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+User=www
+PermissionsStartOnly=true
+WorkingDirectory={Path to MyUNIV}
+ExecStart={Path to uvicorn} --port {Port} main:app
+Restart=on-failure
+TimeoutSec=600
+```
+
+记得设置 nginx 的反向代理。
 
 ## LICENSE
 
