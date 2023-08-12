@@ -1,0 +1,67 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "MyUNIV"
+			}
+		}, {
+			"path": "pages/query/query",
+			"style": {
+				"navigationBarTitleText": "查找",
+				"enablePullDownRefresh": false
+			}
+
+		}, {
+			"path": "pages/major/major",
+			"style": {
+				"navigationBarTitleText": "专业",
+				"enablePullDownRefresh": false
+			}
+
+		}, {
+			"path": "pages/univ/univ",
+			"style": {
+				"navigationBarTitleText": "学校",
+				"enablePullDownRefresh": false
+			}
+
+		}, {
+			"path": "pages/my/my",
+			"style": {
+				"navigationBarTitleText": "收藏",
+				"enablePullDownRefresh": false
+			}
+
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "white",
+		"navigationBarTitleText": "MyUNIV",
+		"navigationBarBackgroundColor": "#0284c7",
+		"backgroundColor": "#F8F8F8"
+	},
+	"uniIdRouter": {},
+	"tabBar": {
+		"color": "#46484b",
+		"selectedColor": "#0075FF",
+		"borderStyle": "black",
+		"backgroundColor": "#ffffff",
+		"list": [{
+			"pagePath": "pages/index/index",
+			"iconPath": "static/icons8-home-48.png",
+			"selectedIconPath": "static/icons8-home-48-hl.png",
+			"text": "主页"
+		}, {
+			"pagePath": "pages/query/query",
+			"iconPath": "static/icons8-search-more-48.png",
+			"selectedIconPath": "static/icons8-search-more-48-hl.png",
+			"text": "搜索"
+		}, {
+			"pagePath": "pages/my/my",
+			"iconPath": "static/icons8-heart-48.png",
+			"selectedIconPath": "static/icons8-heart-48-hl.png",
+			"text": "收藏"
+		}]
+	}
+}
