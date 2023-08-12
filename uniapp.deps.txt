@@ -1,2 +1,0 @@
-uni-ui
-lime-echart
