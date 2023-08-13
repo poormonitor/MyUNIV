@@ -1,0 +1,52 @@
+{% extends "base.html.j2" %}
+{% block title %}登录{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-4 box-shadow py-4 px-5">
+        <br />
+        <h2 class="center ud-margin">登录</h2>
+        {% if error %}
+        <div class="alert alert-danger m-3 center" role="alert">
+            <strong>{{ error }}</strong>
+        </div>
+        {% endif %}
+        {% if suc %}
+        <div class="alert alert-success m-3 center" role="alert">
+            <strong>{{ suc }}</strong>
+        </div>
+        {% endif %}
+        <div id="form">
+            <form method="POST" action="{{ url_for('Login.login') }}" role="form" onsubmit="SubmitCheck()">
+                <div class="mb-3">
+                    <label for="uid" class="form-label">用户名</label>
+                    <input type="text" class="form-control" id="uid" name="uid" autocomplete="username" placeholder="用户名"
+                        required>
+                </div>
+                <div class="mb-3">
+                    <label for="passwd" class="form-label">密码</label>
+                    <input type="password" class="form-control" id="passwd-fake" autocomplete="current-password"
+                        placeholder="密码" required>
+                    <input type="hidden" id="nonce" value="{{ nonce }}">
+                    <input type="hidden" id="passwd" name="passwd">
+                </div>
+                <br />
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <div class="center">
+                    <button type="submit" class="btn btn-primary">登录</button>
+                    <a class='btn btn-info' href="{{ url_for('Reg.reg') }}">注册</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-7 offset-lg-1">
+        <img title="Gate" class="img-round mb-4 mt-4 img-fluid align-middle" src="{{ url_for('static', filename='gate.jpg') }}">
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='md5.min.js') }}"></script>
+<script>
+    function SubmitCheck() {
+        $('#passwd').val(md5(md5($('#passwd-fake').val()) + $('#nonce').val()));
+    }
+</script>
+{% endblock %}

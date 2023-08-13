@@ -1,0 +1,499 @@
+{% extends "base.html.j2" %} {% block title %}查询{% endblock %} {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-select.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-icons.css') }}">
+<div class="modal fade" id="exRank" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="exRankLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exRankLabel">分数转换</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    根据输入的分数自动确认位次号。
+                </p>
+                <div>
+                    <div class="mb-3">
+                        <label for="exyear" class="form-label">数据年份</label>
+                        <select class="selectpicker form-control" id="exyear">
+                            {% for i in rank_years %}
+                            {% if i == info['year'] %}
+                            <option value="{{ i }}" selected>{{ i }}</option>
+                            {% else %}
+                            <option value="{{ i }}">{{ i }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="passwd" class="form-label">分数</label>
+                        <input type="text" class="form-control" id="score" required>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick='exRank()'>确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<form method="GET" id="queryForm">
+    <div class="row g-3">
+        <div class="col-md-3">
+            <label for="province" class="form-label">省份</label>
+            <select class="selectpicker form-control" id="province" name="province" multiple>
+                {% for i in provinces %}
+                {% if i[0] in info["province"] %}
+                <option value="{{ i[0] }}" selected>{{ i[1] }}</option>
+                {% else %}
+                <option value="{{ i[0] }}">{{ i[1] }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="utags" class="form-label">学校标签(包含)</label>
+            <select class="selectpicker form-control" id="utags" name="utags" multiple>
+                {% for i in utags %}
+                {% if i.tid in info["utags"] %}
+                <option value="{{ i.tid }}" selected>{{ i.tname }}</option>
+                {% else %}
+                <option value="{{ i.tid }}">{{ i.tname }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="nutags" class="form-label">学校标签(不包含)</label>
+            <select class="selectpicker form-control" id="nutags" name="nutags" multiple>
+                {% for i in utags %}
+                {% if i.tid in info["nutags"] %}
+                <option value="{{ i.tid }}" selected>{{ i.tname }}</option>
+                {% else %}
+                <option value="{{ i.tid }}">{{ i.tname }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="school" class="form-label">学校</label>
+            <input type="text" class="form-control" id="school" name="school" value="{{ info['school'] }}">
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <label for="major" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="专业类的名称。这是招生时登记的专业名称。">专业</label>
+            <input type="text" class="form-control" id="major" name="major" value="{{ info['major'] }}">
+        </div>
+        <div class="col-md-3">
+            <label for="sort" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="大专业下属的小专业。">专业细分</label>
+            <input type="text" class="form-control" id="sort" name="sort" value="{{ info['sort'] }}">
+        </div>
+        <div class="col-md-2">
+            <label for="rank" class="form-label">
+                <span data-bs-toggle="tooltip" data-bs-placement="top" title="搜索的位次号。需配合区间使用。">位次号</span>
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exRank">
+                    分数转换
+                </button>
+            </label>
+            <input type="text" class="form-control" id="rank" name="rank" value="{{ info['rank'] }}">
+        </div>
+        <div class="col-md-2">
+            <label for="rank_range" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="位次号允许的偏差区间。如1000意为筛选在前输入框中位次号前后1000名的专业。">区间</label>
+            <input type="text" class="form-control" id="rank_range" name="rank_range" value="{{ info['rank_range'] }}">
+        </div>
+        <div class="col-md-2">
+            <label for="year" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="投档位次号的年份。">投档数据年份</label>
+            <select class="selectpicker form-control" id="year" name="year">
+                {% for i in rank_years %}
+                {% if i == info['year'] %}
+                <option value="{{ i }}" selected>{{ i }}</option>
+                {% else %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-7">
+            <label for="must">选考科目</label>
+            <a class="btn btn-primary btn-sm" href='javascript:setOption()'>
+                勾选我的
+            </a>
+            <div class="mt-2" id="must">
+                {% for i,e in must_string %}
+                <div class="form-check form-check-inline">
+                    <label class="form-check-label" for="must{{ i + 1 }}">{{ e }}</label>
+                    {% if i + 1 in info["mymust"] %}
+                    <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}"
+                        value="{{ i + 1 }}" checked>
+                    {% else %}
+                    <input class="form-check-input musts" type="checkbox" name="mymust" id="must{{ i + 1 }}"
+                        value="{{ i + 1 }}">
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-2">
+            <label data-bs-toggle="tooltip" data-bs-placement="top"
+                title="要求专业至少必选我的一半选考科目，且根据匹配度排序。例如若选择三门则筛选必需同时选考其中至少两门的专业，且同时要求三门选考的专业优先展示。">一致优先</label>
+            <div class="mt-2">
+                <div class="form-check">
+                    <label class="form-check-label" for="accordation">是</label>
+                    {% if info["accordation"] %}
+                    <input class="form-check-input" type="checkbox" name="accordation" id="accordation" value="1"
+                        checked>
+                    {% else %}
+                    <input class="form-check-input" type="checkbox" name="accordation" id="accordation" value="1">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <label for="standard" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="浙江省教育考试院公布的选考科目标准的年份。2024及以后参加高考学生适用2024标准，2020-2023参加高考学生适用2020标准。">选考科目标准</label>
+            <select class="selectpicker form-control" id="standard" name="standard">
+                {% for i in must_standard %}
+                {% if i == info["standard"] %}
+                <option value="{{ i }}" selected>{{ i }}</option>
+                {% else %}
+                <option value="{{ i }}">{{ i }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="col-12 center mb-3">
+        <button type="submit" class="btn btn-primary col-sm-4">Go</button>
+    </div>
+</form>
+<div class="mb-2">
+    <span>共计有<b id="cnt">{{ count }}</b>个结果。</span>
+    {% if count <= 1000 %}
+    <a href="{{ url_for('Excel.excel', **info) }}" class="btn btn-sm btn-outline-secondary">导出为Excel</a>
+    {% endif %}
+    {%if count <= 100 %}
+    <a href="javascript:addAll(this)" class="btn btn-sm btn-outline-secondary">结果加入备选</a>
+    <a href="javascript:delAll(this)" class="btn btn-sm btn-outline-secondary">结果删除备选</a>
+    {% endif %}
+    <a href="javascript:addThisPage(this)" class="btn btn-sm btn-outline-secondary">本页加入备选</a>
+    <a href="javascript:delThisPage(this)" class="btn btn-sm btn-outline-secondary">本页删除备选</a>
+</div>
+<div class="table-responsive">
+    <table class="table table-striped text-nowrap" id="resultTable">
+        <thead>
+            <tr>
+                <th>学校名称</th>
+                <th>专业名称</th>
+                <th>计划数</th>
+                <th>年份</th>
+                <th>位次号</th>
+                <th>分数</th>
+                <th>选考科目</th>
+                <th>选科标准</th>
+                <th>备选</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i, item in result %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('Univ.univ', sid=item[1].sid) }}" target="_blank">{{ item[1].uname }}</a>
+                </td>
+                <td>
+                    <a href="{{ url_for('Major.major', mid=item[0].mid) }}" target="_blank">{{ item[0].mname }}</a>
+                </td>
+                <td>{{ item[2].schedule }}</td>
+                <td>{{ item[2].year }}</td>
+                <td>{{ item[2].rank }}</td>
+                <td>{{ item[2].score }}</td>
+                <td>{{ musts[i][0] }}</td>
+                <td>{{ musts[i][1] }}</td>
+                <td>
+                    {% if item[0].mid not in session['my'] %}
+                    <button onclick='addMyMajor(this)' type="button" class="btn btn-sm btn-primary my-major"
+                        data-id="{{ item[0].mid }}">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                    {% else %}
+                    <button onclick='deleteMyMajor(this)' type="button" class="btn btn-sm btn-danger my-major"
+                        data-id="{{ item[0].mid }}">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<nav aria-label="navigation" class="mt-2">
+    <ul class="pagination justify-content-center">
+        {% if page > 3 %}
+        <li class="page-item">
+            <a class="page-link" href="{{ string[0] }}">1</a>
+        </li>
+        {% endif %}
+        {% if page > 4 %}
+        <li class="page-item disabled" aria-current="page">
+            <span class="page-link">...</span>
+        </li>
+        {% endif %}
+
+        {% for i in range(5) %}
+        {% if 0 < page + i - 2 < cnt + 1 %}
+        {% if i == 2 %}
+        <li class="page-item active">
+            <a class="page-link" href="{{ string[i + 1] }}">
+                <span id='page-now'>{{ page + i - 2 }}</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item">
+            <a class="page-link" href="{{ string[i + 1] }}">
+                <span>{{ page + i - 2 }}</span>
+            </a>
+        </li>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+
+        {% if page < cnt - 3 %}
+        <li class="page-item disabled" aria-current="page">
+            <span class="page-link">...</span>
+        </li>
+        {% endif %}
+        {% if page < cnt - 2 %}
+        <li class="page-item">
+            <a class="page-link" href="{{ string[6] }}">{{ cnt }}</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+<script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+{% endblock %}
+{% block script %}
+<script src="{{ url_for('static', filename='bootstrap-select.min.js') }}"></script>
+<script src="{{ url_for('static', filename='defaults-zh_CN.js') }}"></script>
+<script src="{{ url_for('static', filename='sweetalert.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js.cookie.min.js') }}"></script>
+<script>
+    function loggedInOnly() {
+        var logged = JSON.parse("{{ 'true' if 'uid' in session else 'false' }}");
+        if (!logged) {
+            swal({
+                title: "尚未登陆",
+                text: "该功能仅限登录用户！",
+                icon: "info",
+                buttons: {
+                    cancel: "取消",
+                    catch: {
+                        text: "去登录",
+                        value: "login",
+                    },
+                }
+            }).then((value) => {
+                if (value == "login") {
+                    window.location.href = "{{ url_for('Login.login') }}";
+                }
+            })
+            return false
+        } else {
+            return true
+        }
+    }
+
+    function setOption() {
+        if (!loggedInOnly()) { return; }
+        var mymust = "{{ mymust }}";
+        $("input.musts").prop("checked", false)
+        for (var i = 0; i < mymust.length; i++) {
+            var id = mymust[i]
+            $("input.musts#must" + id).prop("checked", true)
+        }
+    }
+
+    function addMyMajor(self) {
+        if (!loggedInOnly()) { return; }
+        var id = $(self).attr("data-id")
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", {
+            mid: id,
+            action: "id"
+        }, function (data, status) {
+            if (data == "success") {
+                $(self).removeClass("btn-primary").addClass("btn-danger");
+                $(self).attr("onclick", "deleteMyMajor(this)");
+                $(self).children().first().attr("class", "bi bi-x-lg");
+            }
+        });
+    }
+
+    function deleteMyMajor(self) {
+        if (!loggedInOnly()) { return; }
+        var id = $(self).attr("data-id")
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", {
+            mid: id,
+            action: "delete"
+        }, function (data, status) {
+            if (data == "success") {
+                $(self).removeClass("btn-danger").addClass("btn-primary");
+                $(self).attr("onclick", "addMyMajor(this)");
+                $(self).children().first().attr("class", "bi bi-plus-lg");
+            }
+        });
+    }
+
+    function exRank() {
+        var exyear = $("select#exyear").val();
+        var score = $("input#score").val();
+        $.post("{{ url_for('Score.score') }}", {
+            exyear: exyear,
+            score: score
+        }, function (data, status) {
+            if (status == "success") {
+                $("input#rank").val(data)
+            }
+        });
+    }
+
+    function addThisPage(self) {
+        if (!loggedInOnly()) { return; }
+        var data = $("form#queryForm").serializeArray();
+        var page = $("span#page-now").text();
+        data.push({
+            name: "page",
+            value: page
+        });
+        data.push({
+            name: "action",
+            value: "query"
+        });
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", data, function (data, status) {
+            if (status == "success") {
+                swal({
+                    title: "成功",
+                    text: "添加页面至备选成功！",
+                    icon: "success",
+                    timer: 1000
+                })
+                $(".my-major").removeClass("btn-primary").addClass("btn-danger");
+                $(".my-major").attr("onclick", "deleteMyMajor(this)");
+                $(".my-major").children().attr("class", "bi bi-x-lg");
+            }
+        });
+    }
+
+    function delThisPage(self) {
+        if (!loggedInOnly()) { return; }
+        var data = $("form#queryForm").serializeArray();
+        var page = $("span#page-now").text();
+        data.push({
+            name: "page",
+            value: page
+        });
+        data.push({
+            name: "action",
+            value: "query"
+        });
+        data.push({
+            name: "del",
+            value: 1
+        });
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", data, function (data, status) {
+            if (status == "success") {
+                swal({
+                    title: "成功",
+                    text: "删除页面备选成功！",
+                    icon: "success",
+                    timer: 1000
+                })
+                $(".my-major").removeClass("btn-danger").addClass("btn-primary");
+                $(".my-major").attr("onclick", "addMyMajor(this)");
+                $(".my-major").children().attr("class", "bi bi-plus-lg");
+            }
+        });
+    }
+
+    function addAll(self) {
+        if (!loggedInOnly()) { return; }
+        var data = $("form#queryForm").serializeArray();
+        data.push({
+            name: "action",
+            value: "query"
+        });
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", data, function (data, status) {
+            if (status == "success") {
+                swal({
+                    title: "成功",
+                    text: "添加所有结果至备选成功！",
+                    icon: "success",
+                    timer: 1000
+                })
+                $(".my-major").removeClass("btn-primary").addClass("btn-danger");
+                $(".my-major").attr("onclick", "deleteMyMajor(this)");
+                $(".my-major").children().attr("class", "bi bi-x-lg");
+            }
+        });
+    }
+
+    function delAll(self) {
+        if (!loggedInOnly()) { return; }
+        var data = $("form#queryForm").serializeArray();
+        data.push({
+            name: "action",
+            value: "query",
+        });
+        data.push({
+            name: "del",
+            value: 1
+        })
+        $.get("{{ url_for('AddMyMajor.addmymajor') }}", data, function (data, status) {
+            if (status == "success") {
+                swal({
+                    title: "成功",
+                    text: "删除所有结果备选成功！",
+                    icon: "success",
+                    timer: 1000
+                })
+                $(".my-major").removeClass("btn-danger").addClass("btn-primary");
+                $(".my-major").attr("onclick", "addMyMajor(this)");
+                $(".my-major").children().attr("class", "bi bi-plus-lg");
+            }
+        });
+    }
+
+    $('input.musts').on('change', function (e) {
+        if ($('input.musts:checked').length > 3) {
+            $(this).prop('checked', false);
+        }
+    });
+
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    if (Cookies.get("agreement") != "true") {
+        swal({
+            title: "免责声明",
+            text: "本页面提供数据来自政府教育考试机构。\
+                    系统已经采取最佳可行算法自动处理相关数据，但仍可能存在必选科目匹配错误等信息有误情况。\
+                    本系统仅供辅助查询，请您以相关学校以及教育考试机构官方数据为准。\
+                    网站运营者不承担有关数据正确性的个别及连带责任。",
+            icon: "info",
+        }).then((onConfirm)=>{
+            if (onConfirm){
+                Cookies.set("agreement", "true", {expires: 3650})
+            }
+        })
+    }
+</script>
+{% endblock %}

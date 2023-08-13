@@ -1,0 +1,59 @@
+.center {
+    text-align: center;
+    margin: auto;
+}
+
+.jumbotron {
+    width: 90%;
+    margin: 30px auto;
+}
+
+.row {
+    margin: 10px 0;
+}
+
+.ud-margin {
+    margin: 15px 0;
+}
+
+.auto-height {
+    position: absolute;
+    height: auto;
+    margin: auto;
+}
+
+@font-face {
+    font-family: "SourceHanSansCN-Medium";
+    src: url("SourceHanSansCN-Medium.woff");
+}
+
+* {
+    font-family: "Helvetica", "SourceHanSansCN-Medium" !important;
+}
+
+.box-shadow {
+    padding: 3em;
+    border-radius: 20px;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+}
+
+.img-round {
+    border-radius: 30px;
+    box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.7) inset;
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px,
+        rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+}
+
+.content {
+    opacity: 1;
+}
+
+.my-major {
+    width: 2.5em;
+    height: 2em;
+    padding: 0 0.25em;
+}
+
+.min-h-auto {
+    min-height: auto !important;
+}
