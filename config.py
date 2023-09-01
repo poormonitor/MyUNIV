@@ -12,8 +12,6 @@ from pydantic import BaseSettings
 class Settings(BaseSettings):
     SECRET_KEY: str = codecs.encode(os.urandom(32), "hex").decode()
     DB_PATH: str = "sqlite:///data.sqlite"
-    MINIAPP_APP_ID: str = ""
-    MINIAPP_APP_SECRET: str = ""
 
     class Config:
         env_file = ".env"
