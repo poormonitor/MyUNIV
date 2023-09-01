@@ -1,6 +1,7 @@
 <script setup>
 import { ArchiveOutline as ArchiveIcon } from "@vicons/ionicons5";
 import { message } from "../discrete";
+import { watch } from "vue";
 
 const axios = inject("axios");
 const fileList = ref([]);
@@ -18,6 +19,20 @@ const upload = () => {
         }
     });
 };
+
+watch(fileList, () => {
+    if (!fileList.value.length) return;
+    let yearRegex = /\d{4}/g;
+    let years = fileList.value[0].name.match(yearRegex);
+    if (!years) return;
+    years = years.map(parseInt);
+    let currentYear = parseInt(new Date().getFullYear());
+    let filteredYears = years.filter((year) => currentYear - year < 5);
+    let maxYear = Math.max(...filteredYears);
+    if (!maxYear) return;
+    let date = new Date(maxYear, 0, 1);
+    time.value = date.getTime();
+});
 
 const conn = () => {
     axios.post("/manage/conn").then((response) => {

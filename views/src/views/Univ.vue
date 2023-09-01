@@ -259,7 +259,7 @@ const mustColumns = [
         key: "must",
         render: (row) => getMustString(row.must),
     },
-    { title: "包含专业", key: "include" },
+    { title: "包含专业", className: "whitespace-nowrap", key: "include" },
 ];
 watch(
     mustByYear,
@@ -312,21 +312,23 @@ watch(
         <div id="rank" class="center" style="width: auto; height: 250px"></div>
     </div>
     <div class="mt-12 mb-10">
-        <n-form class="flex gap-x-12" label-placement="left">
+        <div class="flex flex-col md:flex-row gap-x-12">
             <div class="text-2xl font-bold">历年投档信息</div>
-            <n-form-item label="按年分类">
-                <n-switch v-model:value="rankByYear"></n-switch>
-            </n-form-item>
-            <n-form-item label="分类项目">
-                <div class="min-w-32">
-                    <n-select
-                        v-model:value="rankCurrentItem"
-                        :consistent-menu-width="false"
-                        :options="rankSelectOptions"
-                    />
-                </div>
-            </n-form-item>
-        </n-form>
+            <n-form class="flex gap-x-8 mt-4 md:mt-0" label-placement="left">
+                <n-form-item label="按年分类">
+                    <n-switch v-model:value="rankByYear"></n-switch>
+                </n-form-item>
+                <n-form-item label="分类项目">
+                    <div class="min-w-32">
+                        <n-select
+                            v-model:value="rankCurrentItem"
+                            :consistent-menu-width="false"
+                            :options="rankSelectOptions"
+                        />
+                    </div>
+                </n-form-item>
+            </n-form>
+        </div>
         <n-data-table
             size="small"
             :data="rankDataFiltered"
@@ -335,21 +337,24 @@ watch(
     </div>
     <n-divider></n-divider>
     <div class="mt-10">
-        <n-form class="flex gap-x-12" label-placement="left">
+        <div class="flex flex-col md:flex-row gap-x-12">
             <div class="text-2xl font-bold">必选科目要求</div>
-            <n-form-item label="按年分类">
-                <n-switch v-model:value="mustByYear"></n-switch>
-            </n-form-item>
-            <n-form-item label="分类项目">
-                <div class="min-w-32">
-                    <n-select
-                        v-model:value="mustCurrentItem"
-                        :consistent-menu-width="false"
-                        :options="mustSelectOptions"
-                    />
-                </div>
-            </n-form-item>
-        </n-form>
+            <n-form class="flex gap-x-8 mt-4 md:mt-0" label-placement="left">
+                <n-form-item label="按年分类">
+                    <n-switch v-model:value="mustByYear"></n-switch>
+                </n-form-item>
+                <n-form-item label="分类项目">
+                    <div class="min-w-32">
+                        <n-select
+                            v-model:value="mustCurrentItem"
+                            :consistent-menu-width="false"
+                            :options="mustSelectOptions"
+                        />
+                    </div>
+                </n-form-item>
+            </n-form>
+        </div>
+
         <n-data-table
             size="small"
             :data="mustDataFiltered"

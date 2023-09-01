@@ -170,18 +170,20 @@ const mustColumns = [
         key: "must",
         render: (row) => getMustString(row.must),
     },
-    { title: "包含专业", key: "include" },
+    { title: "包含专业", className: "whitespace-nowrap", key: "include" },
 ];
 </script>
 
 <template>
     <div class="mb-8">
-        <div class="flex justify-between items-center">
+        <div
+            class="flex flex-col md:flex-row md:justify-between gap-y-2 gap-x-4 items-start md:items-center mb-4"
+        >
             <div>
                 <p class="text-4xl font-bold mb-2">
                     {{ data.mname }}
                 </p>
-                <div class="mb-4 text-xl">
+                <div class="text-xl">
                     <router-link
                         :to="{ name: 'univ', params: { sid: data.univ.sid } }"
                         class="text-sky-800 hover:text-sky-900 transition"
@@ -222,7 +224,7 @@ const mustColumns = [
         ></n-data-table>
     </div>
     <n-divider></n-divider>
-    <div class="mt-10">
+    <div class="mt-10 mb-10">
         <div class="text-2xl font-bold mb-4">必选科目要求</div>
         <n-data-table
             size="small"

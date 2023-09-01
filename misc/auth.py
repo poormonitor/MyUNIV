@@ -5,11 +5,8 @@ from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from sqlalchemy.orm import Session
 
 from config import get_secret_key
-from models import get_db
-from models.user import User
 
 SECRET_KEY = get_secret_key()
 ALGORITHM = "HS256"
@@ -81,7 +78,6 @@ async def get_user_token(identity: Tuple[bool, str] = Depends(get_current_user))
     token = identity[1]
 
     return token
-
 
 
 def hash_passwd(passwd: str) -> str:

@@ -121,6 +121,13 @@ def findNearestMust(major, year):
     return result
 
 
+def reverse_lookup(dictionary, value):
+    for key, val in dictionary.items():
+        if val == value:
+            return key
+    return None
+
+
 def process_excel(xlsx, year, delete=False):
     import os
 
@@ -137,13 +144,14 @@ def process_excel(xlsx, year, delete=False):
 
     db = list(get_db())[0]
     data = read_excel(xlsx)
+
     if "位次" in data.columns.tolist():
-        univs = {i.uname: [i.sid, i.utags] for i in db.query(Univ).all()}
+        univs = {i.uname: i for i in db.query(Univ).all()}
         tags = {i.tname: i.tid for i in db.query(Tag).all()}
         for i in tqdm(data.values):
             univ_name = unifyBracket(i[1])
             univ_name, tag = get_school_name(univ_name)
-            major = unifyBracket(i[3])
+            mname = unifyBracket(i[3])
             schedule = i[4]
             score = i[5]
             rank = i[6] if i[6] == i[6] else 0
@@ -163,12 +171,14 @@ def process_excel(xlsx, year, delete=False):
                 univ = Univ(uname=univ_name, utags=tids, province=0)
                 db.add(univ)
                 db.flush()
-                univs[univ_name] = [univ.sid, univ.utags]
-            elif (
-                "," + ",".join(str(tags.get(i, -1)) for i in tag) + ","
-                != univs[univ_name][1]
-            ):
-                tids = []
+                univs[univ_name] = univ
+            else:
+                old_tags = []
+                if univs[univ_name].utags and univs[univ_name].utags != ",,":
+                    old_tags = list(univs[univ_name].utags.split(","))
+                    old_tags = [i for i in old_tags if i != ""]
+
+                tids = list(map(int, old_tags))
                 for j in tag:
                     if j not in tags:
                         t = Tag(tname=j)
@@ -179,36 +189,35 @@ def process_excel(xlsx, year, delete=False):
                     else:
                         tid = tags[j]
                     tids.append(tid)
-                tids = "," + ",".join(str(i) for i in sorted(tids)) + ","
-                univ = db.query(Univ).filter_by(sid=univs[univ_name][0]).first()
-                univ.utags = tids
+                tids = "," + ",".join(str(i) for i in sorted(set(tids))) + ","
+                univs[univ_name].utags = tids
                 db.flush()
 
-            univ_id = univs[univ_name][0]
+            univ_id = univs[univ_name].sid
 
             if (
-                b := db.query(Major).filter_by(sid=univ_id, mname=major).first()
+                major := db.query(Major).filter_by(sid=univ_id, mname=mname).first()
             ) is None:
-                b = Major(sid=univ_id, mname=major)
-                db.add(b)
+                major = Major(sid=univ_id, mname=mname)
+                db.add(major)
                 db.flush()
 
             if (
-                a := db.query(Rank).filter(Rank.mid == b.mid, Rank.year == year).first()
+                rk := db.query(Rank).filter_by(mid=major.mid, year=year).first()
             ) is None:
-                rank = Rank(
-                    mid=b.mid, year=year, rank=rank, schedule=schedule, score=score
+                rk = Rank(
+                    mid=major.mid, year=year, rank=rank, schedule=schedule, score=score
                 )
-                db.add(rank)
+                db.add(rk)
                 db.flush()
             else:
-                a.rank = rank
-                a.schedule = schedule
-                a.score = score
+                rk.rank = rank
+                rk.schedule = schedule
+                rk.score = score
                 db.flush()
 
     elif "选考科目要求" in data.columns.tolist():
-        univs = {i.uname: [i.sid, i.province] for i in db.query(Univ).all()}
+        univs = {i.uname: i for i in db.query(Univ).all()}
         for i in tqdm(data.values):
             province = i[0]
             univ_name = unifyBracket(i[1])
@@ -229,25 +238,21 @@ def process_excel(xlsx, year, delete=False):
                 else:
                     must = int(str(len(str(must))) + str(must))
 
-            province_id = list(provinces.keys())[
-                list(provinces.values()).index(province)
-            ]
+            province_id = reverse_lookup(provinces, province)
 
             if univ_name not in univs:
                 univ = Univ(uname=univ_name, province=province_id)
                 db.add(univ)
                 db.flush()
-                univs[univ_name] = [univ.sid, univ.province]
-            elif univs[univ_name][1] != province:
-                univ = db.query(Univ).filter(Univ.uname == univ_name).first()
-                univ.province = province_id
+                univs[univ_name] = univ
+            elif univs[univ_name].province != province_id:
+                univs[univ_name].province = province_id
                 db.flush()
-                univs[univ_name][1] = province_id
 
-            univ_id = univs[univ_name][0]
+            univ_id = univs[univ_name].sid
 
             if (
-                a := db.query(Must)
+                rank := db.query(Must)
                 .filter_by(mname=major, sid=univ_id, year=year)
                 .first()
             ) is None:
@@ -256,12 +261,13 @@ def process_excel(xlsx, year, delete=False):
                 )
                 db.add(must)
             else:
-                a.must = must
-                a.include = include
+                rank.must = must
+                rank.include = include
             db.flush()
 
     if delete:
         os.remove(xlsx)
+
     db.commit()
 
 
@@ -357,7 +363,7 @@ def connectMust():
             if not res:
                 continue
             if (a := db.query(Conne).filter_by(mid=i.mid, year=j).first()) is None:
-                conn = Conne(i.mid, res.mmid, j)
+                conn = Conne(mid=i.mid, mmid=res.mmid, year=j)
                 db.add(conn)
             elif a.mmid != res.mmid:
                 a.mmid = res.mmid
@@ -396,3 +402,18 @@ def datetime_to_str(date_time):
     utc = timezone("UTC")
 
     return date_time.replace(tzinfo=utc).astimezone(tz).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def create_admin():
+    from hashlib import md5
+    from misc.auth import hash_passwd
+    from models.user import User
+    from models import get_db
+
+    db = list(get_db())[0]
+    admin = db.query(User).filter_by(uid="admin").first()
+    if admin is None:
+        passwd = hash_passwd(md5("admin".encode("utf-8")).hexdigest())
+        admin = User(uid="admin", name="管理员", passwd=passwd, admin=True)
+        db.add(admin)
+        db.commit()

@@ -54,10 +54,10 @@ function compareObjects(obj1, obj2) {
 }
 
 function findMaxValue(array, n) {
-    let max = 0;
+    let max = null;
 
     for (let i = 0; i < array.length; i++) {
-        if (array[i] <= n && array[i] > max) {
+        if (!max || (array[i] <= n && array[i] > max)) {
             max = array[i];
         }
     }
