@@ -411,8 +411,8 @@ def create_admin():
     from models import get_db
 
     db = list(get_db())[0]
-    admin = db.query(User).filter_by(uid="admin").first()
-    if admin is None:
+    admin = db.query(User).filter_by(admin=True).count()
+    if not admin:
         passwd = hash_passwd(md5("admin".encode("utf-8")).hexdigest())
         admin = User(uid="admin", name="管理员", passwd=passwd, admin=True)
         db.add(admin)
