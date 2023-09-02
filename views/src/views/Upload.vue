@@ -31,7 +31,6 @@ watch(fileList, () => {
     let maxYear = Math.max(...filteredYears);
     if (!maxYear || isNaN(maxYear)) return;
     let date = new Date(maxYear, 0, 1);
-    console.log(date);
     time.value = date.getTime();
 });
 
