@@ -77,6 +77,8 @@ Promise.all([
             value: item,
         }));
         let current = new Date().getFullYear();
+        let currentMonth = new Date().getMonth();
+        if (currentMonth >= 7) current += 1;
         info.standard = findMaxValue(response.data, current);
     }),
 ]).then(() => {
