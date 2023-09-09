@@ -112,7 +112,7 @@ def unifyBracket(st):
     return st.replace("（", "(").replace("）", ")")
 
 
-@lru_cache(256)
+@lru_cache(128)
 def findNearestMust(major, year):
     from models.must import Must
 
