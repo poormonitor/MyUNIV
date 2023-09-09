@@ -29,7 +29,6 @@ echarts.use([
 const axios = inject("axios");
 const route = useRoute();
 const myStore = useMyStore();
-const userStore = useUserStore();
 
 const data = await axios
     .get("/get/major", { params: { mid: route.params.mid } })
@@ -40,9 +39,13 @@ data.musts.sort((a, b) => a.year - b.year);
 
 const tags = Array.from(
     data.musts.reduce((ac, ob) => {
-        ob.include.split("、").forEach((elem) => {
-            if (elem) ac.add(elem);
-        });
+        if (
+            data.value.mname.includes(ob.mname) ||
+            ob.mname.includes(data.mname)
+        )
+            ob.include.split("、").forEach((elem) => {
+                if (elem) ac.add(elem);
+            });
         return ac;
     }, new Set())
 );
