@@ -53,9 +53,13 @@ onMounted(() => {
 			data.value.musts.sort((a, b) => a.year - b.year);
 			tags.value = Array.from(
 				data.value.musts.reduce((ac, ob) => {
-					ob.include.split('、').forEach((elem) => {
-						if (elem) ac.add(elem);
-					});
+					if (
+						data.value.mname.includes(ob.mname) ||
+						ob.mname.includes(data.mname)
+					)
+						ob.include.split('、').forEach((elem) => {
+							if (elem) ac.add(elem);
+						});
 					return ac;
 				}, new Set())
 			);
@@ -152,18 +156,28 @@ onMounted(() => {
 		<div v-if="data">
 			<div class="p-10 pb-15">
 				<div
-					class="flex items-start"
+					class="flex items-center mb-2"
 					style="color: #0891b2"
 					@click="gotoUniv(data.univ.sid)"
 				>
 					<span>{{ data.univ.uname }}</span>
 					<image
 						style="width: 12px; height: 12px"
-						class="ml-3"
+						class="ml-3 mb-3"
 						src="../../static/icons8-right-2-24.png"
 					></image>
 				</div>
 				<div class="text-bold text-2xl">{{ data.mname }}</div>
+				<div
+					class="my-10 flex flex-wrap gap-4"
+					style="line-height: 160%"
+				>
+					<uni-tag
+						v-for="tag in tags"
+						:text="tag"
+						type="info"
+					></uni-tag>
+				</div>
 				<div class="mt-12">
 					<button
 						@click.stop="() => mymajors.remove(data.mid)"

@@ -254,9 +254,9 @@ onMounted(() => {
 	<Loading ref="loadingDialog" />
 	<div class="main-content" v-show="data">
 		<div v-if="data">
-			<div class="p-10 flex justify-between items-center">
+			<div class="px-10 py-15 flex justify-between items-center">
 				<div class="majorInfo">
-					<div class="text-bold text-2xl">{{ data.uname }}</div>
+					<div class="text-bold text-2xl mb-2">{{ data.uname }}</div>
 					<div style="color: #0891b2">
 						{{ provinces[data.province] }}
 					</div>
@@ -267,7 +267,10 @@ onMounted(() => {
 					</button>
 				</div>
 			</div>
-			<div class="px-10 mb-10 flex flex-wrap gap-4">
+			<div
+				class="px-10 mb-10 flex flex-wrap gap-4"
+				style="line-height: 160%"
+			>
 				<uni-tag v-for="tag in tags" :text="tag" type="info"></uni-tag>
 			</div>
 			<div class="mb-30 table-c">
