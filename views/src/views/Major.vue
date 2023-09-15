@@ -40,7 +40,7 @@ data.musts.sort((a, b) => a.year - b.year);
 const tags = Array.from(
     data.musts.reduce((ac, ob) => {
         if (
-            data.value.mname.includes(ob.mname) ||
+            data.mname.includes(ob.mname) ||
             ob.mname.includes(data.mname)
         )
             ob.include.split("、").forEach((elem) => {
