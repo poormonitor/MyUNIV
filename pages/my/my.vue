@@ -71,11 +71,14 @@ Promise.all([
 });
 
 onShow(() => {
-	if (!majors.get().every((e) => last.value.includes(e))) goQuery();
-	else
+	if (!majors.get().every((e) => last.value.includes(e))) {
+		goQuery();
+	} else {
 		data.value = data.value.filter((item) =>
 			majors.get().includes(item[0].mid)
 		);
+		renderTable();
+	}
 });
 
 const goQuery = () => {

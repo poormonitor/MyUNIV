@@ -55,7 +55,7 @@ onMounted(() => {
 				data.value.musts.reduce((ac, ob) => {
 					if (
 						data.value.mname.includes(ob.mname) ||
-						ob.mname.includes(data.mname)
+						ob.mname.includes(data.value.mname)
 					)
 						ob.include.split('、').forEach((elem) => {
 							if (elem) ac.add(elem);
