@@ -98,6 +98,16 @@ const goQuery = () => {
     });
 };
 
+const switchPage = () => {
+    let count = document.getElementById("divider");
+    if (count) count.scrollIntoView({ behavior: "smooth" });
+    goQuery();
+};
+
+const handleQueryKeyUp = (event) => {
+    if (event.key === "Enter") goQuery();
+};
+
 const tableColumns = [
     {
         title: "学校名称",
@@ -253,7 +263,7 @@ onMounted(() => {
             </n-form-item>
         </n-form>
     </n-modal>
-    <div class="mx-8 w-auto lg:mx-auto lg:w-[70vw] my-8">
+    <div class="mx-8 w-auto lg:mx-auto lg:w-[75vw] pt-8 pb-4">
         <n-form class="grid grid-cols-2 gap-x-4 md:grid-cols-4 md:gap-x-8">
             <n-form-item label="省份">
                 <n-select
@@ -264,7 +274,10 @@ onMounted(() => {
                 ></n-select>
             </n-form-item>
             <n-form-item label="学校">
-                <n-input v-model:value="info.school"></n-input>
+                <n-input
+                    v-model:value="info.school"
+                    @keyup="handleQueryKeyUp"
+                ></n-input>
             </n-form-item>
             <n-form-item label="标签(包含)">
                 <n-select
@@ -283,7 +296,10 @@ onMounted(() => {
                 ></n-select>
             </n-form-item>
             <n-form-item label="专业">
-                <n-input v-model:value="info.major"></n-input>
+                <n-input
+                    v-model:value="info.major"
+                    @keyup="handleQueryKeyUp"
+                ></n-input>
             </n-form-item>
             <n-form-item label="位次号">
                 <div class="flex gap-x-2">
@@ -325,19 +341,34 @@ onMounted(() => {
         </n-form>
         <div class="flex justify-center">
             <div class="w-32">
-                <n-button @click="goQuery" type="info" :block="true"
-                    >查找</n-button
-                >
+                <n-button @click="goQuery" type="info" :block="true">
+                    查找
+                </n-button>
             </div>
         </div>
 
-        <n-divider></n-divider>
+        <n-divider id="divider"></n-divider>
         <div class="w-full mx-auto">
-            <div class="mb-4">
-                <n-statistic label="共计找到了" tabular-nums>
+            <div class="flex justify-between items-end mb-4 flex-wrap gap-y-3">
+                <n-statistic
+                    label="共计找到了"
+                    tabular-nums
+                    class="hidden md:block"
+                >
                     {{ data.total }}
                     <template #suffix> 个专业 </template>
                 </n-statistic>
+                <span class="md:hidden text-lg">
+                    共计找到了 <b>{{ data.total }}</b> 个专业
+                </span>
+                <n-pagination
+                    class="mb-2 ml-auto"
+                    v-model:page="pagination.page"
+                    :page-count="pagination.pageCount"
+                    :page-slot="7"
+                    @update:page="goQuery"
+                    v-if="loading || data.total"
+                />
             </div>
             <div v-if="loading || data.total">
                 <n-data-table
@@ -352,10 +383,11 @@ onMounted(() => {
                     class="justify-end mt-3 mb-8"
                     v-model:page="pagination.page"
                     :page-count="pagination.pageCount"
-                    @update:page="goQuery"
+                    :page-slot="7"
+                    @update:page="switchPage"
                 />
             </div>
-            <n-empty class="mt-12" description="什么也没找到" v-else></n-empty>
+            <n-empty class="mt-12 pb-8" description="什么也没找到" v-else></n-empty>
         </div>
     </div>
 </template>

@@ -60,7 +60,7 @@ def findResult(info, db):
         result = result.filter(
             and_(
                 or_(
-                    Must.include.contains(i),
+                    and_(Must.include.contains(i), Must.mname.contains(Major.mname)),
                     Major.mname.contains(i),
                 )
                 for i in info["major"].split()
