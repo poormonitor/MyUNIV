@@ -6,7 +6,7 @@ class Must(Base):
     __tablename__ = "must"
 
     mmid = Column(Integer, primary_key=True, autoincrement=True)
-    mname = Column(String(64), nullable=False, index=True)
+    mname = Column(String(128), nullable=False, index=True)
     year = Column(Integer, nullable=False, index=True)
     sid = Column(Integer, nullable=False, index=True)
     must = Column(Integer, nullable=False, index=True)
