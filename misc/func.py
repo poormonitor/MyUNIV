@@ -327,7 +327,7 @@ def connectMust():
     allMust = db.query(Must).all()
     schoolRank = (
         db.query(Major.sid, func.avg(Rank.score))
-        .outerjoin(Major, Major.mid == Rank.mid)
+        .join(Major, Major.mid == Rank.mid)
         .group_by(Major.sid)
         .order_by(func.avg(Rank.score))
         .all()
@@ -363,7 +363,7 @@ def connectMust():
             if not res:
                 continue
             if (a := db.query(Conne).filter_by(mid=i.mid, year=j).first()) is None:
-                conn = Conne(mid=i.mid, mmid=res.mmid, year=j)
+                conn = Conne(mid=i.mid, mmid=res.mmid)
                 db.add(conn)
             elif a.mmid != res.mmid:
                 a.mmid = res.mmid

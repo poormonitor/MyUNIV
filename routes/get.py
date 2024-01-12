@@ -10,8 +10,15 @@ from sqlalchemy.orm import Session
 
 from misc.const import provinces
 from misc.func import findNearestMust, get_must_string
-from misc.model import (OneMajor, OneMust, OneRank, OneUniv, QueryResult,
-                        parse_result, trans_utags)
+from misc.model import (
+    OneMajor,
+    OneMust,
+    OneRank,
+    OneUniv,
+    QueryResult,
+    parse_result,
+    trans_utags,
+)
 from models import get_db
 from models.conne import Conne
 from models.major import Major
@@ -120,12 +127,10 @@ def get_majors(form: MajorsQuery, db: Session = Depends(get_db)) -> QueryResult:
 
     result = db.query(Major, Univ, Rank, Must)
     result = result.select_from(Rank)
-    result = result.outerjoin(Major, Major.mid == Rank.mid)
-    result = result.outerjoin(Univ, Univ.sid == Major.sid)
-    result = result.outerjoin(Conne, Conne.mid == Rank.mid)
-    result = result.outerjoin(
-        Must, and_(Conne.mmid == Must.mmid, Conne.year == Must.year)
-    )
+    result = result.join(Major, Major.mid == Rank.mid)
+    result = result.join(Univ, Univ.sid == Major.sid)
+    result = result.join(Conne, Conne.mid == Rank.mid)
+    result = result.join(Must, Conne.mmid == Must.mmid)
     result = result.filter(Major.mid.in_(form.majors))
     result = result.filter(Rank.year == form.year)
     result = result.filter(Must.year == form.standard)
@@ -148,12 +153,10 @@ def get_excel(form: MajorsQuery, db: Session = Depends(get_db)) -> downloadTable
 
     result = db.query(Major, Univ, Rank, Must)
     result = result.select_from(Rank)
-    result = result.outerjoin(Major, Major.mid == Rank.mid)
-    result = result.outerjoin(Univ, Univ.sid == Major.sid)
-    result = result.outerjoin(Conne, Conne.mid == Rank.mid)
-    result = result.outerjoin(
-        Must, and_(Conne.mmid == Must.mmid, Conne.year == Must.year)
-    )
+    result = result.join(Major, Major.mid == Rank.mid)
+    result = result.join(Univ, Univ.sid == Major.sid)
+    result = result.join(Conne, Conne.mid == Rank.mid)
+    result = result.join(Must, Conne.mmid == Must.mmid)
     result = result.filter(Major.mid.in_(form.majors))
     result = result.filter(Rank.year == form.year)
     result = result.filter(Must.year == form.standard)

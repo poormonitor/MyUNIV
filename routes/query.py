@@ -2,10 +2,10 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, not_, func
+from sqlalchemy.orm import Session, aliased
+from sqlalchemy import and_, or_, func
 
-from misc.func import findNearestMust, freezeDict, hash_dict, lru_cache_ignored
+from misc.func import freezeDict, hash_dict, lru_cache_ignored
 from misc.model import QueryResult, parse_result
 from models import get_db
 
@@ -43,71 +43,88 @@ def findResult(info, db):
     from models.rank import Rank
     from models.univ import Univ
 
-    result = db.query(Major, Univ, Rank, Must)
-    result = result.select_from(Rank)
-    result = result.outerjoin(Major, Major.mid == Rank.mid)
-    result = result.outerjoin(Univ, Univ.sid == Major.sid)
-    result = result.outerjoin(Conne, Conne.mid == Rank.mid)
-    result = result.outerjoin(
-        Must, and_(Conne.mmid == Must.mmid, Conne.year == Must.year)
-    )
+    MustS = db.query(Must)
+    RankS = db.query(Rank)
+    UnivS = db.query(Univ)
+    MajorS = db.query(Major)
 
-    if info["school"]:
-        for i in info["school"].split(" "):
-            result = result.filter(Univ.uname.like("%" + i + "%"))
+    MustS = MustS.filter(Must.year == info["standard"])
+    if info["mymust"]:
+        mymust = "".join(map(str, info["mymust"]))
+        if info["accordation"]:
+            what_i_can = get_what_i_can_choose_most(mymust)
+        else:
+            what_i_can = get_what_i_can_choose(mymust)
+        MustS = MustS.filter(Must.must.in_(what_i_can))
 
-    if info["major"]:
-        result = result.filter(
-            and_(
-                or_(
-                    and_(Must.include.contains(i), Must.mname.contains(Major.mname)),
-                    Major.mname.contains(i),
-                )
-                for i in info["major"].split()
-            )
-        )
-
-    result = result.filter(Rank.year == info["year"])
-
+    RankS = RankS.filter(Rank.year == info["year"])
     if info["rank"]:
         rank = info["rank"]
         if not info["rank_range"]:
-            result = result.filter(Rank.rank >= rank).filter(Rank.rank != 0)
-            result = result.order_by(Rank.rank.asc())
+            RankS = RankS.filter(Rank.rank >= rank)
         else:
-            result = result.filter(
-                rank - info["rank_range"] <= Rank.rank,
-                Rank.rank <= rank + info["rank_range"],
-            ).filter(Rank.rank != 0)
-            result = result.order_by(func.abs(Rank.rank - rank).asc())
-    else:
-        result = result.order_by(Univ.sid.asc())
+            RankS = RankS.filter(Rank.rank >= rank - info["rank_range"])
+            RankS = RankS.filter(Rank.rank <= rank + info["rank_range"])
+            RankS = RankS.filter(Rank.rank != 0)
 
-    if info["mymust"]:
-        mymust = "".join(map(str, info["mymust"]))
-        result = result.order_by(Must.must.desc())
-        if info["accordation"]:
-            what_i_can = get_what_i_can_choose_most(mymust)
-            result = result.order_by(Must.must)
-        else:
-            what_i_can = get_what_i_can_choose(mymust)
-        result = result.filter(Must.must.in_(what_i_can))
-
-    result = result.filter(Must.year == info["standard"])
-    result = result.group_by(Major.mid)
+    if info["school"]:
+        for i in info["school"].split(" "):
+            UnivS = UnivS.filter(Univ.uname.like("%" + i + "%"))
 
     if info["utags"]:
-        condition = or_(Univ.utags.like("%," + str(i) + ",%") for i in info["utags"])
-        result = result.filter(condition)
+        for i in info["utags"]:
+            UnivS = UnivS.filter(Univ.utags.like("%," + str(i) + ",%"))
 
     if info["nutags"]:
-        ncondition = not_(
-            and_(Univ.utags.like("%," + str(i) + ",%") for i in info["nutags"])
-        )
-        result = result.filter(ncondition)
+        for i in info["nutags"]:
+            UnivS = UnivS.filter(Univ.utags.notlike("%," + str(i) + ",%"))
 
     if info["province"]:
-        result = result.filter(Univ.province.in_(info["province"]))
+        UnivS = UnivS.filter(Univ.province.in_(info["province"]))
+
+    RankS = RankS.subquery()
+    RankAlias = aliased(Rank, RankS)
+    UnivS = UnivS.subquery()
+    UnivAlias = aliased(Univ, UnivS)
+    MajorS = MajorS.subquery()
+    MajorAlias = aliased(Major, MajorS)
+    MustS = MustS.subquery()
+    MustAlias = aliased(Must, MustS)
+
+    result = db.query(MajorAlias, UnivAlias, RankAlias, MustAlias)
+    result = result.select_from(RankAlias)
+    result = result.join(MajorAlias, MajorAlias.mid == RankAlias.mid)
+    result = result.join(UnivAlias, UnivAlias.sid == MajorAlias.sid)
+    result = result.join(Conne, Conne.mid == RankAlias.mid)
+    result = result.join(MustAlias, Conne.mmid == MustAlias.mmid)
+
+    if info["major"]:
+        for i in info["major"].split():
+            result = result.filter(
+                or_(
+                    MajorAlias.mname.contains(i),
+                    and_(
+                        MustAlias.include.contains(i),
+                        MustAlias.mname.contains(MajorAlias.mname),
+                    ),
+                )
+            )
+
+    if info["mymust"]:
+        if info["accordation"]:
+            result = result.order_by(MustAlias.must)
+        else:
+            result = result.order_by(MustAlias.must.desc())
+
+    if info["rank"]:
+        if not info["rank_range"]:
+            result = result.order_by(RankAlias.rank.asc())
+        else:
+            result = result.order_by(func.abs(RankAlias.rank - info["rank"]).asc())
+    else:
+        result = result.order_by(UnivAlias.sid.asc())
+
+    result = result.group_by(MajorAlias.mid)
 
     count = result.count()
 
@@ -115,11 +132,6 @@ def findResult(info, db):
         result = result.offset((info["page"] - 1) * 50).limit(50).all()
     else:
         result = result.all()
-
-    result = [
-        i if i[3] else (i[0], i[1], i[2], findNearestMust(i[0].mname, info["standard"]))
-        for i in result
-    ]
 
     db.expunge_all()
 

@@ -85,6 +85,12 @@ Promise.all([
     goQuery();
 });
 
+const reQuery = () => {
+    pagination.page = 1;
+    pagination.pageCount = 0;
+    goQuery();
+};
+
 const goQuery = () => {
     loading.value = true;
     info.page = pagination.page;
@@ -105,7 +111,7 @@ const switchPage = () => {
 };
 
 const handleQueryKeyUp = (event) => {
-    if (event.key === "Enter") goQuery();
+    if (event.key === "Enter") reQuery();
 };
 
 const tableColumns = [
@@ -341,7 +347,7 @@ onMounted(() => {
         </n-form>
         <div class="flex justify-center">
             <div class="w-32">
-                <n-button @click="goQuery" type="info" :block="true">
+                <n-button @click="reQuery" type="info" :block="true">
                     查找
                 </n-button>
             </div>
@@ -387,7 +393,11 @@ onMounted(() => {
                     @update:page="switchPage"
                 />
             </div>
-            <n-empty class="mt-12 pb-8" description="什么也没找到" v-else></n-empty>
+            <n-empty
+                class="mt-12 pb-8"
+                description="什么也没找到"
+                v-else
+            ></n-empty>
         </div>
     </div>
 </template>
