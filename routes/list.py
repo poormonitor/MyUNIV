@@ -1,10 +1,10 @@
 from typing import List, Tuple
-from functools import cache
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 
+from misc.func import lru_cache_ignored
 from misc.model import OneTag
 from models import get_db
 from models.must import Must
@@ -28,7 +28,7 @@ def get_available_must(db: Session = Depends(get_db)) -> List[int]:
     return years
 
 
-@cache
+@lru_cache_ignored(None)
 def get_sums_helper(db: Session) -> int:
     totals = db.query(Rank.year, func.sum(Rank.schedule))
     totals = totals.group_by(Rank.year)

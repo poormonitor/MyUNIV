@@ -56,14 +56,14 @@ def get_mymust_string(now: int) -> str:
     return ", ".join(ans)
 
 
-def lru_cache_ignored(*args, **kwargs):
+def lru_cache_ignored(*args, count: int = 0, **kwargs):
     lru_decorator = lru_cache(*args, **kwargs)
 
     class _Equals(object):
         def __init__(self, o):
             self.obj = o
 
-        def __eq__(self, other):
+        def __eq__(self, _):
             return True
 
         def __hash__(self):
@@ -71,14 +71,18 @@ def lru_cache_ignored(*args, **kwargs):
 
     def decorator(f):
         @lru_decorator
-        def helper(arg1, *args, **kwargs):
-            args = map(lambda x: x.obj, args)
-            return f(arg1, *args, **kwargs)
+        def helper(*args, **kwargs):
+            args_c = args[:count]
+            args_i = args[count:]
+            args_i = map(lambda x: x.obj, args_i)
+            return f(*args_c, *args_i, **kwargs)
 
         @wraps(f)
-        def function(arg1, *args, **kwargs):
-            args = map(_Equals, args)
-            return helper(arg1, *args, **kwargs)
+        def function(*args, **kwargs):
+            args_c = args[:count]
+            args_i = args[count:]
+            args_i = map(_Equals, args_i)
+            return helper(*args_c, *args_i, **kwargs)
 
         return function
 

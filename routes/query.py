@@ -35,7 +35,7 @@ def query(form: QueryForm, db: Session = Depends(get_db)):
 
 
 @hash_dict
-@lru_cache_ignored(64)
+@lru_cache_ignored(64, count=1)
 def findResult(info, db):
     from models.conne import Conne
     from models.major import Major
