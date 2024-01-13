@@ -116,19 +116,14 @@ def findResult(info, db):
                 )
             )
 
-    if info["mymust"]:
-        if info["accordation"]:
-            result = result.order_by(MustAlias.must)
-        else:
-            result = result.order_by(MustAlias.must.desc())
+    if info["mymust"] and info["accordation"]:
+        result = result.order_by(MustAlias.must.desc())
 
-    if info["rank"]:
-        if not info["rank_range"]:
-            result = result.order_by(RankAlias.rank.asc())
-        else:
-            result = result.order_by(func.abs(RankAlias.rank - info["rank"]).asc())
+    if filtered:
+        result = result.order_by(RankAlias.rank == 0)
+        result = result.order_by(RankAlias.rank.asc())
     else:
-        result = result.order_by(UnivAlias.sid.asc())
+        result = result.order_by(RankAlias.rmid.asc())
 
     result = result.group_by(MajorAlias.mid)
 
