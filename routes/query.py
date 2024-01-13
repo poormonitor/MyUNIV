@@ -43,10 +43,11 @@ def findResult(info, db):
     from models.rank import Rank
     from models.univ import Univ
 
-    MustS = db.query(Must)
     RankS = db.query(Rank)
     UnivS = db.query(Univ)
     MajorS = db.query(Major)
+    MustS = db.query(Must, Conne.mid)
+    MustS = MustS.join(Conne, Conne.mmid == Must.mmid)
 
     MustS = MustS.filter(Must.year == info["standard"])
     if info["mymust"]:
@@ -101,8 +102,7 @@ def findResult(info, db):
     result = result.select_from(RankAlias)
     result = result.join(MajorAlias, MajorAlias.mid == RankAlias.mid)
     result = result.join(UnivAlias, UnivAlias.sid == MajorAlias.sid)
-    result = result.join(Conne, Conne.mid == RankAlias.mid)
-    result = result.join(MustAlias, Conne.mmid == MustAlias.mmid)
+    result = result.join(MustAlias, MustS.c.mid == MajorAlias.mid)
 
     if info["major"]:
         for i in info["major"].split():
