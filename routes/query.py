@@ -82,6 +82,12 @@ def findResult(info, db):
     if info["province"]:
         UnivS = UnivS.filter(Univ.province.in_(info["province"]))
 
+    datas = ["mymust", "rank", "school", "utags", "nutags", "province", "major"]
+    filtered = any([info[i] for i in datas])
+    if not filtered:
+        count = RankS.count()
+        RankS = RankS.offset((info["page"] - 1) * 50).limit(50)
+
     RankS = RankS.subquery()
     RankAlias = aliased(Rank, RankS)
     UnivS = UnivS.subquery()
@@ -126,12 +132,11 @@ def findResult(info, db):
 
     result = result.group_by(MajorAlias.mid)
 
-    count = result.count()
+    if filtered:
+        count = result.count()
+        result = result.offset((info["page"] - 1) * 50).limit(50)
 
-    if info["page"]:
-        result = result.offset((info["page"] - 1) * 50).limit(50).all()
-    else:
-        result = result.all()
+    result = result.all()
 
     db.expunge_all()
 
