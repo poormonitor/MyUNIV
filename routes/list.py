@@ -1,4 +1,5 @@
-from typing import Dict, List, Tuple
+from typing import List, Tuple
+from functools import cache
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -27,15 +28,20 @@ def get_available_must(db: Session = Depends(get_db)) -> List[int]:
     return years
 
 
+@cache
+def get_sums_helper(db: Session) -> int:
+    totals = db.query(Rank.year, func.sum(Rank.schedule))
+    totals = totals.group_by(Rank.year)
+    totals = totals.order_by(Rank.year.asc())
+    totals = totals.all()
+
+    years = [(i[0], i[1]) for i in totals]
+    return years
+
+
 @router.get("/sums")
 def get_sums(db: Session = Depends(get_db)) -> List[Tuple[int, int]]:
-    totals = (
-        db.query(Rank.year, func.sum(Rank.schedule))
-        .group_by(Rank.year)
-        .order_by(Rank.year.asc())
-        .all()
-    )
-    years = [(i[0], i[1]) for i in totals]
+    years = get_sums_helper(db)
     return years
 
 
