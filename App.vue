@@ -62,7 +62,7 @@ page {
 }
 
 .main-content {
-	margin: 12px;
+	margin: 20px 15px;
 	padding: 10px 16px;
 	border-radius: 20px;
 	background-color: #fff;

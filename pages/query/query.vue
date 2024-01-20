@@ -142,10 +142,17 @@ const fetchRank = () => {
 	});
 };
 
+const reQuery = () => {
+	page.value = 1;
+	data.total = 0;
+	goQuery();
+};
+
 const agree = () => {
 	uni.setStorageSync('agreement', true);
 	infoDialog.value.close();
 };
+
 const disagree = () => {
 	uni.redirectTo({
 		url: '/pages/index/index'
@@ -187,7 +194,7 @@ const gotoMajor = (mid) => {
 	<uni-popup
 		type="right"
 		ref="optionPop"
-		@maskClick="goQuery"
+		@maskClick="reQuery"
 		background-color="#fafafa"
 	>
 		<scroll-view class="scrollView" :scroll-y="true">
@@ -303,7 +310,7 @@ const gotoMajor = (mid) => {
 				>
 					更多选项
 				</button>
-				<button @click="goQuery" class="button" size="mini" type="info">
+				<button @click="reQuery" class="button" size="mini" type="info">
 					查找
 				</button>
 			</div>
