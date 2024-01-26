@@ -309,13 +309,17 @@ onMounted(() => {
             </n-form-item>
             <n-form-item label="位次号">
                 <div class="flex gap-x-2">
-                    <n-input-number v-model:value="info.rank"></n-input-number>
+                    <n-input-number
+                        v-model:value="info.rank"
+                        @keyup="handleQueryKeyUp"
+                    ></n-input-number>
                     <n-button @click="score.show = true"> 转换 </n-button>
                 </div>
             </n-form-item>
             <n-form-item label="区间">
                 <n-input-number
                     v-model:value="info.rank_range"
+                    @keyup="handleQueryKeyUp"
                 ></n-input-number>
             </n-form-item>
             <n-form-item label="投档数据">

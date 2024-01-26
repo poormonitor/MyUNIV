@@ -83,7 +83,7 @@ def findResult(info, db):
     if info["province"]:
         UnivS = UnivS.filter(Univ.province.in_(info["province"]))
 
-    datas = ["mymust", "rank", "school", "utags", "nutags", "province", "major"]
+    datas = ["mymust", "school", "utags", "nutags", "province", "major"]
     filtered = any([info[i] for i in datas])
     if not filtered:
         count = RankS.count()
