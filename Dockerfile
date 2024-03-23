@@ -1,7 +1,12 @@
 FROM python:3.11-slim
 
+ARG CN="N"
+ARG CN_MIRROR="mirrors.bfsu.edu.cn"
+
+RUN [ "$CN" != "N" ] &&  \
+    pip config set global.index-url "https://${CN_MIRROR}/pypi/web/simple" || true
+
 COPY requirements.txt .
-RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 RUN pip install -r requirements.txt --no-cache-dir
 
 WORKDIR /app
