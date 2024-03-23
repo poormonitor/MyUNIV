@@ -29,18 +29,3 @@ def get_config(item: Optional[str] = None):
     if item:
         return Settings()[item]
     return Settings()
-
-
-@cache
-def get_version() -> str:
-    cmd = "git rev-parse --short HEAD"
-    proc = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
-    return proc.stdout.decode().strip()
-
-
-@cache
-def get_dependencies() -> List[Dict[str, str]]:
-    cmd = [sys.executable, "-m", "pip", "list", "--format", "json"]
-    proc = subprocess.run(cmd, stdout=subprocess.PIPE)
-    dep = json.loads(proc.stdout.decode())
-    return dep

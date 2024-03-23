@@ -6,7 +6,6 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from misc.auth import admin_required, get_current_user
-from config import get_version
 
 
 def init_app_routes(app: FastAPI):
@@ -55,7 +54,6 @@ def init_app_routes(app: FastAPI):
         response = await call_next(request)
         process_time = time.time() - start_time
         response.headers["X-Process-Time"] = str(round(process_time * 1000, 4))
-        response.headers["X-MyUniv-Version"] = get_version()
         return response
 
     @app.middleware("http")
