@@ -3,7 +3,7 @@ import Card from "./Card.vue";
 </script>
 
 <template>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-x-2 gap-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-x-3 gap-y-4">
         <Card title="易用">
             <template #content>
                 前端逻辑清晰，操作提示直观，无需教学也可使用，极大的降低了学校专业查询成本。

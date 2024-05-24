@@ -1,5 +1,5 @@
 <script setup>
-import { Search } from "@vicons/ionicons5";
+import { SchoolOutline, BookOutline, Book } from "@vicons/ionicons5";
 import { useRouter } from "vue-router";
 
 import * as echarts from "echarts/core";
@@ -26,7 +26,10 @@ const collapsed = inject("collapsed");
 const axios = inject("axios");
 const router = useRouter();
 const inputRef = ref(null);
-const searchContent = ref(null);
+const searchContent = reactive({
+    major: "",
+    school: "",
+});
 
 let option = {
     title: {
@@ -82,7 +85,8 @@ const goQuery = () => {
     router.push({
         name: "query",
         query: {
-            major: searchContent.value,
+            major: searchContent.major,
+            school: searchContent.school,
         },
     });
 };
@@ -103,16 +107,27 @@ const goQuery = () => {
     </div>
     <div class="mt-8 flex justify-center md:mt-12">
         <div class="mx-8 flex items-center gap-x-4 md:mx-auto md:w-[40vw]">
-            <span class="whitespace-nowrap md:text-lg">专业</span>
+            <span class="whitespace-nowrap md:text-lg">搜索</span>
             <n-input
                 ref="inputRef"
                 @keyup.enter="goQuery"
-                v-model:value="searchContent"
-                size="large"
-                placeholder="搜索"
+                v-model:value="searchContent.school"
+                :size="collapsed ? 'medium' : 'large'"
+                placeholder="学校"
             >
                 <template #prefix>
-                    <n-icon :component="Search" />
+                    <n-icon :component="SchoolOutline" />
+                </template>
+            </n-input>
+            <n-input
+                ref="input2Ref"
+                @keyup.enter="goQuery"
+                v-model:value="searchContent.major"
+                :size="collapsed ? 'medium' : 'large'"
+                placeholder="专业"
+            >
+                <template #prefix>
+                    <n-icon :component="BookOutline" />
                 </template>
             </n-input>
             <n-button :size="collapsed ? 'medium' : 'large'" @click="goQuery">
