@@ -29,7 +29,6 @@
     "unplugin-auto-import": "^0.12.1",
     "unplugin-vue-components": "^0.22.12",
     "vite": "^4.0.0",
-    "vite-plugin-version-mark": "^0.0.4",
-    "webfontloader": "^1.6.28"
+    "vite-plugin-version-mark": "^0.0.4"
   }
 }
