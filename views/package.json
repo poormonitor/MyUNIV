@@ -11,11 +11,12 @@
   "dependencies": {
     "axios": "^1.2.2",
     "crypto-js": "^4.1.1",
-    "echarts": "^5.4.2",
+    "echarts": "^5.5.0",
     "js-cookie": "^3.0.5",
     "pinia": "^2.0.28",
     "pinia-plugin-persistedstate": "^3.0.2",
     "vue": "^3.2.45",
+    "vue-echarts": "^6.7.3",
     "vue-router": "^4.1.6"
   },
   "devDependencies": {

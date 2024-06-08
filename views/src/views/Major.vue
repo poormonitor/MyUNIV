@@ -1,12 +1,9 @@
 <script setup lang="jsx">
 import { useRoute } from "vue-router";
 import { useMyStore } from "../stores/my";
-import { useUserStore } from "../stores/user";
 import { getMustString } from "../func";
-import { onMounted } from "vue";
-import { message } from "../discrete";
 
-import * as echarts from "echarts/core";
+import { use } from "echarts/core";
 import { LineChart } from "echarts/charts";
 import {
     TitleComponent,
@@ -15,8 +12,9 @@ import {
 } from "echarts/components";
 import { LabelLayout, UniversalTransition } from "echarts/features";
 import { CanvasRenderer } from "echarts/renderers";
+import VChart from "vue-echarts";
 
-echarts.use([
+use([
     TitleComponent,
     TooltipComponent,
     GridComponent,
@@ -39,10 +37,7 @@ data.musts.sort((a, b) => a.year - b.year);
 
 const tags = Array.from(
     data.musts.reduce((ac, ob) => {
-        if (
-            data.mname.includes(ob.mname) ||
-            ob.mname.includes(data.mname)
-        )
+        if (data.mname.includes(ob.mname) || ob.mname.includes(data.mname))
             ob.include.split("、").forEach((elem) => {
                 if (elem) ac.add(elem);
             });
@@ -50,90 +45,81 @@ const tags = Array.from(
     }, new Set())
 );
 
-onMounted(() => {
-    let totalChart = echarts.init(document.getElementById("total"));
-    let totalChartdata = data.ranks.map((item) => [item.year, item.schedule]);
-    totalChartdata.sort((a, b) => a[0] - b[0]);
-    let totalChartoption = {
-        title: {
-            left: "center",
-            text: "历年计划数",
+const totalChartdata = data.ranks.map((item) => [item.year, item.schedule]);
+totalChartdata.sort((a, b) => a[0] - b[0]);
+const totalChartoption = {
+    title: {
+        left: "center",
+        text: "历年计划数",
+    },
+    textStyle: {
+        fontFamily: ["Inter", "Noto Sans SC"],
+        fontWeight: "bold",
+    },
+    grid: {
+        left: "1%",
+        right: "1%",
+        bottom: "1%",
+        containLabel: true,
+    },
+    tooltip: {
+        trigger: "axis",
+    },
+    xAxis: {
+        type: "category",
+    },
+    yAxis: {
+        type: "value",
+    },
+    series: [
+        {
+            data: totalChartdata,
+            name: "计划数",
+            type: "line",
+            smooth: true,
+            color: "#78c2ad",
         },
-        textStyle: {
-            fontFamily: ["Inter", "Noto Sans SC"],
-            fontWeight: "bold",
-        },
-        grid: {
-            left: "1%",
-            right: "1%",
-            bottom: "1%",
-            containLabel: true,
-        },
-        tooltip: {
-            trigger: "axis",
-        },
-        xAxis: {
-            type: "category",
-        },
-        yAxis: {
-            type: "value",
-        },
-        series: [
-            {
-                data: totalChartdata,
-                name: "计划数",
-                type: "line",
-                smooth: true,
-                color: "#78c2ad",
-            },
-        ],
-    };
-    totalChart.setOption(totalChartoption);
+    ],
+};
 
-    let rankChart = echarts.init(document.getElementById("rank"));
-    let rankChartdata = data.ranks.map((item) => [item.year, item.rank]);
-    rankChartdata.sort((a, b) => a[0] - b[0]);
-    let rankChartoption = {
-        title: {
-            left: "center",
-            text: "历年位次号",
+const rankChartdata = data.ranks.map((item) => [item.year, item.rank]);
+rankChartdata.sort((a, b) => a[0] - b[0]);
+const rankChartoption = {
+    title: {
+        left: "center",
+        text: "历年位次号",
+    },
+    textStyle: {
+        fontFamily: ["Inter", "Noto Sans SC"],
+        fontWeight: "bold",
+    },
+    grid: {
+        left: "1%",
+        right: "1%",
+        bottom: "1%",
+        containLabel: true,
+    },
+    tooltip: {
+        trigger: "axis",
+    },
+    xAxis: {
+        type: "category",
+    },
+    yAxis: {
+        type: "value",
+    },
+    series: [
+        {
+            data: rankChartdata,
+            name: "位次号",
+            type: "line",
+            smooth: true,
+            color: "#78c2ad",
         },
-        textStyle: {
-            fontFamily: ["Inter", "Noto Sans SC"],
-            fontWeight: "bold",
-        },
-        grid: {
-            left: "1%",
-            right: "1%",
-            bottom: "1%",
-            containLabel: true,
-        },
-        tooltip: {
-            trigger: "axis",
-        },
-        xAxis: {
-            type: "category",
-        },
-        yAxis: {
-            type: "value",
-        },
-        series: [
-            {
-                data: rankChartdata,
-                name: "位次号",
-                type: "line",
-                smooth: true,
-                color: "#78c2ad",
-            },
-        ],
-    };
-    rankChart.setOption(rankChartoption);
+    ],
+};
 
-    window.addEventListener("resize", function (event) {
-        totalChart.resize();
-        rankChart.resize();
-    });
-});
+console.log(rankChartoption);
 
 const rankColumns = [
     {
@@ -215,8 +201,16 @@ const mustColumns = [
         </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
-        <div id="total" class="center" style="width: auto; height: 250px"></div>
-        <div id="rank" class="center" style="width: auto; height: 250px"></div>
+        <v-chart
+            :option="totalChartoption"
+            autoresize
+            style="width: auto; height: 250px"
+        ></v-chart>
+        <v-chart
+            :option="rankChartoption"
+            autoresize
+            style="width: auto; height: 250px"
+        ></v-chart>
     </div>
     <div class="mt-12 mb-10">
         <div class="text-2xl font-bold mb-4">历年投档信息</div>

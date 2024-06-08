@@ -1,8 +1,8 @@
 <script setup>
-import { SchoolOutline, BookOutline, Book } from "@vicons/ionicons5";
+import { SchoolOutline, BookOutline } from "@vicons/ionicons5";
 import { useRouter } from "vue-router";
 
-import * as echarts from "echarts/core";
+import { use } from "echarts/core";
 import { LineChart } from "echarts/charts";
 import {
     TitleComponent,
@@ -11,8 +11,10 @@ import {
 } from "echarts/components";
 import { LabelLayout, UniversalTransition } from "echarts/features";
 import { CanvasRenderer } from "echarts/renderers";
+import VChart from "vue-echarts";
+import { onActivated } from "vue";
 
-echarts.use([
+use([
     TitleComponent,
     TooltipComponent,
     GridComponent,
@@ -31,7 +33,7 @@ const searchContent = reactive({
     school: "",
 });
 
-let option = {
+const option = ref({
     title: {
         text: "历年计划数",
         left: "center",
@@ -64,20 +66,15 @@ let option = {
             color: "#383838",
         },
     ],
-};
+});
+
+onActivated(() => {
+    inputRef.value.focus();
+});
 
 onMounted(() => {
-    inputRef.value.focus();
-
-    var myChart = echarts.init(document.getElementById("main-chart"));
-    myChart.setOption(option);
-    window.addEventListener("resize", function (event) {
-        myChart.resize();
-    });
-
     axios.get("/list/sums").then((response) => {
-        option.series[0].data = response.data;
-        myChart.setOption(option);
+        option.value.series[0].data = response.data;
     });
 });
 
@@ -137,7 +134,12 @@ const goQuery = () => {
     </div>
     <div class="md:mx-10 mt-10">
         <div class="mx-10 md:mx-auto md:w-[90vw] xl:w-[60vw]">
-            <div id="main-chart" style="width: auto; height: 300px"></div>
+            <v-chart
+                class="chart"
+                :option="option"
+                style="width: auto; height: 300px"
+                autoresize
+            />
         </div>
         <div class="mx-10 md:mx-auto md:w-[90vw] xl:w-[70vw]">
             <Intro class="my-8 md:my-12"></Intro>

@@ -2,12 +2,10 @@
 import { useRoute } from "vue-router";
 import { provinces } from "../const";
 import { getMustString } from "../func";
-import { onMounted } from "vue";
 import { Close, Add } from "@vicons/ionicons5";
 import { useMyStore } from "../stores/my";
-import { useUserStore } from "../stores/user";
 
-import * as echarts from "echarts/core";
+import { use } from "echarts/core";
 import { LineChart } from "echarts/charts";
 import {
     TitleComponent,
@@ -16,8 +14,9 @@ import {
 } from "echarts/components";
 import { LabelLayout, UniversalTransition } from "echarts/features";
 import { CanvasRenderer } from "echarts/renderers";
+import VChart from "vue-echarts";
 
-echarts.use([
+use([
     TitleComponent,
     TooltipComponent,
     GridComponent,
@@ -28,7 +27,6 @@ echarts.use([
 ]);
 
 const axios = inject("axios");
-const userStore = useUserStore();
 const myStore = useMyStore();
 const route = useRoute();
 
@@ -37,108 +35,97 @@ const data = await axios
     .get("/get/univ", { params: { sid: route.params.sid } })
     .then((response) => response.data);
 
-onMounted(() => {
-    let totalChart = echarts.init(document.getElementById("total"));
-    let totalChartdata = data.ranks.reduce((accumulator, currentObject) => {
-        const { year, schedule } = currentObject[0];
-        let counter = accumulator.find((item) => item[0] == year);
-        if (!counter) {
-            accumulator.push([year, schedule]);
-        } else {
-            counter[1] += schedule;
-        }
-        return accumulator;
-    }, []);
-    totalChartdata.sort((a, b) => a[0] - b[0]);
-    let totalChartoption = {
-        title: {
-            left: "center",
-            text: "历年计划数",
+const totalChartdata = data.ranks.reduce((accumulator, currentObject) => {
+    const { year, schedule } = currentObject[0];
+    let counter = accumulator.find((item) => item[0] == year);
+    if (!counter) {
+        accumulator.push([year, schedule]);
+    } else {
+        counter[1] += schedule;
+    }
+    return accumulator;
+}, []);
+totalChartdata.sort((a, b) => a[0] - b[0]);
+const totalChartoption = {
+    title: {
+        left: "center",
+        text: "历年计划数",
+    },
+    textStyle: {
+        fontFamily: ["Inter", "Noto Sans SC"],
+        fontWeight: "bold",
+    },
+    grid: {
+        left: "1%",
+        right: "1%",
+        bottom: "1%",
+        containLabel: true,
+    },
+    tooltip: {
+        trigger: "axis",
+    },
+    xAxis: {
+        type: "category",
+    },
+    yAxis: {
+        type: "value",
+    },
+    series: [
+        {
+            data: totalChartdata,
+            name: "计划数",
+            type: "line",
+            smooth: true,
+            color: "#78c2ad",
         },
-        textStyle: {
-            fontFamily: ["Inter", "Noto Sans SC"],
-            fontWeight: "bold",
-        },
-        grid: {
-            left: "1%",
-            right: "1%",
-            bottom: "1%",
-            containLabel: true,
-        },
-        tooltip: {
-            trigger: "axis",
-        },
-        xAxis: {
-            type: "category",
-        },
-        yAxis: {
-            type: "value",
-        },
-        series: [
-            {
-                data: totalChartdata,
-                name: "计划数",
-                type: "line",
-                smooth: true,
-                color: "#78c2ad",
-            },
-        ],
-    };
-    totalChart.setOption(totalChartoption);
+    ],
+};
 
-    let rankChart = echarts.init(document.getElementById("rank"));
-    let rankChartdata = data.ranks.reduce((accumulator, currentObject) => {
-        const { year, rank } = currentObject[0];
-        let counter = accumulator.find((item) => item[0] == year);
-        if (!counter) {
-            accumulator.push([year, rank]);
-        } else {
-            counter[1] = Math.max(rank, counter[1]);
-        }
-        return accumulator;
-    }, []);
-    rankChartdata.sort((a, b) => a[0] - b[0]);
-    let rankChartoption = {
-        title: {
-            left: "center",
-            text: "历年(最高)位次号",
+const rankChartdata = data.ranks.reduce((accumulator, currentObject) => {
+    const { year, rank } = currentObject[0];
+    let counter = accumulator.find((item) => item[0] == year);
+    if (!counter) {
+        accumulator.push([year, rank]);
+    } else {
+        counter[1] = Math.max(rank, counter[1]);
+    }
+    return accumulator;
+}, []);
+rankChartdata.sort((a, b) => a[0] - b[0]);
+const rankChartoption = {
+    title: {
+        left: "center",
+        text: "历年(最高)位次号",
+    },
+    textStyle: {
+        fontFamily: ["Inter", "Noto Sans SC"],
+        fontWeight: "bold",
+    },
+    grid: {
+        left: "1%",
+        right: "1%",
+        bottom: "1%",
+        containLabel: true,
+    },
+    tooltip: {
+        trigger: "axis",
+    },
+    xAxis: {
+        type: "category",
+    },
+    yAxis: {
+        type: "value",
+    },
+    series: [
+        {
+            data: rankChartdata,
+            name: "位次号",
+            type: "line",
+            smooth: true,
+            color: "#78c2ad",
         },
-        textStyle: {
-            fontFamily: ["Inter", "Noto Sans SC"],
-            fontWeight: "bold",
-        },
-        grid: {
-            left: "1%",
-            right: "1%",
-            bottom: "1%",
-            containLabel: true,
-        },
-        tooltip: {
-            trigger: "axis",
-        },
-        xAxis: {
-            type: "category",
-        },
-        yAxis: {
-            type: "value",
-        },
-        series: [
-            {
-                data: rankChartdata,
-                name: "位次号",
-                type: "line",
-                smooth: true,
-                color: "#78c2ad",
-            },
-        ],
-    };
-    rankChart.setOption(rankChartoption);
-
-    window.addEventListener("resize", function (event) {
-        totalChart.resize();
-        rankChart.resize();
-    });
-});
+    ],
+};
 
 const rankByYear = ref(true);
 const rankCurrentItem = ref(null);
@@ -308,8 +295,16 @@ watch(
         </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
-        <div id="total" class="center" style="width: auto; height: 250px"></div>
-        <div id="rank" class="center" style="width: auto; height: 250px"></div>
+        <v-chart
+            class="center"
+            style="width: auto; height: 250px"
+            :option="totalChartoption"
+        ></v-chart>
+        <v-chart
+            class="center"
+            style="width: auto; height: 250px"
+            :option="rankChartoption"
+        ></v-chart>
     </div>
     <div class="mt-12 mb-10">
         <div class="flex flex-col md:flex-row gap-x-12">

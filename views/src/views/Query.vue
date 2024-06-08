@@ -8,11 +8,9 @@ import {
     findMaxValue,
 } from "../func";
 import { useMyStore } from "../stores/my";
-import { message } from "../discrete";
-import { useUserStore } from "../stores/user";
 import { Close, Add } from "@vicons/ionicons5";
 import { useDialog } from "naive-ui";
-import { onMounted } from "vue";
+import { onActivated, onMounted } from "vue";
 import Cookies from "js-cookie";
 
 const route = useRoute();
@@ -20,7 +18,6 @@ const router = useRouter();
 const axios = inject("axios");
 const dialog = useDialog();
 const myStore = useMyStore();
-const userStore = useUserStore();
 
 const tags = ref([]);
 const rank_years = ref([]);
@@ -83,6 +80,16 @@ Promise.all([
     }),
 ]).then(() => {
     goQuery();
+});
+
+onActivated(() => {
+    // compare the params in the route with the current info
+    // if not the same then requery
+    let query = route.query;
+    if (query.school != info.school || query.major != info.major) {
+        Object.assign(info, query);
+        reQuery();
+    }
 });
 
 const reQuery = () => {
