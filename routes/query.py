@@ -119,7 +119,7 @@ def findResult(info, db):
     if info["mymust"] and info["accordation"]:
         result = result.order_by(MustAlias.must.desc())
 
-    if filtered:
+    if filtered or info["rank"]:
         result = result.order_by(RankAlias.rank == 0)
         result = result.order_by(RankAlias.rank.asc())
     else:

@@ -315,8 +315,9 @@ onMounted(() => {
                 ></n-input>
             </n-form-item>
             <n-form-item label="位次号">
-                <div class="flex gap-x-2">
+                <div class="flex gap-x-2 w-full">
                     <n-input-number
+                        class="flex-grow"
                         v-model:value="info.rank"
                         @keyup="handleQueryKeyUp"
                     ></n-input-number>
@@ -325,6 +326,7 @@ onMounted(() => {
             </n-form-item>
             <n-form-item label="区间">
                 <n-input-number
+                    class="w-full"
                     v-model:value="info.rank_range"
                     @keyup="handleQueryKeyUp"
                 ></n-input-number>
