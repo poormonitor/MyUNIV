@@ -82,8 +82,8 @@ const goQuery = () => {
     router.push({
         name: "query",
         query: {
-            major: searchContent.major,
-            school: searchContent.school,
+            major: searchContent.major ? searchContent.major : undefined,
+            school: searchContent.school ? searchContent.school : undefined,
         },
     });
 };
@@ -134,12 +134,9 @@ const goQuery = () => {
     </div>
     <div class="md:mx-10 mt-10">
         <div class="mx-10 md:mx-auto md:w-[90vw] xl:w-[60vw]">
-            <v-chart
-                class="chart"
-                :option="option"
-                style="width: auto; height: 300px"
-                autoresize
-            />
+            <div class="chart" style="width: auto; height: 300px">
+                <v-chart :option="option" autoresize />
+            </div>
         </div>
         <div class="mx-10 md:mx-auto md:w-[90vw] xl:w-[70vw]">
             <Intro class="my-8 md:my-12"></Intro>

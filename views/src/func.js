@@ -21,7 +21,7 @@ const fixInteger = (obj, name) => {
 const filterEmptyObject = (obj) => {
     let filteredObj = {};
     for (let key in obj) {
-        if (obj[key] !== "") {
+        if (obj[key] !== "" && obj[key] !== null && obj[key] !== undefined) {
             filteredObj[key] = obj[key];
         }
     }

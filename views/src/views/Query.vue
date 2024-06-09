@@ -82,14 +82,15 @@ Promise.all([
     goQuery();
 });
 
-onActivated(() => {
-    // compare the params in the route with the current info
-    // if not the same then requery
-    let query = route.query;
-    if (query.school != info.school || query.major != info.major) {
-        Object.assign(info, query);
-        reQuery();
-    }
+onMounted(() => {
+    onActivated(() => {
+        Object.assign(info, route.query);
+        fixInteger(info, "province");
+        fixInteger(info, "utags");
+        fixInteger(info, "nutags");
+        fixInteger(info, "mymust");
+        goQuery();
+    });
 });
 
 const reQuery = () => {
@@ -101,6 +102,7 @@ const reQuery = () => {
 const goQuery = () => {
     loading.value = true;
     info.page = pagination.page;
+    console.log("query", filterEmptyObject(info));
     router.push({ query: filterEmptyObject(info) });
     axios.post("/query", info).then((response) => {
         data.total = response.data.total;

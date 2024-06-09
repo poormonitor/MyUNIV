@@ -295,16 +295,12 @@ watch(
         </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
-        <v-chart
-            class="center"
-            style="width: auto; height: 250px"
-            :option="totalChartoption"
-        ></v-chart>
-        <v-chart
-            class="center"
-            style="width: auto; height: 250px"
-            :option="rankChartoption"
-        ></v-chart>
+        <div style="width: auto; height: 250px">
+            <v-chart class="center" :option="totalChartoption"></v-chart>
+        </div>
+        <div style="width: auto; height: 250px">
+            <v-chart class="center" :option="rankChartoption"></v-chart>
+        </div>
     </div>
     <div class="mt-12 mb-10">
         <div class="flex flex-col md:flex-row gap-x-12">

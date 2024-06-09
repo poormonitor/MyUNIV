@@ -119,8 +119,6 @@ const rankChartoption = {
     ],
 };
 
-console.log(rankChartoption);
-
 const rankColumns = [
     {
         title: "年份",
@@ -201,16 +199,12 @@ const mustColumns = [
         </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
-        <v-chart
-            :option="totalChartoption"
-            autoresize
-            style="width: auto; height: 250px"
-        ></v-chart>
-        <v-chart
-            :option="rankChartoption"
-            autoresize
-            style="width: auto; height: 250px"
-        ></v-chart>
+        <div style="width: auto; height: 250px">
+            <v-chart :option="totalChartoption" autoresize></v-chart>
+        </div>
+        <div style="width: auto; height: 250px">
+            <v-chart :option="rankChartoption" autoresize></v-chart>
+        </div>
     </div>
     <div class="mt-12 mb-10">
         <div class="text-2xl font-bold mb-4">历年投档信息</div>
