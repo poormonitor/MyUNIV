@@ -3,7 +3,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session, aliased
-from sqlalchemy import and_, or_, func
+from sqlalchemy import and_, or_
 
 from misc.func import freezeDict, hash_dict, lru_cache_ignored
 from misc.model import QueryResult, parse_result
@@ -87,6 +87,12 @@ def findResult(info, db):
     filtered = any([info[i] for i in datas])
     if not filtered:
         count = RankS.count()
+
+        if info["rank"]:
+            RankS = RankS.order_by(Rank.rank.asc())
+        else:
+            RankS = RankS.order_by(Rank.rmid.asc())
+
         RankS = RankS.offset((info["page"] - 1) * 50).limit(50)
 
     RankS = RankS.subquery()
@@ -119,7 +125,7 @@ def findResult(info, db):
     if info["mymust"] and info["accordation"]:
         result = result.order_by(MustAlias.must.desc())
 
-    if filtered or info["rank"]:
+    if filtered or info["rank"] is not None:
         result = result.order_by(RankAlias.rank == 0)
         result = result.order_by(RankAlias.rank.asc())
     else:
