@@ -15,6 +15,7 @@ import {
 import { LabelLayout, UniversalTransition } from "echarts/features";
 import { CanvasRenderer } from "echarts/renderers";
 import VChart from "vue-echarts";
+import { darkTheme } from "naive-ui";
 
 use([
     TitleComponent,
@@ -50,6 +51,9 @@ const totalChartoption = {
     title: {
         left: "center",
         text: "历年计划数",
+        textStyle: {
+            color: darkTheme ? "#c0c0c0" : undefined,
+        },
     },
     textStyle: {
         fontFamily: ["Inter", "Noto Sans SC"],
@@ -96,6 +100,9 @@ const rankChartoption = {
     title: {
         left: "center",
         text: "历年(最高)位次号",
+        textStyle: {
+            color: darkTheme ? "#c0c0c0" : undefined,
+        },
     },
     textStyle: {
         fontFamily: ["Inter", "Noto Sans SC"],
@@ -147,7 +154,7 @@ const rankColumns = [
         key: "major",
         render: (row) => (
             <RouterLink
-                class="text-sky-800 hover:text-sky-900 transition"
+                class="text-sky-800 dark:text-sky-500 hover:text-sky-900 dark:hover:text-sky-600 transition"
                 to={{ name: "major", params: { mid: row[1].mid } }}
             >
                 {row[1].mname}

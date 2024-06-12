@@ -129,7 +129,7 @@ const tableColumns = [
         key: "univ",
         render: (row) => (
             <router-link
-                class="text-sky-800 hover:text-sky-900 transition"
+                class="text-sky-800 dark:text-sky-500 hover:text-sky-900 dark:hover:text-sky-600 transition"
                 to={{ name: "univ", params: { sid: row[1].sid } }}
             >
                 {row[1].uname}
@@ -141,7 +141,7 @@ const tableColumns = [
         key: "major",
         render: (row) => (
             <router-link
-                class="text-sky-800 hover:text-sky-900 transition"
+                class="text-sky-800 dark:text-sky-500 hover:text-sky-900 dark:hover:text-sky-600 transition"
                 to={{ name: "major", params: { mid: row[0].mid } }}
             >
                 {row[0].mname}

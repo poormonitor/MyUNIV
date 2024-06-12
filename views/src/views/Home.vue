@@ -13,6 +13,7 @@ import { LabelLayout, UniversalTransition } from "echarts/features";
 import { CanvasRenderer } from "echarts/renderers";
 import VChart from "vue-echarts";
 import { onActivated } from "vue";
+import { darkTheme } from "naive-ui";
 
 use([
     TitleComponent,
@@ -37,6 +38,9 @@ const option = ref({
     title: {
         text: "历年计划数",
         left: "center",
+        textStyle: {
+            color: darkTheme ? "#c0c0c0" : undefined,
+        },
     },
     textStyle: {
         fontFamily: ["Inter", "Noto Sans SC"],
@@ -63,7 +67,7 @@ const option = ref({
             name: "计划数",
             type: "line",
             smooth: true,
-            color: "#383838",
+            color: darkTheme ? "#808080" : "#383838",
         },
     ],
 });
