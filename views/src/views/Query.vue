@@ -45,10 +45,10 @@ const info = reactive({
     accordation: false,
 });
 Object.assign(info, route.query);
-fixInteger(info, "province");
 fixInteger(info, "utags");
 fixInteger(info, "nutags");
 fixInteger(info, "mymust");
+console.log(info.province);
 
 const score = reactive({ show: false, year: info.year, score: 600 });
 
@@ -85,7 +85,6 @@ Promise.all([
 onMounted(() => {
     onActivated(() => {
         Object.assign(info, route.query);
-        fixInteger(info, "province");
         fixInteger(info, "utags");
         fixInteger(info, "nutags");
         fixInteger(info, "mymust");
@@ -102,7 +101,6 @@ const reQuery = () => {
 const goQuery = () => {
     loading.value = true;
     info.page = pagination.page;
-    console.log("query", filterEmptyObject(info));
     router.push({ query: filterEmptyObject(info) });
     axios.post("/query", info).then((response) => {
         data.total = response.data.total;
