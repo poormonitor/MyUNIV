@@ -96,7 +96,7 @@ const goQuery = () => {
 <template>
     <div class="mx-16 md:mx-auto md:w-[90vw] xl:w-[70vw]">
         <div
-            class="text-center gradient-title from-cyan-500 via-sky-600 to-blue-800 mt-10"
+            class="text-center gradient-title from-cyan-500 via-sky-600 to-blue-800 mt-10 lg:md-15"
         >
             <div
                 class="font-bold text-5xl md:text-6xl lg:text-7xl mb-1 md:mb-3 lg:mb-5"
@@ -105,6 +105,15 @@ const goQuery = () => {
             </div>
             <div class="font-bold text-2xl md:text-3xl lg:text-4xl">
                 高考志愿填报决策分析系统
+            </div>
+        </div>
+        <div class="text-center mt-10">
+            <div class="font-bold text-base md:text-lg lg:text-xl mb-2">
+                第二十三届全国学生素养提升实践活动获奖作品
+            </div>
+            <div class="text-base md:text-lg lg:text-xl mb-1">孙奕凡</div>
+            <div class="text-base md:text-lg lg:text-xl mb-1">
+                浙江省杭州高级中学
             </div>
         </div>
     </div>
