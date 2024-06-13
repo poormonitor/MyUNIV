@@ -107,17 +107,17 @@ const goQuery = () => {
                 高考志愿填报决策分析系统
             </div>
         </div>
-        <div class="text-center mt-10">
-            <div class="font-bold text-base md:text-lg lg:text-xl mb-2">
+        <div class="text-center mt-8 lg:mt-10">
+            <div class="font-bold text-base md:text-lg lg:text-xl lg:mb-2">
                 第二十三届全国学生素养提升实践活动获奖作品
             </div>
-            <div class="text-base md:text-lg lg:text-xl mb-1">孙奕凡</div>
-            <div class="text-base md:text-lg lg:text-xl mb-1">
+            <div class="text-base md:text-lg lg:text-xl lg:mb-1">孙奕凡</div>
+            <div class="text-base md:text-lg lg:text-xl lg:mb-1">
                 浙江省杭州高级中学
             </div>
         </div>
     </div>
-    <div class="mt-8 flex justify-center md:mt-12">
+    <div class="mt-10 flex justify-center md:mt-12">
         <div class="mx-8 flex items-center gap-x-4 md:mx-auto md:w-[40vw]">
             <span class="whitespace-nowrap md:text-lg">搜索</span>
             <n-input
