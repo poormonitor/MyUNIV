@@ -13,7 +13,6 @@ import { LabelLayout, UniversalTransition } from "echarts/features";
 import { CanvasRenderer } from "echarts/renderers";
 import VChart from "vue-echarts";
 import { onActivated } from "vue";
-import { darkTheme } from "naive-ui";
 
 use([
     TitleComponent,
@@ -29,6 +28,7 @@ const collapsed = inject("collapsed");
 const axios = inject("axios");
 const router = useRouter();
 const inputRef = ref(null);
+const darkTheme = inject("darkTheme");
 const searchContent = reactive({
     major: "",
     school: "",
@@ -39,7 +39,7 @@ const option = ref({
         text: "历年计划数",
         left: "center",
         textStyle: {
-            color: darkTheme ? "#c0c0c0" : undefined,
+            color: darkTheme ? "#c0c0c0" : "#333",
         },
     },
     textStyle: {
@@ -67,7 +67,7 @@ const option = ref({
             name: "计划数",
             type: "line",
             smooth: true,
-            color: darkTheme ? "#808080" : "#383838",
+            color: "#0284c7",
         },
     ],
 });
@@ -98,10 +98,12 @@ const goQuery = () => {
         <div
             class="text-center gradient-title from-cyan-500 via-sky-600 to-blue-800 mt-10"
         >
-            <div class="mb-1 font-bold text-5xl md:text-6xl md:mb-3">
+            <div
+                class="font-bold text-5xl md:text-6xl lg:text-7xl mb-1 md:mb-3 lg:mb-5"
+            >
                 MyUNIV
             </div>
-            <div class="text-2xl font-bold md:text-3xl">
+            <div class="font-bold text-2xl md:text-3xl lg:text-4xl">
                 高考志愿填报决策分析系统
             </div>
         </div>

@@ -24,6 +24,7 @@ const collapsed = ref(window.innerWidth <= 768);
 window.addEventListener("resize", () => {
     collapsed.value = window.innerWidth <= 768;
 });
+provide("darkTheme", osThemeRef.value === "dark");
 provide("collapsed", collapsed);
 </script>
 

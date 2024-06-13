@@ -48,7 +48,6 @@ Object.assign(info, route.query);
 fixInteger(info, "utags");
 fixInteger(info, "nutags");
 fixInteger(info, "mymust");
-console.log(info.province);
 
 const score = reactive({ show: false, year: info.year, score: 600 });
 

@@ -15,7 +15,6 @@ import {
 import { LabelLayout, UniversalTransition } from "echarts/features";
 import { CanvasRenderer } from "echarts/renderers";
 import VChart from "vue-echarts";
-import { darkTheme } from "naive-ui";
 
 use([
     TitleComponent,
@@ -28,6 +27,7 @@ use([
 ]);
 
 const axios = inject("axios");
+const darkTheme = inject("darkTheme");
 const myStore = useMyStore();
 const route = useRoute();
 
@@ -52,7 +52,7 @@ const totalChartoption = {
         left: "center",
         text: "历年计划数",
         textStyle: {
-            color: darkTheme ? "#c0c0c0" : undefined,
+            color: darkTheme ? "#c0c0c0" : "#333",
         },
     },
     textStyle: {
@@ -80,7 +80,7 @@ const totalChartoption = {
             name: "计划数",
             type: "line",
             smooth: true,
-            color: "#78c2ad",
+            color: "#0284c7",
         },
     ],
 };
@@ -101,7 +101,7 @@ const rankChartoption = {
         left: "center",
         text: "历年(最高)位次号",
         textStyle: {
-            color: darkTheme ? "#c0c0c0" : undefined,
+            color: darkTheme ? "#c0c0c0" : "#333",
         },
     },
     textStyle: {
@@ -129,7 +129,7 @@ const rankChartoption = {
             name: "位次号",
             type: "line",
             smooth: true,
-            color: "#78c2ad",
+            color: "#0284c7",
         },
     ],
 };
