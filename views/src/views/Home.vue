@@ -109,7 +109,7 @@ const goQuery = () => {
         </div>
         <div class="text-center mt-8 lg:mt-10">
             <div class="font-bold text-base md:text-lg lg:text-xl lg:mb-2">
-                第二十三届全国学生素养提升实践活动获奖作品
+                第二十三届全国学生信息素养提升实践活动获奖作品
             </div>
             <div class="text-base md:text-lg lg:text-xl lg:mb-1">孙奕凡</div>
             <div class="text-base md:text-lg lg:text-xl lg:mb-1">

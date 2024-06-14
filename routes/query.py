@@ -26,6 +26,7 @@ class QueryForm(BaseModel):
     standard: int
     accordation: Optional[bool] = False
     page: int = 1
+    page_size: int = 50
 
 
 @router.post("")
@@ -93,7 +94,8 @@ def findResult(info, db):
         else:
             RankS = RankS.order_by(Rank.rmid.asc())
 
-        RankS = RankS.offset((info["page"] - 1) * 50).limit(50)
+        page_size = info["page_size"]
+        RankS = RankS.offset((info["page"] - 1) * page_size).limit(page_size)
 
     RankS = RankS.subquery()
     RankAlias = aliased(Rank, RankS)
@@ -135,7 +137,9 @@ def findResult(info, db):
 
     if filtered:
         count = result.count()
-        result = result.offset((info["page"] - 1) * 50).limit(50)
+
+        page_size = info["page_size"]
+        result = result.offset((info["page"] - 1) * page_size).limit(page_size)
 
     result = result.all()
 
