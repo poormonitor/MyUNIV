@@ -46,4 +46,14 @@ const majors = [
     "技术",
 ];
 
-export {provinces, majors}
+const majors_short = ["无", "物", "化", "生", "地", "史", "政", "技"];
+
+const recommends = [
+    { label: "冗余", tag: void 0, color: "#D3D3D3" },
+    { label: "保底", tag: "info", color: "#4098FC" },
+    { label: "稳妥", tag: "success", color: "#36AD6A" },
+    { label: "冲刺", tag: "warning", color: "#FCB040" },
+    { label: "困难", tag: "error", color: "#DE576D" },
+];
+
+export { provinces, majors, majors_short, recommends };

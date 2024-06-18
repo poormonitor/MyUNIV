@@ -1,16 +1,24 @@
 <script setup lang="jsx">
-import { onActivated, onMounted } from "vue";
-import { getMustString, findMaxValue, base64toBlob } from "../func";
+import {
+    getMustString,
+    findMaxValue,
+    base64toBlob,
+    getRecommendLevel,
+} from "../func";
+import { recommends } from "../const";
 import { useMyStore } from "../stores/my";
-import { Add, Close } from "@vicons/ionicons5";
+import { Close } from "@vicons/ionicons5";
+import { useInfoStore } from "../stores/info";
 
-import * as echarts from "echarts/core";
+import { use } from "echarts/core";
 import { TitleComponent, SingleAxisComponent } from "echarts/components";
 import { ScatterChart } from "echarts/charts";
 import { UniversalTransition } from "echarts/features";
 import { CanvasRenderer } from "echarts/renderers";
+import VChart from "vue-echarts";
+import { onActivated } from "vue";
 
-echarts.use([
+use([
     TitleComponent,
     SingleAxisComponent,
     ScatterChart,
@@ -18,17 +26,28 @@ echarts.use([
     UniversalTransition,
 ]);
 
-var table = null;
+const setinfo = ref(null);
 const data = reactive({ total: 0, list: [] });
 const axios = inject("axios");
 const loading = ref(true);
 const rank_years = ref([]);
 const must_years = ref([]);
 const myStore = useMyStore();
+const infoStore = useInfoStore();
 const info = reactive({
     year: 0,
     standard: 0,
 });
+
+const processData = (data) => {
+    if (!data) return [];
+    return data.map((item) => {
+        if (!infoStore.rank) return item[2].rank;
+        let recommend = getRecommendLevel(infoStore.rank, item[2].rank);
+        let color = recommends[recommend].color;
+        return { value: item[2].rank, itemStyle: { color: color } };
+    });
+};
 
 const goQuery = () => {
     axios
@@ -43,35 +62,31 @@ const goQuery = () => {
             });
             data.list = result;
 
+            option.value.series.data = processData(data.list);
+
             loading.value = false;
         });
 };
 
-const renderTable = (val) => {
-    let options = {
-        singleAxis: {
-            top: "middle",
-            left: "2%",
-            left: "2%",
-            height: "0",
-            type: "value",
-            boundaryGap: false,
-        },
-        textStyle: {
-            fontFamily: ["Inter", "Noto Sans SC"],
-            fontWeight: "bold",
-        },
-        series: {
-            coordinateSystem: "singleAxis",
-            type: "scatter",
-            data: val.map((item) => [item[2].rank]),
-        },
-    };
-
-    table.setOption(options);
-};
-
-watch(() => data.list, renderTable);
+const option = ref({
+    singleAxis: {
+        top: "middle",
+        left: "2%",
+        left: "2%",
+        height: "0",
+        type: "value",
+        boundaryGap: false,
+    },
+    textStyle: {
+        fontFamily: ["Inter", "Noto Sans SC"],
+        fontWeight: "bold",
+    },
+    series: {
+        coordinateSystem: "singleAxis",
+        type: "scatter",
+        data: [],
+    },
+});
 
 Promise.all([
     axios.get("/list/ranks").then((response) => {
@@ -94,12 +109,16 @@ Promise.all([
     watch(() => myStore.order, goQuery);
 });
 
-onActivated(goQuery);
 onMounted(() => {
-    table = echarts.init(document.getElementById("table"));
-    window.addEventListener("resize", () => {
-        table.resize();
+    onActivated(() => {
+        goQuery();
     });
+});
+
+onActivated(() => {
+    if (!infoStore.disabled && !infoStore.setted) {
+        setinfo.value.open();
+    }
 });
 
 const removeItem = (id) => {
@@ -136,8 +155,22 @@ const downloadExcel = () => {
         });
 };
 
-const tableColumns = [
+const tableColumnsInit = [
     { title: "排序", key: "index", render: (row) => row[4] },
+    {
+        title: "可能性",
+        key: "recommend",
+        render: (row) => {
+            if (!infoStore.rank) return;
+            let level = getRecommendLevel(infoStore.rank, row[2].rank);
+            let recommend = recommends[level];
+            return (
+                <n-tag bordered={false} type={recommend.tag}>
+                    {recommend.label}
+                </n-tag>
+            );
+        },
+    },
     {
         title: "学校名称",
         key: "univ",
@@ -212,11 +245,26 @@ const tableColumns = [
         ),
     },
 ];
+
+const tableColumns = computed(() => {
+    if (infoStore.rank) return tableColumnsInit;
+    return tableColumnsInit.filter((item) => item.key !== "recommend");
+});
+
+const finishSetInfo = () => {
+    option.value.series.data = processData(data.list);
+};
 </script>
 
 <template>
+    <SetInfo
+        ref="setinfo"
+        :year="info.year"
+        :yearOptions="rank_years"
+        @finish="finishSetInfo"
+    />
     <div class="mx-8 w-auto lg:mx-auto lg:w-[70vw] my-8">
-        <div class="w-full mx-auto">
+        <div class="w-full mx-auto mb-20">
             <div class="flex flex-col sm:flex-row justify-between">
                 <n-statistic label="共计收藏了" tabular-nums>
                     {{ myStore.count }}
@@ -278,7 +326,13 @@ const tableColumns = [
                     </n-form-item>
                 </div>
             </div>
-            <div id="table" class="h-12 mb-5"></div>
+            <div class="mb-5">
+                <v-chart
+                    style="width: 100%; height: 3rem"
+                    :option="option"
+                    autoresize
+                />
+            </div>
             <n-data-table
                 :columns="tableColumns"
                 :data="data.list"

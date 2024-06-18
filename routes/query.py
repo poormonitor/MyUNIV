@@ -63,11 +63,20 @@ def findResult(info, db):
     if info["rank"]:
         rank = info["rank"]
         if not info["rank_range"]:
-            RankS = RankS.filter(Rank.rank >= rank)
+            if info["rank"] <= 4000:
+                RankS = RankS.filter(Rank.rank <= info["rank"] + 700)
+                RankS = RankS.filter(Rank.rank >= info["rank"] - 700)
+            elif info["rank"] <= 20000:
+                RankS = RankS.filter(Rank.rank >= rank * 0.8)
+                RankS = RankS.filter(Rank.rank <= rank * 1.2)
+            else:
+                RankS = RankS.filter(Rank.rank >= info["rank"] - 7000)
+                RankS = RankS.filter(Rank.rank <= info["rank"] + 7000)
         else:
             RankS = RankS.filter(Rank.rank >= rank - info["rank_range"])
             RankS = RankS.filter(Rank.rank <= rank + info["rank_range"])
-            RankS = RankS.filter(Rank.rank != 0)
+            
+        RankS = RankS.filter(Rank.rank != 0)
 
     if info["school"]:
         for i in info["school"].split(" "):

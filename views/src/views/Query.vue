@@ -1,23 +1,26 @@
 <script setup lang="jsx">
 import { useRoute, useRouter } from "vue-router";
-import { provinces, majors } from "../const";
+import { provinces, majors, recommends } from "../const";
 import {
     getMustString,
     fixInteger,
     filterEmptyObject,
     findMaxValue,
+    getRecommendLevel,
 } from "../func";
 import { useMyStore } from "../stores/my";
+import { useInfoStore } from "../stores/info";
 import { Close, Add } from "@vicons/ionicons5";
 import { useDialog } from "naive-ui";
-import { onActivated, onMounted } from "vue";
-import Cookies from "js-cookie";
+import { onActivated, onMounted, ref } from "vue";
 
 const route = useRoute();
 const router = useRouter();
 const axios = inject("axios");
 const dialog = useDialog();
 const myStore = useMyStore();
+const infoStore = useInfoStore();
+const setinfo = ref(null);
 
 const tags = ref([]);
 const rank_years = ref([]);
@@ -30,7 +33,7 @@ const pagination = reactive({
     pageSize: 50,
 });
 
-const info = reactive({
+const initInfo = {
     rank: null,
     year: 0,
     school: "",
@@ -43,13 +46,29 @@ const info = reactive({
     mymust: [],
     standard: 0,
     accordation: false,
+};
+
+const info = reactive({
+    rank: infoStore.rank,
+    year: 0,
+    school: "",
+    major: "",
+    rank_range: null,
+    utags: "",
+    province: [],
+    utags: [],
+    nutags: [],
+    mymust: infoStore.must,
+    standard: 0,
+    accordation: false,
 });
 Object.assign(info, route.query);
 fixInteger(info, "utags");
 fixInteger(info, "nutags");
 fixInteger(info, "mymust");
 
-const score = reactive({ show: false, year: info.year, score: 600 });
+const rank = ref(null);
+const rankShow = ref(false);
 
 axios.get("/list/tags").then((response) => {
     tags.value = response.data.map((item) => ({
@@ -65,16 +84,14 @@ Promise.all([
             value: item,
         }));
 
-        if (!info.year) score.year = info.year = Math.max(...response.data);
+        if (!info.year) info.year = Math.max(...response.data);
     }),
     axios.get("/list/musts").then((response) => {
         must_years.value = response.data.map((item) => ({
             label: item,
             value: item,
         }));
-        let current = new Date().getFullYear();
-        let currentMonth = new Date().getMonth();
-        if (currentMonth >= 7) current += 1;
+        let current = getCurrent();
         info.standard = findMaxValue(response.data, current);
     }),
 ]).then(() => {
@@ -83,11 +100,17 @@ Promise.all([
 
 onMounted(() => {
     onActivated(() => {
-        Object.assign(info, route.query);
-        fixInteger(info, "utags");
-        fixInteger(info, "nutags");
-        fixInteger(info, "mymust");
-        goQuery();
+        for (let key in info) {
+            if (route.query[key]) {
+                reset();
+                Object.assign(info, route.query);
+                fixInteger(info, "utags");
+                fixInteger(info, "nutags");
+                fixInteger(info, "mymust");
+                goQuery();
+                return;
+            }
+        }
     });
 });
 
@@ -106,6 +129,7 @@ const goQuery = () => {
         data.list = response.data.result;
         pagination.pageCount = Math.ceil(data.total / pagination.pageSize);
         if (pagination.page > pagination.pageCount) pagination.page = 1;
+        rank.value = info.rank;
         loading.value = false;
     });
 };
@@ -120,7 +144,21 @@ const handleQueryKeyUp = (event) => {
     if (event.key === "Enter") reQuery();
 };
 
-const tableColumns = [
+const tableColumnsInit = [
+    {
+        title: "可能性",
+        key: "recommend",
+        render: (row) => {
+            if (!rank.value) return;
+            let level = getRecommendLevel(rank.value, row[2].rank);
+            let recommend = recommends[level];
+            return (
+                <n-tag bordered={false} type={recommend.tag}>
+                    {recommend.label}
+                </n-tag>
+            );
+        },
+    },
     {
         title: "学校名称",
         key: "univ",
@@ -206,6 +244,11 @@ const tableColumns = [
     },
 ];
 
+const tableColumns = computed(() => {
+    if (rank.value) return tableColumnsInit;
+    return tableColumnsInit.filter((item) => item.key !== "recommend");
+});
+
 const province_option = Object.keys(provinces)
     .slice(1)
     .map((item) => ({
@@ -218,19 +261,36 @@ const must_options = majors.slice(1).map((item, index) => ({
     value: index + 1,
 }));
 
-const fetchRank = () => {
-    axios
-        .get("/get/score", { params: { score: score.score, year: score.year } })
-        .then((response) => {
-            if (response.data) {
-                info.rank = response.data.rank;
-                score.show = false;
-            }
-        });
+const setRank = (rank) => {
+    info.rank = rank;
+};
+
+const getCurrent = () => {
+    let current = new Date().getFullYear();
+    let currentMonth = new Date().getMonth();
+    if (currentMonth >= 7) current += 1;
+    return current;
+};
+
+const reset = () => {
+    Object.assign(info, initInfo);
+    info.year = Math.max(...rank_years.value.map((item) => item.value));
+
+    let current = getCurrent();
+    info.standard = findMaxValue(
+        must_years.value.map((item) => item.value),
+        current
+    );
+};
+
+const finishSet = (rank, mymust) => {
+    info.rank = rank;
+    info.mymust = mymust;
+    reQuery();
 };
 
 onMounted(() => {
-    if (Cookies.get("agreement") !== "true")
+    if (!infoStore.agree)
         dialog.info({
             title: "免责声明",
             content: () => (
@@ -244,37 +304,29 @@ onMounted(() => {
             positiveText: "确定",
             maskClosable: false,
             onPositiveClick: () => {
-                Cookies.set("agreement", "true", { expires: 3650 });
+                infoStore.agree = true;
+                setinfo.value.open();
             },
         });
+    else if (!infoStore.disabled && !infoStore.setted) {
+        setinfo.value.open();
+    }
 });
 </script>
 
 <template>
-    <n-modal
-        v-model:show="score.show"
-        title="分数转换"
-        preset="dialog"
-        positive-text="确认"
-        negative-text="取消"
-        class="w-4/5 md:3/5 lg:w-2/5"
-        @positive-click="fetchRank"
-    >
-        <n-form class="px-8 pt-8">
-            <n-form-item label="年份">
-                <n-select
-                    v-model:value="score.year"
-                    :options="rank_years"
-                ></n-select>
-            </n-form-item>
-            <n-form-item label="分数">
-                <n-input-number
-                    class="w-full"
-                    v-model:value="score.score"
-                ></n-input-number>
-            </n-form-item>
-        </n-form>
-    </n-modal>
+    <SetInfo
+        ref="setinfo"
+        :year="info.year"
+        :yearOptions="rank_years"
+        @finish="finishSet"
+    />
+    <GetRank
+        v-model:show="rankShow"
+        :year="info.year"
+        :yearOptions="rank_years"
+        @rank="setRank"
+    />
     <div class="mx-8 w-auto lg:mx-auto lg:w-[75vw] pt-8 pb-4">
         <n-form class="grid grid-cols-2 gap-x-4 md:grid-cols-4 md:gap-x-8">
             <n-form-item label="省份">
@@ -320,7 +372,7 @@ onMounted(() => {
                         v-model:value="info.rank"
                         @keyup="handleQueryKeyUp"
                     ></n-input-number>
-                    <n-button @click="score.show = true"> 转换 </n-button>
+                    <n-button @click="rankShow = true"> 转换 </n-button>
                 </div>
             </n-form-item>
             <n-form-item label="区间">
@@ -357,7 +409,10 @@ onMounted(() => {
                 <n-switch v-model:value="info.accordation" />
             </n-form-item>
         </n-form>
-        <div class="flex justify-center">
+        <div class="flex justify-center gap-4">
+            <div>
+                <n-button @click="reset" :block="true"> 重置 </n-button>
+            </div>
             <div class="w-32">
                 <n-button @click="reQuery" type="info" :block="true">
                     查找
