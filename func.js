@@ -88,6 +88,30 @@ const base64toBlob = (base64, mime = "application/octet-stream") => {
 	});
 };
 
+const getRecommendLevel = (current, target) => {
+	current = Number(current)
+	target = Number(target)
+	if (current <= 4000) {
+		if (target >= current + 600) return 0;
+		else if (target >= current + 200) return 1;
+		else if (target >= current - 200) return 2;
+		else if (target >= current - 600) return 3;
+		else return 4;
+	} else if (current <= 20000) {
+		if (target >= current * 1.15) return 0;
+		else if (target >= current * 1.05) return 1;
+		else if (target >= current * 0.95) return 2;
+		else if (target >= current * 0.85) return 3;
+		else return 4;
+	} else {
+		if (target >= current + 6000) return 0;
+		else if (target >= current + 2000) return 1;
+		else if (target >= current - 2000) return 2;
+		else if (target >= current - 6000) return 3;
+		else return 4;
+	}
+};
+
 export {
 	getMustString,
 	fixInteger,
@@ -96,4 +120,5 @@ export {
 	findMaxValue,
 	isSubArray,
 	base64toBlob,
+	getRecommendLevel,
 };

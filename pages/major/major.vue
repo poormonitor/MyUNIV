@@ -81,7 +81,11 @@ onMounted(() => {
 					containLabel: true
 				},
 				tooltip: {
-					trigger: 'axis'
+					trigger: 'axis',
+					textStyle: {
+						textShadowColor: 'transparent', //文字块背景阴影颜色
+						textShadowBlur: 10 //文字块的背景阴影长度
+					}
 				},
 				xAxis: {
 					type: 'category'
@@ -95,7 +99,7 @@ onMounted(() => {
 						name: '计划数',
 						type: 'line',
 						smooth: true,
-						color: '#0075ff'
+						color: '#0284c7'
 					}
 				]
 			};
@@ -117,7 +121,11 @@ onMounted(() => {
 					containLabel: true
 				},
 				tooltip: {
-					trigger: 'axis'
+					trigger: 'axis',
+					textStyle: {
+						textShadowColor: 'transparent', //文字块背景阴影颜色
+						textShadowBlur: 10 //文字块的背景阴影长度
+					}
 				},
 				xAxis: {
 					type: 'category'
@@ -131,7 +139,7 @@ onMounted(() => {
 						name: '位次号',
 						type: 'line',
 						smooth: true,
-						color: '#0075ff'
+						color: '#0284c7'
 					}
 				]
 			};
