@@ -7,6 +7,7 @@ const year = ref(props.year);
 
 const visible = computed({
     get() {
+        year.value = props.year;
         return props.show;
     },
     set(value) {
