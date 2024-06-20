@@ -233,7 +233,7 @@ const downloadTable = () => {
 			<uni-list-item :to="'/pages/major/major?mid=' + item[0].mid" :clickable="true" direction="column" v-for="item in data">
 				<template #header>
 					<div class="flex justify-between">
-						<div>
+						<div class="main-label">
 							<div class="text-sm" style="color: #0891b2">
 								{{ item[1].uname }}
 							</div>
@@ -243,7 +243,7 @@ const downloadTable = () => {
 						</div>
 						<div class="ml-10">
 							<div v-if="item.length >= 5">
-								<uni-tag :type="item[4].tag" :text="item[4].label"></uni-tag>
+								<uni-tag class="whitespace-nowrap" :type="item[4].tag" :text="item[4].label"></uni-tag>
 							</div>
 						</div>
 					</div>

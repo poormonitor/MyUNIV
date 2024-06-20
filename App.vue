@@ -136,4 +136,8 @@ button[type='info'] {
 .floatButton .uni-fab__circle .uni-icons {
 	font-size: 24px !important;
 }
+
+.main-label {
+	max-width: 75vw;
+}
 </style>

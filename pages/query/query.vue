@@ -127,6 +127,8 @@ const reset = () => {
 		must_years.value.map((item) => item.value),
 		current
 	);
+
+	reQuery();
 };
 
 const goQuery = (e) => {
@@ -215,7 +217,7 @@ const handleMaskClick = () => {
 
 const finishSet = (rank, must) => {
 	info.rank = rank;
-	info.must = must;
+	info.mymust = must;
 	reQuery();
 };
 
@@ -393,9 +395,5 @@ const sideBarChange = (e) => {
 
 .scrollView {
 	height: calc(100vh);
-}
-
-.main-label {
-	max-width: 75vw;
 }
 </style>
