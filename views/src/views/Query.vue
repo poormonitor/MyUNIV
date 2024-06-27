@@ -63,6 +63,7 @@ const info = reactive({
     accordation: false,
 });
 Object.assign(info, route.query);
+fixInteger(info, "province");
 fixInteger(info, "utags");
 fixInteger(info, "nutags");
 fixInteger(info, "mymust");
@@ -104,6 +105,7 @@ onMounted(() => {
             if (route.query[key]) {
                 reset();
                 Object.assign(info, route.query);
+                fixInteger(info, "province");
                 fixInteger(info, "utags");
                 fixInteger(info, "nutags");
                 fixInteger(info, "mymust");
@@ -253,7 +255,7 @@ const province_option = Object.keys(provinces)
     .slice(1)
     .map((item) => ({
         label: provinces[item],
-        value: item,
+        value: Number(item),
     }));
 
 const must_options = majors.slice(1).map((item, index) => ({

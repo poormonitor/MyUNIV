@@ -15,7 +15,12 @@ const getMustString = (must) => {
 };
 
 const fixInteger = (obj, name) => {
-    obj[name] = obj[name].map((item) => Number(item));
+    if (!Array.isArray(obj[name])) {
+        obj[name] = [Number(obj[name])];
+    } else {
+        obj[name] = obj[name].map((item) => Number(item));
+    }
+    console.log(name, obj[name]);
 };
 
 const filterEmptyObject = (obj) => {
