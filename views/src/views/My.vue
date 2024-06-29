@@ -54,16 +54,8 @@ const goQuery = () => {
         .post("/get/majors", { ...info, majors: myStore.get() })
         .then((response) => {
             data.total = response.data.total;
-
-            let result = [];
-            response.data.result.forEach((elem, index) => {
-                elem[4] = index + 1;
-                result[index] = elem;
-            });
-            data.list = result;
-
+            data.list = setOrder(response.data.result);
             option.value.series.data = processData(data.list);
-
             loading.value = false;
         });
 };
@@ -121,10 +113,21 @@ onActivated(() => {
     }
 });
 
+const setOrder = (list) => {
+    list.sort((a, b) => a[2].rank - b[2].rank);
+
+    list.forEach((item, index) => {
+        item[4] = index + 1; // order从1开始
+    });
+
+    return list;
+};
+
 const removeItem = (id) => {
     myStore.remove(id);
     data.total -= 1;
     data.list = data.list.filter((item) => item[0].mid != id);
+    data.list = setOrder(data.list);
 };
 
 const resetItem = () => {
