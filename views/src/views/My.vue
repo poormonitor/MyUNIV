@@ -128,12 +128,14 @@ const removeItem = (id) => {
     data.total -= 1;
     data.list = data.list.filter((item) => item[0].mid != id);
     data.list = setOrder(data.list);
+    option.value.series.data = processData(data.list);
 };
 
 const resetItem = () => {
     myStore.reset();
     data.total = 0;
     data.list = [];
+    option.value.series.data = processData(data.list);
 };
 
 const downloadExcel = () => {
