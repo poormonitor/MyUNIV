@@ -156,6 +156,7 @@ def process_excel(xlsx, year, delete=False):
             univ_name = unifyBracket(i[1])
             univ_name, tag = get_school_name(univ_name)
             mname = unifyBracket(i[3])
+            batch = 1 if i[2] // 100 >= 5 else 0
             schedule = i[4]
             score = i[5]
             rank = i[6] if i[6] == i[6] else 0
@@ -200,9 +201,11 @@ def process_excel(xlsx, year, delete=False):
             univ_id = univs[univ_name].sid
 
             if (
-                major := db.query(Major).filter_by(sid=univ_id, mname=mname).first()
+                major := db.query(Major)
+                .filter_by(sid=univ_id, mname=mname, batch=batch)
+                .first()
             ) is None:
-                major = Major(sid=univ_id, mname=mname)
+                major = Major(sid=univ_id, mname=mname, batch=batch)
                 db.add(major)
                 db.flush()
 
@@ -354,9 +357,9 @@ def connectMust():
         for j in must_years:
             mustList = allMustByYearSchool.get(j, {}).get(i.sid, [])
             res, tmp = findNearestMustInAll(i.mname, mustList)
-            if not res or tmp < 0.4:
+            if not res or tmp < 0.5:
                 sortList = scoreAvgBySchool.get(j, [])
-                
+
                 if i.sid in schoolRank:
                     sortKey = lambda x: abs(x[0] - schoolRank[i.sid])
                     ordered = sorted(sortList, key=sortKey)

@@ -28,6 +28,7 @@ class OneMajor(BaseModel):
     mid: int
     mname: str
     sid: int
+    batch: int
 
 
 class OneMust(BaseModel):
