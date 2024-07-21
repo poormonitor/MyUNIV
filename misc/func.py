@@ -363,7 +363,12 @@ def connectMust():
                 res = findNearestMustInAllSchool(i.mname, mustList)
             if not res:
                 continue
-            if (a := db.query(Conne).filter_by(mid=i.mid, year=j).first()) is None:
+            if (
+                a := db.query(Conne)
+                .join(Must, Must.mmid == Conne.mmid)
+                .filter(Must.year == j, Conne.mid == i.mid)
+                .first()
+            ) is None:
                 conn = Conne(mid=i.mid, mmid=res.mmid)
                 db.add(conn)
             elif a.mmid != res.mmid:
