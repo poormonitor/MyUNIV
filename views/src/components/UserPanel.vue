@@ -73,9 +73,9 @@ const selectOptions = computed(() => {
         <PasswordSetter v-model:show="showPasswd" />
         <n-dropdown trigger="hover" :options="options" @select="handleSelect">
             <div
-                class="flex items-center gap-x-1 hover:text-green-600 transition"
+                class="flex items-center gap-x-1 hover:text-cyan-700 transition"
             >
-                <span>{{ userStore.name }}</span>
+                <span class="whitespace-nowrap">{{ userStore.name }}</span>
                 <n-icon size="0.7rem" :component="CaretDown"></n-icon>
             </div>
         </n-dropdown>
