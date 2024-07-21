@@ -343,9 +343,9 @@ def connectMust():
     }
 
     allMajor = db.query(Major)
-    allMajor = allMajor.join(Must, Major.mid == Must.mid, isouter=True)
+    allMajor = allMajor.join(Conne, Major.mid == Conne.mid, isouter=True)
     allMajor = allMajor.group_by(Major.mid)
-    allMajor = allMajor.having(func.count(Must.mid) < len(allMustByYear))
+    allMajor = allMajor.having(func.count(Conne.connid) < len(allMustByYear))
     allMajor = allMajor.all()
 
     scoreAvgBySchool = {
