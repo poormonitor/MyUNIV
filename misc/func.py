@@ -356,8 +356,12 @@ def connectMust():
             res, tmp = findNearestMustInAll(i.mname, mustList)
             if not res or tmp < 0.4:
                 sortList = scoreAvgBySchool.get(j, [])
-                sortKey = lambda x: abs(x[0] - schoolRank[i.sid])
-                ordered = sorted(sortList, key=sortKey)
+                
+                if i.sid in schoolRank:
+                    sortKey = lambda x: abs(x[0] - schoolRank[i.sid])
+                    ordered = sorted(sortList, key=sortKey)
+                else:
+                    ordered = sortList
 
                 mustList = [j for k in ordered if k[1] for j in k[1]]
                 res = findNearestMustInAllSchool(i.mname, mustList)
