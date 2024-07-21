@@ -1,12 +1,18 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy import and_, or_
 
-from misc.func import freezeDict, hash_dict, lru_cache_ignored
-from misc.model import QueryResult, parse_result
+from misc.func import (
+    freezeDict,
+    hash_dict,
+    lru_cache_ignored,
+    get_school_name,
+    unifyBracket,
+)
+from misc.model import QueryResult, parse_result, QueryResultMini, parse_result_mini
 from models import get_db
 
 router = APIRouter()
@@ -75,7 +81,7 @@ def findResult(info, db):
         else:
             RankS = RankS.filter(Rank.rank >= rank - info["rank_range"])
             RankS = RankS.filter(Rank.rank <= rank + info["rank_range"])
-            
+
         RankS = RankS.filter(Rank.rank != 0)
 
     if info["school"]:
@@ -199,3 +205,56 @@ def get_what_i_can_choose_most(mymust: str) -> list:
                 for l in combinations(new_choice, j):
                     ans.append(str(i) + "".join(map(str, sorted(k + l))))
     return ans
+
+
+@lru_cache_ignored(64, count=3)
+def get_rank(school: str, major: str, year: int, db: Session) -> Tuple[int, int, int]:
+    from models.rank import Rank
+    from models.major import Major
+    from models.univ import Univ
+
+    univ = db.query(Univ).filter(Univ.uname == school).first()
+    major = db.query(Major).filter(Major.mname == major, Major.sid == univ.sid).first()
+
+    if not univ or not major:
+        return None
+
+    rank = db.query(Rank).filter(Rank.mid == major.mid, Rank.year == year).first()
+
+    if not rank:
+        return None
+
+    db.expunge_all()
+
+    return major, univ, rank
+
+
+class QueryRankForm(BaseModel):
+    uname: str
+    mname: str
+
+
+class QueryRanksForm(BaseModel):
+    list: List[QueryRankForm]
+    year: int
+
+
+@router.post("/ranks")
+def query_ranks(form: QueryRanksForm, db: Session = Depends(get_db)):
+    result = []
+
+    for i in form.list:
+        uname = unifyBracket(i.uname)
+        uname = get_school_name(uname)[0]
+        uname = uname[uname.find(" ") + 1 :]
+
+        mname = unifyBracket(i.mname)
+        mname = mname[mname.find(" ") + 1 :]
+        mname = mname[: mname.rfind("(")]
+
+        info = get_rank(uname, mname, form.year, db)
+        if info:
+            result.append(info)
+
+    result = QueryResultMini(result=parse_result_mini(result))
+    return result

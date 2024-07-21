@@ -49,6 +49,11 @@ def trans_utags(univ):
     return data
 
 
+class QueryResult(BaseModel):
+    total: int
+    result: List[Tuple[OneMajor, OneUniv, OneRank, OneMust]]
+
+
 def parse_result(rs):
     return [
         (
@@ -61,6 +66,16 @@ def parse_result(rs):
     ]
 
 
-class QueryResult(BaseModel):
-    total: int
-    result: List[Tuple[OneMajor, OneUniv, OneRank, OneMust]]
+class QueryResultMini(BaseModel):
+    result: List[Tuple[OneMajor, OneUniv, OneRank]]
+
+
+def parse_result_mini(rs):
+    return [
+        (
+            OneMajor.parse_obj(vars(i[0])),
+            OneUniv.parse_obj(trans_utags(i[1])),
+            OneRank.parse_obj(vars(i[2])),
+        )
+        for i in rs
+    ]

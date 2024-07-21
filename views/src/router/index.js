@@ -41,6 +41,14 @@ const router = createRouter({
                     },
                 },
                 {
+                    path: "est",
+                    name: "est",
+                    component: () => import("../views/Est.vue"),
+                    meta: {
+                        title: "估计",
+                    },
+                },
+                {
                     path: "login",
                     name: "login",
                     component: () => import("../views/Login.vue"),

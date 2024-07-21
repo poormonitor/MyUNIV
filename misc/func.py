@@ -327,22 +327,26 @@ def connectMust():
     from models.rank import Rank
 
     db = list(get_db())[0]
-    allMajor = db.query(Major).all()
+
     allMust = db.query(Must).all()
-    schoolRank = (
-        db.query(Major.sid, func.avg(Rank.score))
-        .join(Major, Major.mid == Rank.mid)
-        .group_by(Major.sid)
-        .order_by(func.avg(Rank.score))
-        .all()
-    )
-    schoolRank = {i[0]: i[1] for i in schoolRank}
+
+    schoolRank = db.query(Major.sid, func.avg(Rank.score))
+    schoolRank = schoolRank.join(Major, Major.mid == Rank.mid)
+    schoolRank = schoolRank.group_by(Major.sid)
+    schoolRank = schoolRank.order_by(func.avg(Rank.score))
+    schoolRank = {i[0]: i[1] for i in schoolRank.all()}
 
     allMustByYear = {i: [k for k in j] for i, j in groupby(allMust, lambda x: x.year)}
     allMustByYearSchool = {
         i: {k: [l for l in m] for k, m in groupby(j, lambda x: x.sid)}
         for i, j in allMustByYear.items()
     }
+
+    allMajor = db.query(Major)
+    allMajor = allMajor.join(Must, Major.mid == Must.mid, isouter=True)
+    allMajor = allMajor.group_by(Major.mid)
+    allMajor = allMajor.having(func.count(Must.mid) < len(allMustByYear))
+    allMajor = allMajor.all()
 
     scoreAvgBySchool = {
         i[0]: [(j[1], i[1].get(j[0])) for j in schoolRank.items()]
@@ -353,17 +357,15 @@ def connectMust():
 
     for i in tqdm(allMajor):
         for j in must_years:
-            res, tmp = findNearestMustInAll(
-                i.mname, allMustByYearSchool.get(j, {}).get(i.sid, [])
-            )
+            mustList = allMustByYearSchool.get(j, {}).get(i.sid, [])
+            res, tmp = findNearestMustInAll(i.mname, mustList)
             if not res or tmp < 0.4:
-                ordered = sorted(
-                    scoreAvgBySchool.get(j, []),
-                    key=lambda x: abs(x[0] - schoolRank[i.sid]),
-                )
-                res = findNearestMustInAllSchool(
-                    i.mname, [j for k in ordered if k[1] for j in k[1]]
-                )
+                sortList = scoreAvgBySchool.get(j, [])
+                sortKey = lambda x: abs(x[0] - schoolRank[i.sid])
+                ordered = sorted(sortList, key=sortKey)
+
+                mustList = [j for k in ordered if k[1] for j in k[1]]
+                res = findNearestMustInAllSchool(i.mname, mustList)
             if not res:
                 continue
             if (a := db.query(Conne).filter_by(mid=i.mid, year=j).first()) is None:

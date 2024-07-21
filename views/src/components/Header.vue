@@ -1,13 +1,11 @@
 <script setup lang="jsx">
 import { NIcon } from "naive-ui";
 import { useRoute, RouterLink } from "vue-router";
-import { School, AppsOutline, Archive } from "@vicons/ionicons5";
-import { useUserStore } from "../stores/user";
+import { School, AppsOutline, Archive, Mail } from "@vicons/ionicons5";
 import UserPanel from "./UserPanel.vue";
 
 const route = useRoute();
 
-const userStore = useUserStore();
 const collapsed = inject("collapsed");
 const showSideBar = ref(false);
 
@@ -28,8 +26,12 @@ const menuOptions = [
         key: "query",
     },
     {
-        label: renderLabel(Archive, "my", "备选专业"),
+        label: renderLabel(Archive, "my", "选专业"),
         key: "my",
+    },
+    {
+        label: renderLabel(Mail, "est", "估专业"),
+        key: "est",
     },
 ];
 </script>
