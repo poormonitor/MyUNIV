@@ -329,6 +329,7 @@ def connectMust():
     db = list(get_db())[0]
 
     allMust = db.query(Must).all()
+    allMajor = db.query(Major).all()
 
     schoolRank = db.query(Major.sid, func.avg(Rank.score))
     schoolRank = schoolRank.join(Major, Major.mid == Rank.mid)
@@ -341,12 +342,6 @@ def connectMust():
         i: {k: [l for l in m] for k, m in groupby(j, lambda x: x.sid)}
         for i, j in allMustByYear.items()
     }
-
-    allMajor = db.query(Major)
-    allMajor = allMajor.join(Conne, Major.mid == Conne.mid, isouter=True)
-    allMajor = allMajor.group_by(Major.mid)
-    allMajor = allMajor.having(func.count(Conne.connid) < len(allMustByYear))
-    allMajor = allMajor.all()
 
     scoreAvgBySchool = {
         i[0]: [(j[1], i[1].get(j[0])) for j in schoolRank.items()]
