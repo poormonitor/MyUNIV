@@ -20,7 +20,6 @@ const fixInteger = (obj, name) => {
     } else {
         obj[name] = obj[name].map((item) => Number(item));
     }
-    console.log(name, obj[name]);
 };
 
 const filterEmptyObject = (obj) => {
