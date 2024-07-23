@@ -427,7 +427,7 @@ onMounted(() => {
                 </n-form-item>
             </div>
         </n-form>
-        <div class="flex justify-center gap-4">
+        <div class="flex justify-center gap-x-4 md:gap-x-8">
             <div>
                 <n-button @click="reset" :block="true"> 重置 </n-button>
             </div>
