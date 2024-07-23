@@ -1,5 +1,5 @@
 <script setup>
-import { provinces, majors, recommends } from '../../const';
+import { provinces, majors, recommends, batches } from '../../const';
 import { getMustString, fixInteger, filterEmptyObject, findMaxValue, getRecommendLevel } from '../../func';
 import { onMounted, ref, reactive, watch, inject, unref } from 'vue';
 import { onShow } from '@dcloudio/uni-app';
@@ -36,7 +36,8 @@ const initInfo = {
 	mymust: [],
 	standard: 0,
 	accordation: 0,
-	page_size: 20
+	page_size: 20,
+	batch: 0
 };
 
 const info = reactive({
@@ -52,7 +53,8 @@ const info = reactive({
 	mymust: infos.getMust(),
 	standard: 0,
 	accordation: 0,
-	page_size: 20
+	page_size: 20,
+	batch: 0
 });
 
 const inputDialog = ref(null);
@@ -175,6 +177,11 @@ const must_options = majors.slice(1).map((item, index) => ({
 	value: index + 1
 }));
 
+const batch_options = Object.keys(batches).map((item) => ({
+	text: batches[item],
+	value: Number(item)
+}));
+
 const reQuery = () => {
 	page.value = 1;
 	data.total = 0;
@@ -275,6 +282,9 @@ const sideBarChange = (e) => {
 						v-model="info.accordation"
 					/>
 				</uni-section>
+				<uni-section title="批次" type="line">
+					<uni-data-checkbox :localdata="batch_options" v-model="info.batch" />
+				</uni-section>
 				<uni-section title="选考标准" type="line">
 					<uni-data-select v-model="info.standard" :clear="false" :localdata="must_years"></uni-data-select>
 				</uni-section>
@@ -310,7 +320,7 @@ const sideBarChange = (e) => {
 		</div>
 	</div>
 	<div class="mt-10">
-		<div class="mx-20 my-10">
+		<div class="text-base mx-20 my-10">
 			<span>共计找到了</span>
 			<span>{{ data.total }}</span>
 			<span>个专业。</span>
@@ -326,7 +336,7 @@ const sideBarChange = (e) => {
 							<div class="text-sm" style="color: #0891b2">
 								{{ item[1].uname }}
 							</div>
-							<div class="text-lg mb-2">
+							<div class="mb-2" style="font-size: 0.95rem;">
 								{{ item[0].mname }}
 							</div>
 						</div>

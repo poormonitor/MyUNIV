@@ -80,9 +80,9 @@ const infos = {
 	fetch: function () {
 		let info = uni.getStorageSync('myuniv_my_infos');
 		if (!info) return;
-		mymust.value = info.mymust;
-		myrank.value = info.myrank;
-		mydisabled.value = info.mydisabled;
+		mymust.value = info.mymust || [];
+		myrank.value = info.myrank || null;
+		mydisabled.value = info.mydisabled || 0;
 	}
 };
 

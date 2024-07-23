@@ -68,7 +68,6 @@ onShow(() => {
 		goQuery();
 	} else {
 		data.value = data.value.filter((item) => majors.get().includes(item[0].mid));
-		renderTable();
 	}
 });
 
@@ -104,11 +103,10 @@ const renderTable = () => {
 			coordinateSystem: 'singleAxis',
 			type: 'scatter',
 			data: data.value.map((item) => {
-				if (!infos.getRank()) return item;
+				if (!infos.getRank()) return { value: item[2].rank, itemStyle: { color: '#0075ff' } };
 				let recommend = recommends[getRecommendLevel(infos.getRank(), item[2].rank)];
 				return { value: item[2].rank, itemStyle: { color: recommend.color } };
-			}),
-			color: '#0075ff'
+			})
 		}
 	};
 
@@ -132,7 +130,6 @@ onMounted(() => {
 });
 
 const finishSet = () => {
-	renderTable();
 	data.value = data.value.map((item) => {
 		if (!infos.getRank()) return item;
 		item = item.slice(0, 4);
@@ -219,7 +216,7 @@ const downloadTable = () => {
 		</div>
 	</div>
 	<div class="mt-10" v-if="majors.length">
-		<div class="mx-10 text-center">
+		<div class="mx-10 text-center text-base">
 			<span>共计收藏了</span>
 			<span>{{ majors.length }}</span>
 			<span>个专业。</span>
@@ -237,7 +234,7 @@ const downloadTable = () => {
 							<div class="text-sm" style="color: #0891b2">
 								{{ item[1].uname }}
 							</div>
-							<div class="text-lg mb-2">
+							<div class="mb-2" style="font-size: 0.95rem">
 								{{ item[0].mname }}
 							</div>
 						</div>

@@ -1,28 +1,17 @@
 <script setup>
 import { ref, onMounted, inject } from 'vue';
 import { getMustString } from '../../func';
+import { batches } from '../../const';
 import Loading from '../../components/Loading.vue';
 
 import LEchart from '@/uni_modules/lime-echart/components/l-echart/l-echart.vue';
 import * as echarts from 'echarts/core';
 import { LineChart } from 'echarts/charts';
-import {
-	TitleComponent,
-	TooltipComponent,
-	GridComponent
-} from 'echarts/components';
+import { TitleComponent, TooltipComponent, GridComponent } from 'echarts/components';
 import { LabelLayout, UniversalTransition } from 'echarts/features';
 import { CanvasRenderer } from 'echarts/renderers';
 
-echarts.use([
-	TitleComponent,
-	TooltipComponent,
-	GridComponent,
-	LineChart,
-	LabelLayout,
-	UniversalTransition,
-	CanvasRenderer
-]);
+echarts.use([TitleComponent, TooltipComponent, GridComponent, LineChart, LabelLayout, UniversalTransition, CanvasRenderer]);
 
 const props = defineProps(['mid']);
 const mymajors = inject('majors');
@@ -53,10 +42,7 @@ onMounted(() => {
 			data.value.musts.sort((a, b) => a.year - b.year);
 			tags.value = Array.from(
 				data.value.musts.reduce((ac, ob) => {
-					if (
-						data.value.mname.includes(ob.mname) ||
-						ob.mname.includes(data.value.mname)
-					)
+					if (data.value.mname.includes(ob.mname) || ob.mname.includes(data.value.mname))
 						ob.include.split('、').forEach((elem) => {
 							if (elem) ac.add(elem);
 						});
@@ -64,10 +50,7 @@ onMounted(() => {
 				}, new Set())
 			);
 
-			let totalChartdata = data.value.ranks.map((item) => [
-				item.year,
-				item.schedule
-			]);
+			let totalChartdata = data.value.ranks.map((item) => [item.year, item.schedule]);
 			totalChartdata.sort((a, b) => a[0] - b[0]);
 			let totalChartoption = {
 				title: {
@@ -104,10 +87,7 @@ onMounted(() => {
 				]
 			};
 
-			let rankChartdata = data.value.ranks.map((item) => [
-				item.year,
-				item.rank
-			]);
+			let rankChartdata = data.value.ranks.map((item) => [item.year, item.rank]);
 			rankChartdata.sort((a, b) => a[0] - b[0]);
 			let rankChartoption = {
 				title: {
@@ -163,54 +143,23 @@ onMounted(() => {
 	<div class="main-content" v-show="data">
 		<div v-if="data">
 			<div class="p-10 pb-15">
-				<div
-					class="flex items-center mb-2"
-					style="color: #0891b2"
-					@click="gotoUniv(data.univ.sid)"
-				>
+				<div class="text-bold mb-2" style="font-size: 1.25rem;">{{ data.mname }}</div>
+				<div class="text-sm mb-6">{{ batches[data.batch] }}</div>
+				<div class="flex items-center mb-2 text-base" style="color: #0891b2" @click="gotoUniv(data.univ.sid)">
 					<span>{{ data.univ.uname }}</span>
-					<image
-						style="width: 12px; height: 12px"
-						class="ml-3 mb-3"
-						src="../../static/icons8-right-2-24.png"
-					></image>
+					<image style="width: 12px; height: 12px" class="ml-3 mb-3" src="../../static/icons8-right-2-24.png"></image>
 				</div>
-				<div class="text-bold text-2xl">{{ data.mname }}</div>
-				<div
-					class="my-10 flex flex-wrap gap-4"
-					style="line-height: 160%"
-				>
-					<uni-tag
-						v-for="tag in tags"
-						:text="tag"
-						type="info"
-					></uni-tag>
+				<div class="my-10 flex flex-wrap gap-4" style="line-height: 160%">
+					<uni-tag v-for="tag in tags" :text="tag" type="info"></uni-tag>
 				</div>
 				<div class="mt-12">
-					<button
-						@click.stop="() => mymajors.remove(data.mid)"
-						size="mini"
-						type="info"
-						v-if="mymajors.has(data.mid)"
-					>
+					<button @click.stop="() => mymajors.remove(data.mid)" size="mini" type="info" v-if="mymajors.has(data.mid)">
 						<span class="whitespace-nowrap">收藏</span>
 					</button>
-					<button
-						@click.stop="() => mymajors.add(data.mid)"
-						size="mini"
-						type="default"
-						v-else
-					>
+					<button @click.stop="() => mymajors.add(data.mid)" size="mini" type="default" v-else>
 						<span class="whitespace-nowrap">收藏</span>
 					</button>
-					<button
-						open-type="share"
-						size="mini"
-						class="ml-5"
-						type="info"
-					>
-						分享
-					</button>
+					<button open-type="share" size="mini" class="ml-5" type="info">分享</button>
 				</div>
 			</div>
 			<div class="mb-10 table-c">

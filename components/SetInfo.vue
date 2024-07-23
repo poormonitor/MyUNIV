@@ -47,7 +47,7 @@ defineExpose({
 </script>
 
 <template>
-	<uni-fab class="floatButton" @fabClick="open" horizontal="right" :pattern="{ icon: 'person', buttonColor: '#0284c799' }">
+	<uni-fab class="floatButton" @fabClick="open" horizontal="right" vertical="top" :pattern="{ icon: 'person', buttonColor: '#0284c799' }">
 		<div class="mx-5" v-if="infos.isSetted()">
 			<div v-if="infos.getRank()">{{ infos.getRank() }}</div>
 			<div v-if="infos.getMust().length" class="whitespace-nowrap">

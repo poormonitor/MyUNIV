@@ -56,4 +56,10 @@ const recommends = [
     { label: "困难", tag: "error", color: "#DE576D" },
 ];
 
-export { provinces, majors, majors_short, recommends };
+const batches = {
+    0: "全部",
+    1: "本科",
+    2: "专科",
+};
+
+export { provinces, majors, majors_short, recommends, batches };
