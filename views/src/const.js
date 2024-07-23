@@ -57,9 +57,9 @@ const recommends = [
 ];
 
 const batches = {
-    "-1": "全部",
-    0: "本科",
-    1: "专科",
+    0: "全部",
+    1: "本科",
+    2: "专科",
 };
 
 export { provinces, majors, majors_short, recommends, batches };

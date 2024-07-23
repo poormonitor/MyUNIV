@@ -12,7 +12,6 @@ import {
 import { LabelLayout, UniversalTransition } from "echarts/features";
 import { CanvasRenderer } from "echarts/renderers";
 import VChart from "vue-echarts";
-import { onActivated } from "vue";
 
 use([
     TitleComponent,
@@ -72,14 +71,12 @@ const option = ref({
     ],
 });
 
-onActivated(() => {
-    inputRef.value.focus();
-});
-
 onMounted(() => {
     axios.get("/list/sums").then((response) => {
         option.value.series[0].data = response.data;
     });
+
+    inputRef.value.focus();
 });
 
 const goQuery = () => {

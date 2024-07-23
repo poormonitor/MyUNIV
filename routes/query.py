@@ -29,6 +29,7 @@ class QueryForm(BaseModel):
     utags: Optional[List[int]] = []
     nutags: Optional[List[int]] = []
     mymust: Optional[List[int]] = []
+    batch: Optional[int] = 0
     standard: int
     accordation: Optional[bool] = False
     page: int = 1
@@ -55,6 +56,9 @@ def findResult(info, db):
     MajorS = db.query(Major)
     MustS = db.query(Must, Conne.mid)
     MustS = MustS.join(Conne, Conne.mmid == Must.mmid)
+
+    if info["batch"]:
+        MajorS = MajorS.filter(Major.batch == info["batch"])
 
     MustS = MustS.filter(Must.year == info["standard"])
     if info["mymust"]:
@@ -99,7 +103,7 @@ def findResult(info, db):
     if info["province"]:
         UnivS = UnivS.filter(Univ.province.in_(info["province"]))
 
-    datas = ["mymust", "school", "utags", "nutags", "province", "major"]
+    datas = ["mymust", "school", "utags", "nutags", "province", "major", "batch"]
     filtered = any([info[i] for i in datas])
     if not filtered:
         count = RankS.count()

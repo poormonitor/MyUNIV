@@ -58,7 +58,7 @@ axios
         showModal.value = true;
     });
 
-onActivated(() => {
+onMounted(() => {
     if (!userData.value || userData.value == "") {
         showModal.value = true;
     }
@@ -122,8 +122,6 @@ const tableColumns = [
             style="width: 600px"
             title="输入信息"
             :bordered="false"
-            :mask-closable="false"
-            :close-on-esc="false"
             size="huge"
             role="dialog"
             aria-modal="true"

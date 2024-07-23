@@ -2,6 +2,7 @@
 import { useRoute } from "vue-router";
 import { useMyStore } from "../stores/my";
 import { getMustString } from "../func";
+import { batches } from "../const";
 
 import { use } from "echarts/core";
 import { LineChart } from "echarts/charts";
@@ -171,13 +172,14 @@ const mustColumns = [
 <template>
     <div class="mb-8">
         <div
-            class="flex flex-col md:flex-row md:justify-between gap-y-2 gap-x-4 items-start md:items-center mb-4"
+            class="flex flex-col md:flex-row md:justify-between gap-y-2 gap-x-4 items-start md:items-center mb-5"
         >
             <div>
-                <p class="text-4xl font-bold mb-2">
+                <div class="text-3xl font-bold">
                     {{ data.mname }}
-                </p>
-                <div class="text-xl">
+                </div>
+                <div class="text-lg mt-0.5">{{ batches[data.batch] }}</div>
+                <div class="text-xl mt-2">
                     <router-link
                         :to="{ name: 'univ', params: { sid: data.univ.sid } }"
                         class="text-sky-800 dark:text-sky-500 hover:text-sky-900 dark:hover:text-sky-600 transition"

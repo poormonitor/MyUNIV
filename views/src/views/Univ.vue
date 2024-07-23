@@ -289,7 +289,7 @@ watch(
 
 <template>
     <div>
-        <p class="text-4xl font-bold mb-2">
+        <p class="text-4xl font-bold mb-1">
             {{ data.uname }}
         </p>
         <div class="mb-4 text-xl">

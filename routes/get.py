@@ -60,6 +60,7 @@ def get_univ(sid: int, db: Session = Depends(get_db)) -> UnivResult:
 class MajorResult(BaseModel):
     mid: int
     mname: str
+    batch: int
     univ: OneUniv
     musts: List[OneMust]
     ranks: List[OneRank]
@@ -186,7 +187,17 @@ def get_excel(form: MajorsQuery, db: Session = Depends(get_db)) -> downloadTable
 
     df = pd.DataFrame(
         data,
-        columns=["学校名称", "省份", "专业名称", "招生计划", "年份", "位次号", "录取分数", "选考科目", "选考科目标准"],
+        columns=[
+            "学校名称",
+            "省份",
+            "专业名称",
+            "招生计划",
+            "年份",
+            "位次号",
+            "录取分数",
+            "选考科目",
+            "选考科目标准",
+        ],
     )
 
     buffer = BytesIO()

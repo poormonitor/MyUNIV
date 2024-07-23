@@ -156,7 +156,7 @@ def process_excel(xlsx, year, delete=False):
             univ_name = unifyBracket(i[1])
             univ_name, tag = get_school_name(univ_name)
             mname = unifyBracket(i[3])
-            batch = 1 if i[2] // 100 >= 5 else 0
+            batch = 2 if i[2] // 100 >= 5 else 1
             schedule = i[4]
             score = i[5]
             rank = i[6] if i[6] == i[6] else 0

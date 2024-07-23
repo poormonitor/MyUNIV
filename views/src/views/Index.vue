@@ -1,8 +1,3 @@
-<script setup>
-import { useRouter } from "vue-router";
-
-const router = useRouter();
-</script>
 <template>
     <n-layout class="min-h-full pb-12">
         <n-layout-header bordered>
@@ -10,7 +5,7 @@ const router = useRouter();
         </n-layout-header>
         <n-layout-content>
             <router-view v-slot="{ Component }">
-                <keep-alive>
+                <keep-alive :include="['Query', 'My']">
                     <component :is="Component" />
                 </keep-alive>
             </router-view>

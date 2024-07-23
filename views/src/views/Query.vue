@@ -1,6 +1,6 @@
 <script setup lang="jsx">
 import { useRoute, useRouter } from "vue-router";
-import { provinces, majors, recommends } from "../const";
+import { provinces, majors, recommends, batches } from "../const";
 import {
     getMustString,
     fixInteger,
@@ -46,6 +46,7 @@ const initInfo = {
     mymust: [],
     standard: 0,
     accordation: false,
+    batch: 0,
 };
 
 const info = reactive({
@@ -61,12 +62,16 @@ const info = reactive({
     mymust: infoStore.must,
     standard: 0,
     accordation: false,
+    batch: 0,
 });
 Object.assign(info, route.query);
 fixInteger(info, "province");
 fixInteger(info, "utags");
 fixInteger(info, "nutags");
 fixInteger(info, "mymust");
+info["standard"] = Number(info["standard"]);
+info["year"] = Number(info["year"]);
+info["batch"] = Number(info["batch"]);
 
 const rank = ref(null);
 const rankShow = ref(false);
@@ -101,18 +106,16 @@ Promise.all([
 
 onMounted(() => {
     onActivated(() => {
-        for (let key in info) {
-            if (route.query[key]) {
-                reset();
-                Object.assign(info, route.query);
-                fixInteger(info, "province");
-                fixInteger(info, "utags");
-                fixInteger(info, "nutags");
-                fixInteger(info, "mymust");
-                goQuery();
-                return;
-            }
-        }
+        reset();
+        Object.assign(info, route.query);
+        fixInteger(info, "province");
+        fixInteger(info, "utags");
+        fixInteger(info, "nutags");
+        fixInteger(info, "mymust");
+        info["standard"] = Number(info["standard"]);
+        info["year"] = Number(info["year"]);
+        info["batch"] = Number(info["batch"]);
+        goQuery();
     });
 });
 
@@ -263,6 +266,11 @@ const must_options = majors.slice(1).map((item, index) => ({
     value: index + 1,
 }));
 
+const batch_options = Object.keys(batches).map((item) => ({
+    label: batches[item],
+    value: Number(item),
+}));
+
 const setRank = (rank) => {
     info.rank = rank;
 };
@@ -407,9 +415,17 @@ onMounted(() => {
                     :options="must_years"
                 ></n-select>
             </n-form-item>
-            <n-form-item label="一致优先">
-                <n-switch v-model:value="info.accordation" />
-            </n-form-item>
+            <div class="flex gap-x-6">
+                <n-form-item class="grow" label="批次">
+                    <n-select
+                        :options="batch_options"
+                        v-model:value="info.batch"
+                    />
+                </n-form-item>
+                <n-form-item class="grow" label="一致优先">
+                    <n-switch v-model:value="info.accordation" />
+                </n-form-item>
+            </div>
         </n-form>
         <div class="flex justify-center gap-4">
             <div>

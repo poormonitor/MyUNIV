@@ -5,7 +5,7 @@
         <Suspense>
             <router-view />
             <template #fallback>
-                <div class="flex place-content-center mt-12">
+                <div class="flex place-content-center mt-[40vh]">
                     <n-spin>
                         <template #description> 加载中 </template>
                     </n-spin>
