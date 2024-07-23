@@ -336,7 +336,7 @@ const sideBarChange = (e) => {
 							<div class="text-sm" style="color: #0891b2">
 								{{ item[1].uname }}
 							</div>
-							<div class="mb-2" style="font-size: 0.95rem;">
+							<div class="mb-2" style="font-size: 30rpx;">
 								{{ item[0].mname }}
 							</div>
 						</div>
