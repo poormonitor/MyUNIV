@@ -27,9 +27,11 @@ watch(fileList, () => {
     if (!years) return;
     years = years.map(parseInt);
     let currentYear = parseInt(new Date().getFullYear());
-    let filteredYears = years.filter((year) => currentYear - year < 10);
+    let filteredYears = years.filter((year) => !isNaN(year) && !isFinite(year));
+    filteredYears = filteredYears.filter((year) => currentYear - year < 10);
+    if (!filteredYears.length) return;
     let maxYear = Math.max(...filteredYears);
-    if (!maxYear || isNaN(maxYear)) return;
+    if (!maxYear || isNaN(maxYear) || isFinite(maxYear)) return;
     let date = new Date(maxYear, 0, 1);
     time.value = date.getTime();
 });
