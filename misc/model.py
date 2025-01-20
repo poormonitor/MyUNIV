@@ -4,12 +4,12 @@ from pydantic import BaseModel
 
 
 class OneTag(BaseModel):
-    tid: str
+    tid: int
     tname: str
 
 
 class OneUniv(BaseModel):
-    sid: str
+    sid: int
     uname: str
     utags: List[int]
     province: int
