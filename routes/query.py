@@ -62,7 +62,7 @@ def findResult(info, db):
 
     MustS = MustS.filter(Must.year == info["standard"])
     if info["mymust"]:
-        mymust = "".join(map(str, info["mymust"]))
+        mymust = "".join(map(str, sorted(info["mymust"])))
         if info["accordation"]:
             what_i_can = get_what_i_can_choose_most(mymust)
         else:
