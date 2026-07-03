@@ -58,7 +58,7 @@ const totalChartoption = {
         },
     },
     textStyle: {
-        fontFamily: ["Inter", "Noto Sans SC"],
+        fontFamily: ["Inter", "Noto Sans SC", "sans-serif"],
         fontWeight: "bold",
     },
     grid: {
@@ -98,7 +98,7 @@ const rankChartoption = {
         },
     },
     textStyle: {
-        fontFamily: ["Inter", "Noto Sans SC"],
+        fontFamily: ["Inter", "Noto Sans SC", "sans-serif"],
         fontWeight: "bold",
     },
     grid: {

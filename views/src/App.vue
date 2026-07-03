@@ -12,7 +12,7 @@ const theme = computed(() => (osThemeRef.value === "dark" ? darkTheme : null));
  */
 const themeOverrides = {
 	common: {
-		fontFamily: "Inter, Noto Sans SC",
+		fontFamily: "Inter, Noto Sans SC, sans-serif",
 		primaryColor: "#2080f0FF",
 		primaryColorHover: "#4098fcFF",
 		primaryColorPressed: "#1060c9FF",

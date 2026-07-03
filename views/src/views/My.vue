@@ -70,7 +70,7 @@ const option = ref({
         boundaryGap: false,
     },
     textStyle: {
-        fontFamily: ["Inter", "Noto Sans SC"],
+        fontFamily: ["Inter", "Noto Sans SC", "sans-serif"],
         fontWeight: "bold",
     },
     series: {

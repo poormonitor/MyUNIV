@@ -42,7 +42,7 @@ const option = ref({
         },
     },
     textStyle: {
-        fontFamily: ["Inter", "Noto Sans SC"],
+        fontFamily: ["Inter", "Noto Sans SC", "sans-serif"],
         fontWeight: "bold",
     },
     grid: {
